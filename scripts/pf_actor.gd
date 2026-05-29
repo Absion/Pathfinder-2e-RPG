@@ -1,9 +1,22 @@
 # pf_actor.gd
-# Represents any living (or undead) thing in the game.
+# Represents any living, undead, or construct entity in the game: Players, NPCs, and Monsters.
 class_name PFActor
 extends PFEntity
 
-# --- Ability Modifiers ---
+# --- COMPONENT ---
+var sheet: PFProficiencySheet
+
+# --- MONSTER ARCHITECTURE ---
+var is_monster: bool
+var monster_stats: Dictionary = {} 
+
+# --- EQUIPMENT ---
+var equipped_armor: PFArmor
+
+# --- ACTIVE CONDITIONS ---
+var conditions: Array[PFCondition] = []
+
+# --- ABILITY MODIFIERS ---
 var str_mod: int
 var dex_mod: int
 var con_mod: int
@@ -11,46 +24,49 @@ var int_mod: int
 var wis_mod: int
 var cha_mod: int
 
-# --- Health & Damage Modifiers ---
+# --- HEALTH & DEFENSES ---
 var max_hp: int
 var current_hp: int
-var temp_hp: int = 0 
+var temp_hp: int = 0
 
-# Immunities are an Array because they don't have numerical values. You are either immune or you aren't.
 var immunities: Array[PFDamage.Type] = []
-# Weaknesses and Resistances are Dictionaries mapping the Damage Type to a numerical value.
-# Example: { PFDamage.Type.FIRE: 5 } means "Weakness 5 to Fire"
+
+# Maps Damage Types to numerical values
 var weaknesses: Dictionary = {} 
 var resistances: Dictionary = {} 
 
-# --- Core Stats ---
-var ac: PFStat
+# Maps Traits (like &"holy" or &"unholy") to numerical values
+var trait_weaknesses: Dictionary = {} 
+var trait_resistances: Dictionary = {} 
+
 var fort_save: PFStat
 var ref_save: PFStat
 var will_save: PFStat
 
-# --- Movement Speeds (in feet) ---
+# --- MOVEMENT ---
 var speed_land: int
 var speed_fly: int
 var speed_swim: int
 
-# --- Action Economy variables ---
+# --- ACTION ECONOMY ---
 var actions_remaining: int = 0
 var reactions_remaining: int = 0
-var attack_stacks: int = 0
+var attack_stacks: int = 0 
 
 # Constructor
-func _init(p_name: String, p_traits: Array[StringName], 
-		p_hp: int, p_ac: int, p_fort: int, p_ref: int, p_will: int,
+func _init(p_name: String, p_traits: Array[StringName], p_level: int, p_is_monster: bool,
+		p_hp: int, p_fort: int, p_ref: int, p_will: int,
 		p_str: int, p_dex: int, p_con: int, p_int: int, p_wis: int, p_cha: int,
 		p_speed_land: int = 25, p_speed_fly: int = 0, p_speed_swim: int = 0):
 	
 	super._init(p_name, p_traits) 
+	is_monster = p_is_monster
+	
+	sheet = PFProficiencySheet.new(p_level)
 	
 	max_hp = p_hp
 	current_hp = p_hp
 	
-	ac = PFStat.new(p_ac)
 	fort_save = PFStat.new(p_fort)
 	ref_save = PFStat.new(p_ref)
 	will_save = PFStat.new(p_will)
@@ -66,7 +82,81 @@ func _init(p_name: String, p_traits: Array[StringName],
 	speed_fly = p_speed_fly
 	speed_swim = p_speed_swim
 
-# --- Utility Functions ---
+# ---------------------------------------------------------
+# ACTIVE CONDITIONS ENGINE
+# ---------------------------------------------------------
+
+func apply_condition(new_condition: PFCondition) -> void:
+	if not new_condition.on_apply(self):
+		return
+
+	for c in conditions:
+		if c.condition_name == new_condition.condition_name:
+			if new_condition.value > c.value:
+				c.value = new_condition.value
+				print("%s's %s worsens to %d!" % [entity_name, c.condition_name, c.value])
+			return
+			
+	conditions.append(new_condition)
+	print("%s is now %s %d!" % [entity_name, new_condition.condition_name, new_condition.value])
+
+func get_condition_modifier(context: StringName) -> int:
+	var total_mod = 0
+	for c in conditions:
+		if c.is_active:
+			total_mod += c.get_modifier(context)
+	return total_mod
+
+# ---------------------------------------------------------
+# THE UNIFIED MATH DELEGATES
+# ---------------------------------------------------------
+
+func get_ac() -> int:
+	var base_ac = 10
+	if is_monster:
+		base_ac = monster_stats.get("ac", 10)
+	else:
+		var current_armor = equipped_armor
+		if current_armor == null:
+			current_armor = PFArmor.new("Unarmored", [], PFArmor.Category.UNARMORED, PFArmor.Group.UNARMORED, 0, 99)
+		
+		var capped_dex = mini(dex_mod, current_armor.dex_cap)
+		base_ac += capped_dex + current_armor.ac_bonus + sheet.get_armor_bonus(current_armor.category)
+	
+	return base_ac + get_condition_modifier(&"ac")
+
+func get_strike_bonus(weapon: PFWeapon) -> int:
+	var base_bonus = 0
+	if is_monster:
+		base_bonus = monster_stats.get("attack", 0)
+	else:
+		var stat_mod = dex_mod if weapon.weapon_type == PFWeapon.WeaponType.RANGED else str_mod
+		if weapon.has_trait(&"finesse") and dex_mod > str_mod:
+			stat_mod = dex_mod
+		base_bonus = stat_mod + sheet.get_weapon_bonus(weapon.category)
+		
+	return base_bonus + get_condition_modifier(&"attack")
+
+func get_strike_damage_bonus(weapon: PFWeapon) -> int:
+	if is_monster:
+		return monster_stats.get("damage", str_mod) 
+		
+	if weapon.weapon_type == PFWeapon.WeaponType.MELEE:
+		return str_mod 
+	return 0
+
+func get_skill_bonus(skill: StringName) -> int:
+	var base_bonus = 0
+	if is_monster:
+		base_bonus = monster_stats.get(skill, 0)
+	else:
+		var ability = PFProficiency.get_skill_ability(skill)
+		var ability_mod = get_modifier(ability)
+		var rank = sheet.skills.get(skill, PFProficiency.Rank.UNTRAINED)
+		base_bonus = ability_mod + PFProficiency.calculate_bonus(rank, sheet.level)
+		
+	return base_bonus + get_condition_modifier(&"skill")
+
 func get_modifier(ability: StringName) -> int:
 	match ability:
 		&"STR": return str_mod
@@ -75,21 +165,24 @@ func get_modifier(ability: StringName) -> int:
 		&"INT": return int_mod
 		&"WIS": return wis_mod
 		&"CHA": return cha_mod
-		_:
-			push_error("Invalid ability modifier requested: " + ability)
-			return 0
+		_: return 0
+
+# ---------------------------------------------------------
+# ACTION ECONOMY & TURN HOOKS
+# ---------------------------------------------------------
 
 func start_turn() -> void:
 	actions_remaining = 3
 	reactions_remaining = 1
 	attack_stacks = 0 
 	print("\n--- %s starts their turn! (3 Actions) ---" % entity_name)
+	
+	for c in conditions:
+		if c.is_active: c.on_turn_start(self)
+	conditions = conditions.filter(func(c): return c.is_active)
 
 func use_action(action: PFAction, target: PFActor = null) -> void:
-	var cost_val = 0
-	if action.cost == PFAction.CostType.ONE: cost_val = 1
-	elif action.cost == PFAction.CostType.TWO: cost_val = 2
-	elif action.cost == PFAction.CostType.THREE: cost_val = 3
+	var cost_val = action.cost
 	
 	if actions_remaining < cost_val:
 		print("%s doesn't have enough actions for %s." % [entity_name, action.entity_name])
@@ -98,54 +191,108 @@ func use_action(action: PFAction, target: PFActor = null) -> void:
 	actions_remaining -= cost_val
 	print("[%s spends %d action(s). %d remaining]" % [entity_name, cost_val, actions_remaining])
 	
-	var success = action.execute(self, target)
-	
-	if success:
+	if action.execute(self, target):
 		attack_stacks += action.map_weight
 
 func execute_subordinate_action(action: PFAction, target: PFActor = null) -> void:
 	print("  > [Subordinate Action] %s performs %s" % [entity_name, action.entity_name])
-	var success = action.execute(self, target)
-	if success:
+	if action.execute(self, target):
 		attack_stacks += action.map_weight
 
-# --- Damage & Healing Handling ---
+func end_turn() -> void:
+	print("\n--- %s ends their turn. ---" % entity_name)
+	
+	for c in conditions:
+		if c.is_active: c.on_turn_end(self)
+	conditions = conditions.filter(func(c): return c.is_active)
+
+# ---------------------------------------------------------
+# HEALTH & DAMAGE LOGIC
+# ---------------------------------------------------------
 
 func grant_temp_hp(amount: int) -> void:
 	if amount > temp_hp:
 		temp_hp = amount
 		print("%s gains %d Temporary HP! (Total Temp HP: %d)" % [entity_name, amount, temp_hp])
 
-# UPDATED: Now requires a damage type, and processes Immunity, Weakness, and Resistance!
-func take_damage(amount: int, damage_type: PFDamage.Type = PFDamage.Type.UNTYPED) -> void:
-	var final_damage = amount
+func heal(amount: int, heal_type: PFDamage.Type = PFDamage.Type.UNTYPED) -> void:
+	if has_trait(&"construct") and (heal_type == PFDamage.Type.VITALITY or heal_type == PFDamage.Type.VOID):
+		print("    > %s is a Construct and ignores Vitality/Void healing." % entity_name)
+		return
+		
+	var has_void_healing = has_trait(&"undead") or has_trait(&"void_healing")
+	
+	if heal_type == PFDamage.Type.VITALITY and has_void_healing:
+		print("    > %s is harmed by Vitality! Reversing heal to damage." % entity_name)
+		take_damage(amount, PFDamage.Type.VITALITY)
+		return
+	elif heal_type == PFDamage.Type.VOID and not has_void_healing:
+		print("    > %s is harmed by Void! Reversing heal to damage." % entity_name)
+		take_damage(amount, PFDamage.Type.VOID)
+		return
+
+	current_hp += amount
+	current_hp = mini(max_hp, current_hp) 
+	print("%s heals %d! HP: %d/%d" % [entity_name, amount, current_hp, max_hp])
+
+func take_damage(amount: int, damage_type: PFDamage.Type = PFDamage.Type.UNTYPED, effect_traits: Array[StringName] = []) -> void:
 	var type_name = PFDamage.get_type_name(damage_type)
 	
-	# 1. Immunity Check (Completely negates damage)
+	if has_trait(&"construct") and (damage_type == PFDamage.Type.VITALITY or damage_type == PFDamage.Type.VOID):
+		print("    > %s is a Construct and ignores Vitality/Void effects." % entity_name)
+		return
+
+	var has_void_healing = has_trait(&"undead") or has_trait(&"void_healing")
+	
+	if damage_type == PFDamage.Type.VITALITY and not has_void_healing:
+		print("    > %s is a living creature and immune to Vitality damage." % entity_name)
+		return
+	elif damage_type == PFDamage.Type.VOID and has_void_healing:
+		print("    > %s absorbs the Void damage as healing!" % entity_name)
+		heal(amount, PFDamage.Type.VOID)
+		return
+
 	if immunities.has(damage_type):
 		print("    > %s is IMMUNE to %s damage! They take 0 damage." % [entity_name, type_name])
 		return
-		
-	# 2. Weakness Check (Adds flat damage)
-	if weaknesses.has(damage_type):
-		var weak_val = weaknesses[damage_type]
-		final_damage += weak_val
-		print("    > %s's WEAKNESS to %s adds %d damage!" % [entity_name, type_name, weak_val])
-		
-	# 3. Resistance Check (Subtracts flat damage)
-	if resistances.has(damage_type):
-		var resist_val = resistances[damage_type]
-		final_damage -= resist_val
-		print("    > %s's RESISTANCE to %s reduces damage by %d!" % [entity_name, type_name, resist_val])
+
+	var final_damage = amount
+
+	# PF2e Remaster Rule: Stacking Multiple Unique Weaknesses
+	var total_weakness_damage = 0
 	
-	# Ensure resistance didn't drop damage below 0
+	if weaknesses.has(damage_type):
+		total_weakness_damage += weaknesses[damage_type]
+		print("    > Weakness to %s adds %d damage!" % [type_name, weaknesses[damage_type]])
+	
+	for t in effect_traits:
+		if trait_weaknesses.has(t):
+			total_weakness_damage += trait_weaknesses[t]
+			print("    > Weakness to '%s' adds %d damage!" % [t, trait_weaknesses[t]])
+			
+	if total_weakness_damage > 0:
+		final_damage += total_weakness_damage
+		print("    > Total Weakness Bonus Applied: +%d damage!" % total_weakness_damage)
+
+	# PF2e Resistance Rule: Non-Stacking (Highest applies)
+	var highest_resistance = 0
+	if resistances.has(damage_type):
+		highest_resistance = resistances[damage_type]
+		
+	for t in effect_traits:
+		if trait_resistances.has(t):
+			highest_resistance = maxi(highest_resistance, trait_resistances[t])
+			
+	if highest_resistance > 0:
+		final_damage -= highest_resistance
+		print("    > RESISTANCE triggered! Reduces damage by %d!" % highest_resistance)
+
 	final_damage = maxi(0, final_damage)
 	
 	if final_damage == 0:
 		print("    > The attack deals no damage to %s." % entity_name)
 		return
 	
-	# 4. Route through Temp HP first
 	if temp_hp > 0:
 		if temp_hp >= final_damage:
 			temp_hp -= final_damage
@@ -156,13 +303,7 @@ func take_damage(amount: int, damage_type: PFDamage.Type = PFDamage.Type.UNTYPED
 			final_damage -= temp_hp
 			temp_hp = 0
 			
-	# 5. Apply remaining damage to actual HP
 	if final_damage > 0:
 		current_hp -= final_damage
-		current_hp = maxi(0, current_hp)
+		current_hp = maxi(0, current_hp) 
 		print(">> %s takes %d final %s damage! HP: %d/%d" % [entity_name, final_damage, type_name, current_hp, max_hp])
-
-func heal(amount: int) -> void:
-	current_hp += amount
-	current_hp = mini(max_hp, current_hp)
-	print("%s heals %d! HP: %d/%d" % [entity_name, amount, current_hp, max_hp])

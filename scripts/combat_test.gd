@@ -1,39 +1,39 @@
-# combat_test.gd
 extends Node
 
 func _ready():
 	randomize() 
 	
-	var gunslinger = PFActor.new("Gunslinger", [&"humanoid"], 30, 16, 5, 8, 4, 1, 4, 1, 0, 0, 0)
-	var skeleton = PFActor.new("Skeleton Guard", [&"undead"], 30, 5, 4, 6, 2, 2, 4, 1, -5, 0, 0)
+	print("\n=== SANCTIFICATION & HEALING TEST ===")
 	
-	# Skeleton is heavily resistant to piercing, but weak to bludgeoning!
-	skeleton.weaknesses[PFDamage.Type.BLUDGEONING] = 5
-	skeleton.resistances[PFDamage.Type.PIERCING] = 5
+	var paladin = PFActor.new("Champion", [&"humanoid"], 5, false, 60, 10, 10, 10, 4, 2, 2, 0, 0, 0)
+	var zombie = PFActor.new("Zombie Brute", [&"undead", &"mindless"], 3, true, 40, 8, 12, 7, 3, 4, 2, -1, 1, 2)
+	zombie.monster_stats["ac"] = 15
 	
-	# Flintlock Pistol: 1d4 Piercing. Has Fatal d8 AND Concussive!
-	# We pass deadly=0, fatal=8
-	var pistol = PFWeapon.new("Flintlock Pistol", [&"concussive"], 
-		PFWeapon.WeaponType.RANGED, PFWeapon.Category.MARTIAL, PFWeapon.Group.FIREARM, 
-		1, 4, PFDamage.Type.PIERCING, 0, 8)
-		
-	# Longsword: 1d8 Slashing. Has Versatile Piercing!
-	var longsword = PFWeapon.new("Longsword", [&"versatile_p"], 
+	# The Zombie is Weak to Slashing (5) and Weak to Holy (10)
+	zombie.weaknesses[PFDamage.Type.SLASHING] = 5
+	zombie.trait_weaknesses[&"holy"] = 10
+	
+	# The Paladin swings a Holy Greatsword
+	var holy_sword = PFWeapon.new("Holy Greatsword", [&"holy"], 
 		PFWeapon.WeaponType.MELEE, PFWeapon.Category.MARTIAL, PFWeapon.Group.SWORD, 
-		1, 8, PFDamage.Type.SLASHING)
-		
-	print("\n=== TESTING VERSATILE TRAIT ===")
-	# Fighter wants to pierce the enemy instead of slash
-	longsword.set_versatile_type(PFDamage.Type.PIERCING)
+		1, 12, PFDamage.Type.SLASHING)
 	
-	# If they try to switch to Bludgeoning, Godot will throw a red error!
-	# longsword.set_versatile_type(PFDamage.Type.BLUDGEONING) 
+	paladin.start_turn()
+	var strike = PFActionStrike.new(holy_sword)
 	
-	print("\n=== TESTING GUNSLINGER (CONCUSSIVE & FATAL) ===")
-	gunslinger.start_turn()
+	# When the Paladin hits, the Zombie is weak to BOTH Slashing and Holy.
+	# The engine will correctly apply both weaknesses independently!
+	paladin.use_action(strike, zombie)
 	
-	# The pistol is Piercing, which the skeleton resists.
-	# But because it is Concussive, the engine will automatically swap it to Bludgeoning 
-	# right before damage is applied, bypassing the resistance AND triggering the weakness!
-	var shoot = PFActionStrike.new(pistol)
-	gunslinger.use_action(shoot, skeleton)
+	# Later in the turn, a Cleric casts a 3-action "Heal" spell (Vitality damage) in the area.
+	# The Zombie takes Vitality damage because it is undead.
+	print("\n-- Cleric casts AoE Heal (Vitality) --")
+	zombie.heal(8, PFDamage.Type.VITALITY)
+	
+	# The Paladin is in the area too, but she is living, so she heals normally!
+	paladin.heal(8, PFDamage.Type.VITALITY)
+	
+	# A Necromancer tries to cast a Void spell on the Paladin.
+	# The engine will flip it into damage!
+	print("\n-- Necromancer casts Void damage on Paladin --")
+	paladin.heal(12, PFDamage.Type.VOID)
