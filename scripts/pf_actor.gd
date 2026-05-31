@@ -12,6 +12,9 @@ var monster_stats: Dictionary = {}
 
 # --- EQUIPMENT ---
 var equipped_armor: PFArmor
+var equipped_shield: PFShield 
+var auto_shield_block: bool = true 
+var bonus_blockable_types: Array[PFDamage.Type] = [] 
 
 # --- ACTIVE CONDITIONS ---
 var conditions: Array[PFCondition] = []
@@ -118,10 +121,14 @@ func get_ac() -> int:
 	else:
 		var current_armor = equipped_armor
 		if current_armor == null:
-			current_armor = PFArmor.new("Unarmored", [], PFArmor.Category.UNARMORED, PFArmor.Group.UNARMORED, 0, 99)
+			# FIX: Added 0 (Level) and 0.0 (Price) to the fallback armor generation
+			current_armor = PFArmor.new("Unarmored", [], 0, 0.0, PFArmor.Category.UNARMORED, PFArmor.Group.UNARMORED, 0, 99)
 		
 		var capped_dex = mini(dex_mod, current_armor.dex_cap)
 		base_ac += capped_dex + current_armor.ac_bonus + sheet.get_armor_bonus(current_armor.category)
+		
+		if current_armor.is_broken():
+			base_ac -= 2 
 	
 	return base_ac + get_condition_modifier(&"ac")
 
@@ -134,16 +141,24 @@ func get_strike_bonus(weapon: PFWeapon) -> int:
 		if weapon.has_trait(&"finesse") and dex_mod > str_mod:
 			stat_mod = dex_mod
 		base_bonus = stat_mod + sheet.get_weapon_bonus(weapon.category)
+		base_bonus += weapon.potency_bonus 
+		
+	if weapon.is_broken():
+		base_bonus -= 2
 		
 	return base_bonus + get_condition_modifier(&"attack")
 
 func get_strike_damage_bonus(weapon: PFWeapon) -> int:
+	var dmg_bonus = 0
 	if is_monster:
-		return monster_stats.get("damage", str_mod) 
+		dmg_bonus = monster_stats.get("damage", str_mod) 
+	elif weapon.weapon_type == PFWeapon.WeaponType.MELEE:
+		dmg_bonus = str_mod 
 		
-	if weapon.weapon_type == PFWeapon.WeaponType.MELEE:
-		return str_mod 
-	return 0
+	if weapon.is_broken():
+		dmg_bonus -= 2
+		
+	return dmg_bonus
 
 func get_skill_bonus(skill: StringName) -> int:
 	var base_bonus = 0
@@ -166,6 +181,21 @@ func get_modifier(ability: StringName) -> int:
 		&"WIS": return wis_mod
 		&"CHA": return cha_mod
 		_: return 0
+
+func get_speed_land() -> int:
+	var current_speed = speed_land
+	
+	if equipped_armor != null and equipped_armor.speed_penalty < 0:
+		var armor_penalty = equipped_armor.speed_penalty
+		if str_mod >= equipped_armor.strength_req:
+			armor_penalty = mini(0, armor_penalty + 5)
+		current_speed += armor_penalty
+		
+	if equipped_shield != null and equipped_shield.speed_penalty < 0:
+		current_speed += equipped_shield.speed_penalty
+		
+	current_speed += get_condition_modifier(&"speed")
+	return maxi(5, current_speed)
 
 # ---------------------------------------------------------
 # ACTION ECONOMY & TURN HOOKS
@@ -258,9 +288,7 @@ func take_damage(amount: int, damage_type: PFDamage.Type = PFDamage.Type.UNTYPED
 
 	var final_damage = amount
 
-	# PF2e Remaster Rule: Stacking Multiple Unique Weaknesses
 	var total_weakness_damage = 0
-	
 	if weaknesses.has(damage_type):
 		total_weakness_damage += weaknesses[damage_type]
 		print("    > Weakness to %s adds %d damage!" % [type_name, weaknesses[damage_type]])
@@ -274,7 +302,6 @@ func take_damage(amount: int, damage_type: PFDamage.Type = PFDamage.Type.UNTYPED
 		final_damage += total_weakness_damage
 		print("    > Total Weakness Bonus Applied: +%d damage!" % total_weakness_damage)
 
-	# PF2e Resistance Rule: Non-Stacking (Highest applies)
 	var highest_resistance = 0
 	if resistances.has(damage_type):
 		highest_resistance = resistances[damage_type]
@@ -292,7 +319,32 @@ func take_damage(amount: int, damage_type: PFDamage.Type = PFDamage.Type.UNTYPED
 	if final_damage == 0:
 		print("    > The attack deals no damage to %s." % entity_name)
 		return
-	
+
+	# ---------------------------------------------------------
+	# SHIELD BLOCK REACTION INTERCEPT
+	# ---------------------------------------------------------
+	var has_raised_shield = false
+	for c in conditions:
+		if c is PFConditionRaisedShield and c.is_active:
+			has_raised_shield = true
+			break
+			
+	var is_blockable = equipped_shield != null and (equipped_shield.can_block(damage_type) or bonus_blockable_types.has(damage_type))
+			
+	if is_blockable and has_raised_shield and reactions_remaining > 0 and auto_shield_block and not equipped_shield.is_destroyed():
+		reactions_remaining -= 1
+		print("\n    >>> REACTION: %s uses SHIELD BLOCK! <<<" % entity_name)
+		
+		var shield_hardness = equipped_shield.hardness
+		var damage_through_shield = maxi(0, final_damage - shield_hardness)
+		
+		equipped_shield.take_item_damage(final_damage)
+		final_damage = damage_through_shield
+		
+		if final_damage == 0:
+			print("    > The Shield completely absorbed the impact!")
+			return
+
 	if temp_hp > 0:
 		if temp_hp >= final_damage:
 			temp_hp -= final_damage
@@ -306,4 +358,4 @@ func take_damage(amount: int, damage_type: PFDamage.Type = PFDamage.Type.UNTYPED
 	if final_damage > 0:
 		current_hp -= final_damage
 		current_hp = maxi(0, current_hp) 
-		print(">> %s takes %d final %s damage! HP: %d/%d" % [entity_name, final_damage, type_name, current_hp, max_hp])
+		print(">> %s takes %d final %s damage! HP: %d/%d\n" % [entity_name, final_damage, type_name, current_hp, max_hp])
