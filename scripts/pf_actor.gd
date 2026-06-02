@@ -1,4 +1,5 @@
 # pf_actor.gd
+# Represents any living, undead, or construct entity in the game: Players, NPCs, and Monsters.
 class_name PFActor
 extends PFEntity
 
