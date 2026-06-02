@@ -9,20 +9,20 @@ enum Group { BRAWLING, SWORD, BOW, KNIFE, CLUB, SPEAR, AXE, POLEARM, FLURRY, FIR
 enum PotencyRune { NONE, PLUS_ONE, PLUS_TWO, PLUS_THREE }
 enum StrikingRune { NONE, STRIKING, GREATER, MAJOR }
 
-# Format: [Attack Bonus, RuneLevel, PriceGP, Prefix]
+# Format: [Attack Bonus, RuneLevel, PriceCP, Prefix]
 const POTENCY_STATS = {
-	PotencyRune.NONE: [0, 0, 0.0, ""],
-	PotencyRune.PLUS_ONE: [1, 2, 35.0, "+1 "],
-	PotencyRune.PLUS_TWO: [2, 10, 930.0, "+2 "],
-	PotencyRune.PLUS_THREE: [3, 16, 8935.0, "+3 "]
+	PotencyRune.NONE: [0, 0, 0, ""],
+	PotencyRune.PLUS_ONE: [1, 2, 3500, "+1 "],      # 35.0 gp -> 3500 cp
+	PotencyRune.PLUS_TWO: [2, 10, 93000, "+2 "],    # 930.0 gp -> 93000 cp
+	PotencyRune.PLUS_THREE: [3, 16, 893500, "+3 "]  # 8935.0 gp -> 893500 cp
 }
 
-# Format: [Extra Dice, RuneLevel, PriceGP, Prefix]
+# Format: [Extra Dice, RuneLevel, PriceCP, Prefix]
 const STRIKING_STATS = {
-	StrikingRune.NONE: [0, 0, 0.0, ""],
-	StrikingRune.STRIKING: [1, 4, 65.0, "Striking "],
-	StrikingRune.GREATER: [2, 12, 1065.0, "Greater Striking "],
-	StrikingRune.MAJOR: [3, 19, 31065.0, "Major Striking "]
+	StrikingRune.NONE: [0, 0, 0, ""],
+	StrikingRune.STRIKING: [1, 4, 6500, "Striking "],          # 65.0 gp -> 6500 cp
+	StrikingRune.GREATER: [2, 12, 106500, "Greater Striking "], # 1065.0 gp -> 106500 cp
+	StrikingRune.MAJOR: [3, 19, 3106500, "Major Striking "]     # 31065.0 gp -> 3106500 cp
 }
 
 var weapon_type: WeaponType
@@ -69,13 +69,24 @@ func apply_fundamental_runes(potency: PotencyRune, striking: StrikingRune) -> vo
 	var str_stats = STRIKING_STATS[striking]
 	
 	potency_bonus = pot_stats[0]
-	dice_amount = base_dice_amount + str_stats[0] # Striking automatically adds dice!
+	dice_amount = base_dice_amount + str_stats[0] 
 	
 	level = maxi(base_level, maxi(pot_stats[1], str_stats[1]))
-	price_gp = base_price_gp + pot_stats[2] + str_stats[2]
+	
+	# Update the copper price
+	price_cp = base_price_cp + pot_stats[2] + str_stats[2]
 	
 	entity_name = pot_stats[3] + str_stats[3] + base_name
-	print("    > %s created! [Level %d | Price: %s gp | Bonus: +%d | Dmg: %dd%d]" % [entity_name, level, price_gp, potency_bonus, dice_amount, die_faces])
+	
+	# Use get_price_string() for the debug print
+	print("    > %s created! [Level %d | Price: %s | Bonus: +%d | Dmg: %dd%d]" % [
+		entity_name, 
+		level, 
+		get_price_string(), 
+		potency_bonus, 
+		dice_amount, 
+		die_faces
+	])
 
 func set_versatile_type(new_type: PFDamage.Type) -> void:
 	if new_type == base_damage_type:

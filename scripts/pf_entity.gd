@@ -1,30 +1,32 @@
 # pf_entity.gd
-# Base class for anything in the game that needs traits (Actors, Items, Spells).
+# The absolute base class for everything in the engine.
 class_name PFEntity
-extends RefCounted # We use RefCounted instead of Node because this is pure data. It saves memory and cleans itself up automatically.
+extends RefCounted 
+
+enum Rarity { COMMON, UNCOMMON, RARE, UNIQUE }
 
 var entity_name: String
-# We use an Array of StringNames. In Godot, StringNames (&"text") are optimized 
-# for ultra-fast comparisons, which is vital when checking traits thousands of times in combat.
-var traits: Array[StringName] = []
+var traits: Array[StringName]
+var rarity: Rarity
 
-# Constructor: Called when we create a new PFEntity using .new()
-func _init(p_name: String, p_traits: Array[StringName] = []):
+# Updated Constructor: Added p_rarity with a default of COMMON
+func _init(p_name: String, p_traits: Array[StringName] = [], p_rarity: Rarity = Rarity.COMMON):
 	entity_name = p_name
 	traits = p_traits
+	rarity = p_rarity
 
-# Checks if the entity has a specific trait (e.g., checking if a weapon has "agile")
 func has_trait(trait_name: StringName) -> bool:
 	return traits.has(trait_name)
 
-# Adds a trait dynamically. We check if it already exists to avoid duplicates.
-# Example use: A spell gives a character the "invisible" trait temporarily.
-func add_trait(trait_name: StringName) -> void:
-	if not has_trait(trait_name):
-		traits.append(trait_name)
+# A universal setter so you can easily update rarity after creation
+func set_rarity(new_rarity: Rarity) -> void:
+	rarity = new_rarity
 
-# Removes a trait dynamically.
-# Example use: The "invisible" spell wears off.
-func remove_trait(trait_name: StringName) -> void:
-	if has_trait(trait_name):
-		traits.erase(trait_name)
+# --- UI HELPER ---
+# This is perfect for when you build your UI to color-code text!
+func get_rarity_color() -> Color:
+	match rarity:
+		Rarity.UNCOMMON: return Color.ORANGE 	# PF2e standard for Uncommon
+		Rarity.RARE: return Color.DODGER_BLUE 	# PF2e standard for Rare
+		Rarity.UNIQUE: return Color.PURPLE 		# PF2e standard for Unique
+		_: return Color.WHITE					# Default for Common

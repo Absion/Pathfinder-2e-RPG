@@ -128,3 +128,6 @@ func _ready():
 	print("\n" + "=" . repeat(50))
 	print("COMBAT TEST COMPLETE")
 	print("=" . repeat(50) + "\n")
+	
+	print("\n=== DWARVEN LINGUISTICS TEST ===")
+	

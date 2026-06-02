@@ -1,22 +1,37 @@
 # pf_actor.gd
-# Represents any living, undead, or construct entity in the game: Players, NPCs, and Monsters.
 class_name PFActor
 extends PFEntity
 
-# --- COMPONENT ---
-var sheet: PFProficiencySheet
+enum Size { TINY, SMALL, MEDIUM, LARGE, HUGE, GARGANTUAN }
+enum Vision { NORMAL, LOW_LIGHT, DARKVISION }
 
-# --- MONSTER ARCHITECTURE ---
+enum Gender { UNKNOWN, MALE, FEMALE, NON_BINARY, CONSTRUCT }
+enum Region { UNKNOWN, LINVARRE, ABSALOM, ANDORAN, CHELIAX, TALDOR, QADIRA }
+
+# --- COMPONENTS ---
+var sheet: PFProficiencySheet
+var inventory: PFInventory
+
+# --- LORE & BACKGROUND ---
+var description: String
+var gender: Gender = Gender.UNKNOWN
+var birthplace: Region = Region.UNKNOWN
+var nationality: Region = Region.UNKNOWN
+var languages: Array[PFLanguage.Type] = []
+var ancestry: PFAncestry
+var bonus_language_slots: int = 0
+var available_bonus_languages: Array[PFLanguage.Type] = []
+
+# --- BIOMETRICS & SENSES ---
+var size: Size = Size.MEDIUM
+var vision: Vision = Vision.NORMAL
+var senses: Array[PFSense] = []
+
+# --- ARCHITECTURE ---
 var is_monster: bool
 var monster_stats: Dictionary = {} 
-
-# --- EQUIPMENT ---
-var equipped_armor: PFArmor
-var equipped_shield: PFShield 
+#For testing TODO Remove
 var auto_shield_block: bool = true 
-var bonus_blockable_types: Array[PFDamage.Type] = [] 
-
-# --- ACTIVE CONDITIONS ---
 var conditions: Array[PFCondition] = []
 
 # --- ABILITY MODIFIERS ---
@@ -31,17 +46,11 @@ var cha_mod: int
 var max_hp: int
 var current_hp: int
 var temp_hp: int = 0
-
 var immunities: Array[PFDamage.Type] = []
-
-# Maps Damage Types to numerical values
 var weaknesses: Dictionary = {} 
 var resistances: Dictionary = {} 
-
-# Maps Traits (like &"holy" or &"unholy") to numerical values
 var trait_weaknesses: Dictionary = {} 
 var trait_resistances: Dictionary = {} 
-
 var fort_save: PFStat
 var ref_save: PFStat
 var will_save: PFStat
@@ -50,25 +59,45 @@ var will_save: PFStat
 var speed_land: int
 var speed_fly: int
 var speed_swim: int
+var speed_climb: int 
+var speed_burrow: int
 
 # --- ACTION ECONOMY ---
 var actions_remaining: int = 0
-var reactions_remaining: int = 0
+var reactions_remaining: int = 1
 var attack_stacks: int = 0 
 
-# Constructor
 func _init(p_name: String, p_traits: Array[StringName], p_level: int, p_is_monster: bool,
 		p_hp: int, p_fort: int, p_ref: int, p_will: int,
 		p_str: int, p_dex: int, p_con: int, p_int: int, p_wis: int, p_cha: int,
-		p_speed_land: int = 25, p_speed_fly: int = 0, p_speed_swim: int = 0):
+		p_speed_land: int = 25, p_speed_fly: int = 0, p_speed_swim: int = 0,
+		p_speed_climb: int = 0, p_speed_burrow: int = 0,
+		p_description: String = "", 
+		p_gender: Gender = Gender.UNKNOWN, 
+		p_birthplace: Region = Region.UNKNOWN, 
+		p_nationality: Region = Region.UNKNOWN):
 	
 	super._init(p_name, p_traits) 
 	is_monster = p_is_monster
+	description = p_description
+	gender = p_gender
+	birthplace = p_birthplace
+	nationality = p_nationality
 	
 	sheet = PFProficiencySheet.new(p_level)
+	inventory = PFInventory.new(self)
 	
 	max_hp = p_hp
 	current_hp = p_hp
+	
+	# Default Senses
+	senses.append_array([
+		PFSense.new(PFSense.Type.VISION, PFSense.Acuity.PRECISE),
+		PFSense.new(PFSense.Type.TOUCH, PFSense.Acuity.PRECISE),
+		PFSense.new(PFSense.Type.HEARING, PFSense.Acuity.IMPRECISE),
+		PFSense.new(PFSense.Type.SCENT, PFSense.Acuity.VAGUE),
+		PFSense.new(PFSense.Type.TASTE, PFSense.Acuity.VAGUE)
+	])
 	
 	fort_save = PFStat.new(p_fort)
 	ref_save = PFStat.new(p_ref)
@@ -84,6 +113,120 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int, p_is_monst
 	speed_land = p_speed_land
 	speed_fly = p_speed_fly
 	speed_swim = p_speed_swim
+	speed_climb = p_speed_climb
+	speed_burrow = p_speed_burrow
+
+# ---------------------------------------------------------
+# DATA SETTERS & BACKGROUND
+# ---------------------------------------------------------
+
+func set_description(new_description: String) -> void:
+	description = new_description
+
+func set_biography(new_gender: Gender, new_birthplace: Region, new_nationality: Region) -> void:
+	gender = new_gender
+	birthplace = new_birthplace
+	nationality = new_nationality
+	print("    > %s's biography updated: Gender [%s], Birthplace [%s], Nationality [%s]." % [
+		entity_name, 
+		Gender.keys()[gender], 
+		Region.keys()[birthplace], 
+		Region.keys()[nationality]
+	])
+
+func apply_ancestry(new_ancestry: PFAncestry) -> void:
+	ancestry = new_ancestry
+	
+	max_hp += ancestry.hp 
+	current_hp = max_hp
+	size = ancestry.size
+	
+# Apply all inherited movement speeds
+	speed_land = ancestry.speed
+	if ancestry.speed_fly > 0:
+		speed_fly = ancestry.speed_fly
+	if ancestry.speed_swim > 0:
+		speed_swim = ancestry.speed_swim
+	if ancestry.speed_climb > 0:
+		speed_climb = ancestry.speed_climb
+	if ancestry.speed_burrow > 0:
+		speed_burrow = ancestry.speed_burrow
+		
+	vision = ancestry.vision
+	
+	# NEW: Feed the Ancestry's special granted items straight into the inventory
+	for item in ancestry.granted_items:
+		inventory.add_item(item)
+	
+	# NEW: Grant starting wealth!
+	if ancestry.starting_gold > 0:
+		inventory.add_currency(ancestry.starting_gold)
+	
+	# NEW: In the future, this is where you would process granted_abilities
+	# for ability in ancestry.granted_abilities:
+	#     add_ability(ability)
+	
+	for sense in ancestry.additional_senses:
+		grant_sense(sense.type, sense.acuity, sense.range_ft)
+	
+	for lang in ancestry.known_languages:
+		if not languages.has(lang):
+			languages.append(lang)
+			
+	bonus_language_slots = maxi(0, int_mod)
+	
+	available_bonus_languages = ancestry.bonus_language_options.duplicate()
+	for common_lang in PFLanguage.get_all_common_languages():
+		if not available_bonus_languages.has(common_lang) and not languages.has(common_lang):
+			available_bonus_languages.append(common_lang)
+			
+	for t in ancestry.traits:
+		if not traits.has(t):
+			traits.append(t)
+			
+	print("    > %s is now a %s!" % [entity_name, ancestry.entity_name])
+	
+	# Optional debug prints to verify special speeds transferred correctly
+	if speed_fly > 0: print("    > Gained Fly Speed: %d ft." % speed_fly)
+	if speed_swim > 0: print("    > Gained Swim Speed: %d ft." % speed_swim)
+	if speed_climb > 0: print("    > Gained Climb Speed: %d ft." % speed_climb)
+
+func add_bonus_language_option(lang: PFLanguage.Type) -> void:
+	if not languages.has(lang) and not available_bonus_languages.has(lang):
+		available_bonus_languages.append(lang)
+		print("    > %s gained access to select %s!" % [entity_name, PFLanguage.Type.keys()[lang]])
+
+func learn_language(lang: PFLanguage.Type) -> void:
+	if not languages.has(lang):
+		languages.append(lang)
+		print("    > %s learned %s!" % [entity_name, PFLanguage.Type.keys()[lang]])
+		
+		if available_bonus_languages.has(lang):
+			available_bonus_languages.erase(lang)
+
+# Safely adds a new sense or upgrades an existing one
+func grant_sense(sense_type: PFSense.Type, acuity: PFSense.Acuity, range_ft: int = 0) -> void:
+	# Check if the actor already has this sense
+	for s in senses:
+		if s.type == sense_type:
+			var upgraded = false
+			# Upgrade Acuity if the new one is better (Precise < Imprecise < Vague mathematically in the enum)
+			if acuity < s.acuity: 
+				s.acuity = acuity
+				upgraded = true
+			# Upgrade Range if the new one is longer (or if the new one is unlimited [0])
+			if range_ft == 0 or (s.range_ft != 0 and range_ft > s.range_ft):
+				s.range_ft = range_ft
+				upgraded = true
+				
+			if upgraded:
+				print("    > %s's %s upgraded to: %s" % [entity_name, PFSense.Type.keys()[sense_type], s.get_sense_string()])
+			return
+
+	# If they don't have it, add it completely fresh
+	var new_sense = PFSense.new(sense_type, acuity, range_ft)
+	senses.append(new_sense)
+	print("    > %s gained a new sense: %s" % [entity_name, new_sense.get_sense_string()])
 
 # ---------------------------------------------------------
 # ACTIVE CONDITIONS ENGINE
@@ -119,17 +262,12 @@ func get_ac() -> int:
 	if is_monster:
 		base_ac = monster_stats.get("ac", 10)
 	else:
-		var current_armor = equipped_armor
-		if current_armor == null:
-			# FIX: Added 0 (Level) and 0.0 (Price) to the fallback armor generation
-			current_armor = PFArmor.new("Unarmored", [], 0, 0.0, PFArmor.Category.UNARMORED, PFArmor.Group.UNARMORED, 0, 99)
+		var armor = inventory.worn_items.filter(func(i): return i is PFArmor).front()
+		if not armor: armor = PFArmor.new("Unarmored", [], 0, 0.0, PFArmor.Category.UNARMORED, PFArmor.Group.UNARMORED, 0, 99)
 		
-		var capped_dex = mini(dex_mod, current_armor.dex_cap)
-		base_ac += capped_dex + current_armor.ac_bonus + sheet.get_armor_bonus(current_armor.category)
-		
-		if current_armor.is_broken():
-			base_ac -= 2 
-	
+		var capped_dex = mini(dex_mod, armor.dex_cap)
+		base_ac += capped_dex + armor.ac_bonus + sheet.get_armor_bonus(armor.category)
+		if armor.is_broken(): base_ac -= 2 
 	return base_ac + get_condition_modifier(&"ac")
 
 func get_strike_bonus(weapon: PFWeapon) -> int:
@@ -185,14 +323,14 @@ func get_modifier(ability: StringName) -> int:
 func get_speed_land() -> int:
 	var current_speed = speed_land
 	
-	if equipped_armor != null and equipped_armor.speed_penalty < 0:
-		var armor_penalty = equipped_armor.speed_penalty
-		if str_mod >= equipped_armor.strength_req:
-			armor_penalty = mini(0, armor_penalty + 5)
-		current_speed += armor_penalty
-		
-	if equipped_shield != null and equipped_shield.speed_penalty < 0:
-		current_speed += equipped_shield.speed_penalty
+	# Check inventory for armor or shields with speed penalties
+	for item in inventory.worn_items + [inventory.held_main_hand, inventory.held_off_hand]:
+		if item != null and item.has_method("get_speed_penalty"): # Or just check 'is PFArmor or PFShield'
+			var penalty = item.speed_penalty
+			if penalty < 0:
+				if item is PFArmor and str_mod >= item.strength_req:
+					penalty = mini(0, penalty + 5)
+				current_speed += penalty
 		
 	current_speed += get_condition_modifier(&"speed")
 	return maxi(5, current_speed)
@@ -323,22 +461,16 @@ func take_damage(amount: int, damage_type: PFDamage.Type = PFDamage.Type.UNTYPED
 	# ---------------------------------------------------------
 	# SHIELD BLOCK REACTION INTERCEPT
 	# ---------------------------------------------------------
-	var has_raised_shield = false
-	for c in conditions:
-		if c is PFConditionRaisedShield and c.is_active:
-			has_raised_shield = true
-			break
+	# 1. Identify active shield
+	var wielded_shield = [inventory.held_main_hand, inventory.held_off_hand, inventory.two_handed_item].filter(func(i): return i is PFShield and i.is_wielded).front()
 			
-	var is_blockable = equipped_shield != null and (equipped_shield.can_block(damage_type) or bonus_blockable_types.has(damage_type))
+	# 2. Shield Block Check
+	var has_raised_shield = conditions.any(func(c): return c is PFConditionRaisedShield and c.is_active)
 			
-	if is_blockable and has_raised_shield and reactions_remaining > 0 and auto_shield_block and not equipped_shield.is_destroyed():
+	if wielded_shield and wielded_shield.can_block(damage_type) and has_raised_shield and reactions_remaining > 0 and auto_shield_block and not wielded_shield.is_destroyed():
 		reactions_remaining -= 1
-		print("\n    >>> REACTION: %s uses SHIELD BLOCK! <<<" % entity_name)
-		
-		var shield_hardness = equipped_shield.hardness
-		var damage_through_shield = maxi(0, final_damage - shield_hardness)
-		
-		equipped_shield.take_item_damage(final_damage)
+		var damage_through_shield = maxi(0, final_damage - wielded_shield.hardness)
+		wielded_shield.take_item_damage(final_damage)
 		final_damage = damage_through_shield
 		
 		if final_damage == 0:
