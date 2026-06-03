@@ -1,133 +1,164 @@
+# combat_test.gd
 extends Node
 
 func _ready():
-	# Ensure the dice rolls are different every time we run the game
-	randomize() 
-	
-	print("\n" + "=" . repeat(50))
-	print("PATHFINDER 2E ENGINE: COMPREHENSIVE COMBAT TEST")
-	print("=" . repeat(50))
+	print("==================================================")
+	print("   PATHFINDER 2E ENGINE: UNIFIED SYSTEMS TEST")
+	print("==================================================")
 	
 	# ---------------------------------------------------------
-	# PHASE 1: THE MAGIC ITEM SHOP
+	# 1. SETUP ACTORS
 	# ---------------------------------------------------------
-	print("\n=== PHASE 1: FORGING & EQUIPPING ===")
+	print("\n--- TEST: ACTOR CREATION ---")
 	
-	# Create a Level 10 Champion (High STR, Med DEX)
-	var paladin = PFActor.new("Kaelen the Pure", [&"humanoid", &"human"], 10, false, 140, 19, 15, 17, 5, 2, 4, 0, 2, 4)
+	# Initialize Database for test
+	var pf_db = preload("res://scripts/database/pf_database.gd").new()
+	pf_db._ready()
 	
-	# Create Base Items
-	var sword = PFWeapon.new("Longsword", [&"versatile_p", &"holy"], 0, 1.0, PFWeapon.WeaponType.MELEE, PFWeapon.Category.MARTIAL, PFWeapon.Group.SWORD, 1, 8, PFDamage.Type.SLASHING)
-	var armor = PFArmor.new("Full Plate", [&"bulwark"], 2, 30.0, PFArmor.Category.HEAVY, PFArmor.Group.PLATE, 6, 0, -3, -10, 4)
-	var shield = PFShield.new("Fortress Shield", 1, 20.0, 3, 6, 24, 12, -10, PFItem.ItemMaterial.STEEL)
+	var hero = PFActor.new("Valeros", [&"humanoid", &"human"], 5, false, 
+		68, 12, 9, 10,  # HP, Fort, Ref, Will
+		4, 2, 3, 0, 1, 1 # STR, DEX, CON, INT, WIS, CHA
+	)
 	
-	# Apply Runes (This automatically upgrades Names, HP, Damage, Attack, AC, Level, and Price!)
-	sword.apply_fundamental_runes(PFWeapon.PotencyRune.PLUS_TWO, PFWeapon.StrikingRune.GREATER) # Now 3d8!
-	armor.apply_fundamental_runes(PFArmor.PotencyRune.PLUS_TWO, PFArmor.ResilientRune.GREATER)
-	shield.apply_reinforcing_rune(PFShield.ReinforcingRune.MODERATE) # Now HP 132!
+	# Apply DB data
+	hero.apply_ancestry(pf_db.get_ancestry("human"))
+	hero.apply_background(pf_db.get_background("farmhand"))
+	hero.apply_class(pf_db.get_pf_class("fighter"))
 	
-	# Equip to Paladin
-	paladin.equipped_armor = armor
-	paladin.equipped_shield = shield
+	var abadar = pf_db.get_pf_deity("abadar")
+	if abadar:
+		hero.apply_deity(abadar)
+		print("Abadar Cleric Spells: ", abadar.cleric_spells)
 	
-	# Display final character stats
-	print("\n-- Kaelen's Final Loadout --")
-	print("Weapon: %s (Level %d, %s gp)" % [sword.entity_name, sword.level, sword.price_gp])
-	print("Armor: %s (Level %d, %s gp)" % [armor.entity_name, armor.level, armor.price_gp])
-	print("Shield: %s (Level %d, %s gp)" % [shield.entity_name, shield.level, shield.price_gp])
-	print("Max Speed: %dft (Armor penalty offset by STR, Shield penalty remains)" % paladin.get_speed_land())
-	print("Base AC: %d" % paladin.get_ac())
-	print("Attack Bonus: +%d" % paladin.get_strike_bonus(sword))
+	hero.auto_shield_block = true
+	
+	var orc = PFActor.new("Orc Brute", [&"humanoid", &"orc"], 5, true, 
+		75, 14, 8, 8, 
+		5, 1, 4, -1, 0, -1
+	)
+	orc.monster_stats = {"ac": 21, "attack": 15, "damage": 12}
+	
+	# ---------------------------------------------------------
+	# 2. SETUP ITEMS & ECONOMY
+	# ---------------------------------------------------------
+	print("\n--- TEST: ECONOMY & ITEM INSTANTIATION ---")
+	
+	# Give the hero some starting cash
+	hero.inventory.add_currency(50, 20, 50, 5) # 50gp, 20sp, 50cp, 5pp
+	print("Total wealth in copper: ", hero.inventory.get_total_wealth_in_copper())
+	print("Formatted Wealth: ", PFInventory.format_copper_to_string(hero.inventory.get_total_coin_value_in_copper()))
+	
+	# Create a Magic Cloak (Requires Investment)
+	# (p_name, p_traits, p_level, p_price_gp, p_material, p_hardness, p_hp, p_bt, p_grade, p_bulk, p_bulk_reduction, p_requires_investment)
+	var cloak_of_elvenkind = PFItem.new("Cloak of Elvenkind", [&"magical", &"invested"], 4, 50.0, 
+		PFItem.ItemMaterial.STANDARD, 1, 5, 0, PFItem.MaterialGrade.STANDARD, 1, 0, true)
+	
+	# Create Weapons & Armor
+	var breastplate = PFArmor.new("Breastplate", [], 1, 8.0, PFArmor.Category.MEDIUM, PFArmor.Group.PLATE, 4, 1, -5, 16)
+	var longsword = pf_db.get_weapon("longsword")
+	var dagger = PFWeapon.new("Dagger", [&"agile", &"finesse", &"thrown_10"], 1, 0.2, PFWeapon.WeaponType.MELEE, PFWeapon.Category.SIMPLE, PFWeapon.Group.KNIFE, 1, 4, PFDamage.Type.PIERCING, PFItem.ItemMaterial.STEEL, 3, 12)
+	
+	# Create Shields
+	var buckler = pf_db.get_shield("buckler")
+	
+	var steel_shield = pf_db.get_shield("steel_shield")
+	# Test the dynamic reinforcing rune logic
+	steel_shield.apply_reinforcing_rune(PFShield.ReinforcingRune.MINOR)
+	
+	# ---------------------------------------------------------
+	# 3. TEST INVESTMENT MECHANICS
+	# ---------------------------------------------------------
+	print("\n--- TEST: INVESTMENT LOGIC ---")
+	hero.inventory.add_item(cloak_of_elvenkind)
+	
+	# Attempt to equip without investing (Should fail/warn)
+	hero.inventory.equip_item(cloak_of_elvenkind) 
+	
+	# Invest and successfully equip
+	hero.inventory.invest_item(cloak_of_elvenkind)
+	hero.inventory.equip_item(cloak_of_elvenkind)
+	
+	# Test dynamic investment limit
+	hero.inventory.set_max_invested_items(12)
+	
+	# ---------------------------------------------------------
+	# 4. TEST BUCKLER & HAND OCCUPANCY
+	# ---------------------------------------------------------
+	print("\n--- TEST: HAND TRACKING & BUCKLERS ---")
+	hero.inventory.equip_item(breastplate)
+	var raise_shield = PFActionRaiseShield.new()
+	
+	hero.start_turn() # <--- FIX: Give Valeros his 3 actions!
+	
+	# Scenario A: Wield Buckler and Longsword
+	hero.inventory.wield_item(buckler, false) # Off-hand
+	hero.inventory.wield_item(longsword, true) # Main-hand
+	
+	print("Action: Hero tries to raise buckler while holding a weapon...")
+	hero.use_action(raise_shield) # Should FAIL (Hand occupied by weapon)
+	
+	# Scenario B: Drop sword, hold a light non-weapon (e.g., a potion)
+	var potion = PFItem.new("Healing Potion", [&"consumable"], 1, 4.0, PFItem.ItemMaterial.STEEL, 1, 2)
+	potion.bulk_value = 0 # Light item
+	
+	hero.inventory.release_item(true) # Drop sword
+	hero.inventory.hold_item(potion, true) # Hold potion in main hand
+	
+	print("\nAction: Hero tries to raise buckler while holding a potion...")
+	hero.use_action(raise_shield) # Should SUCCEED (Hand holds a non-weapon light object)
+	
+	hero.end_turn() # <--- FIX: Cleans up the turn and removes the raised shield condition
+	
+	# ---------------------------------------------------------
+	# 5. TEST FULL COMBAT & SHIELD BLOCK
+	# ---------------------------------------------------------
+	print("\n--- TEST: COMBAT & SHIELD BLOCK REACTION ---")
+	# Equip the reinforced Steel Shield and the Longsword
+	hero.inventory.wield_item(steel_shield, false)
+	hero.inventory.wield_item(longsword, true)
+	
+	hero.start_turn()
+	print("Hero AC before raising shield: ", hero.get_ac())
+	hero.use_action(raise_shield) # Should SUCCEED
+	print("Hero AC after raising shield: ", hero.get_ac())
+	hero.end_turn()
+	
+	print("\n--- MONSTER TURN ---")
+	orc.start_turn()
+	# Orc attacks hero (Bypassing attack roll logic to force damage for the test)
+	print("%s violently strikes %s!" % [orc.entity_name, hero.entity_name])
+	
+	# Trigger take_damage (Should intercept via Shield Block since auto_shield_block is true and shield is raised)
+	hero.take_damage(20, PFDamage.Type.SLASHING)
+	
+	# Check shield state
+	print("\n--- POST-COMBAT SHIELD STATUS ---")
+	print("%s HP: %d / %d" % [steel_shield.entity_name, steel_shield.current_hp, steel_shield.max_hp])
+	if steel_shield.is_broken():
+		print("The shield is BROKEN!")
+	elif steel_shield.is_destroyed():
+		print("The shield is DESTROYED!")
+	else:
+		print("The shield is still intact.")
 
 	# ---------------------------------------------------------
-	# PHASE 2: INITIALIZING THE MONSTER
+	# 6. TEST MINIONS (FAMILIARS & ANIMAL COMPANIONS)
 	# ---------------------------------------------------------
-	print("\n=== PHASE 2: A TERRIFYING FOE APPEARS ===")
+	print("\n--- TEST: MINIONS (FAMILIARS & ANIMAL COMPANIONS) ---")
 	
-	var vampire = PFActor.new("Vampire Lord", [&"undead", &"vampire"], 11, true, 180, 21, 23, 20, 6, 7, 4, 5, 4, 6)
-	vampire.monster_stats["ac"] = 30
-	vampire.monster_stats["attack"] = 24
+	var familiar = PFFamiliar.new("Po", hero)
+	var bear = PFAnimalCompanion.new("Barnaby", hero, "Bear", hero.sheet.level, 30, 8, 6, 6, 3, 2, 3, -4, 1, 0, 25)
 	
-	# The Vampire is weak to Holy, Slashing, and Fire!
-	vampire.trait_weaknesses[&"holy"] = 10
-	vampire.weaknesses[PFDamage.Type.SLASHING] = 5
-	vampire.weaknesses[PFDamage.Type.FIRE] = 10
+	print("%s (Familiar) Max HP: %d" % [familiar.entity_name, familiar.max_hp])
+	print("%s (Companion) Level updates to master's level: %d" % [bear.entity_name, bear.sheet.level])
 	
-	var claws = PFWeapon.new("Vampiric Claws", [&"agile", &"finesse"], 0, 0, PFWeapon.WeaponType.MELEE, PFWeapon.Category.UNARMED, PFWeapon.Group.BRAWLING, 2, 8, PFDamage.Type.SLASHING)
+	familiar.start_turn()
+	bear.start_turn()
+	print("Familiar actions at turn start: ", familiar.actions_remaining)
 	
-	print("%s descends! (AC %d)" % [vampire.entity_name, vampire.get_ac()])
-
-	# ---------------------------------------------------------
-	# PHASE 3: COMBAT & ACTION ECONOMY
-	# ---------------------------------------------------------
-	print("\n=== PHASE 3: COMBAT INITIATED ===")
+	print("\nAction: Hero Commands the Bear...")
+	hero.actions_remaining -= 1
+	bear.receive_command()
 	
-	paladin.start_turn()
-	
-	# ACTION 1: Raise Shield
-	var raise = PFActionRaiseShield.new()
-	paladin.use_action(raise)
-	print("-> Kaelen's AC with raised shield is now: %d" % paladin.get_ac())
-	
-	# ACTION 2: Strike with the +2 Greater Striking Holy Longsword
-	var strike = PFActionStrike.new(sword)
-	paladin.use_action(strike, vampire) 
-	# (Engine note: This will trigger BOTH Slashing and Holy weaknesses, stacking them!)
-	
-	# ACTION 3: Strike with the Shield Bash! 
-	# (Demonstrates Agile MAP penalty, which should be -4 instead of -5)
-	var bash = PFActionStrike.new(paladin.equipped_shield.get_bash_weapon())
-	paladin.use_action(bash, vampire)
-	
-	paladin.end_turn()
-
-	# ---------------------------------------------------------
-	# PHASE 4: DEBUFFS & REACTION TRIGGERS
-	# ---------------------------------------------------------
-	print("\n=== PHASE 4: THE VAMPIRE STRIKES BACK ===")
-	
-	vampire.start_turn()
-	
-	# Apply Frightened to Kaelen to test dynamic condition debuffs
-	print("\n-- The Vampire uses terrifying presence! --")
-	var fear = PFConditionFrightened.new(2)
-	paladin.apply_condition(fear)
-	print("-> Kaelen's AC plummets to: %d" % paladin.get_ac())
-	
-	# ACTION 1: The Vampire strikes!
-	var vamp_strike = PFActionStrike.new(claws)
-	vampire.use_action(vamp_strike, paladin)
-	# (Engine note: Because Kaelen is frightened, his AC is lower, making a hit/crit more likely. 
-	# Because his shield is raised, the engine will trigger SHIELD BLOCK and damage the shield!)
-	
-	vampire.end_turn() # Frightened ticks down to 1 here!
-
-	# ---------------------------------------------------------
-	# PHASE 5: ADVANCED HEALING & PERSISTENT DAMAGE
-	# ---------------------------------------------------------
-	print("\n=== PHASE 5: VITALITY INVERSION & PERSISTENT DAMAGE ===")
-	
-	print("\n-- A Cleric casts a 3-Action Heal (Vitality) in the area! --")
-	var heal_roll = PFDice.roll(4, 8).total # 4th rank heal
-	
-	# Kaelen is living, so he heals normally
-	paladin.heal(heal_roll, PFDamage.Type.VITALITY)
-	
-	# Vampire is Undead, so the engine inverts it to Damage!
-	vampire.heal(heal_roll, PFDamage.Type.VITALITY)
-	
-	print("\n-- The Cleric throws Alchemist Fire at the Vampire! --")
-	# Applies Persistent Fire Damage (which triggers the Vampire's Fire Weakness)
-	var burning = PFConditionPersistent.new(PFDamage.Type.FIRE, 1, 6)
-	vampire.apply_condition(burning)
-	
-	print("\n-- End of Round 2 --")
-	# Ending the Vampire's turn will trigger the persistent fire damage and the flat check!
-	vampire.end_turn()
-	
-	print("\n" + "=" . repeat(50))
-	print("COMBAT TEST COMPLETE")
-	print("=" . repeat(50) + "\n")
-	
-	print("\n=== DWARVEN LINGUISTICS TEST ===")
-	
+	print("Bear actions after command: ", bear.actions_remaining)
+	bear.support_benefit()

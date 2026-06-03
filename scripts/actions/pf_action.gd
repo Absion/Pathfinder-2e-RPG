@@ -1,0 +1,24 @@
+# pf_action.gd
+# Represents any action a character can take. Inherits from PFEntity so it has traits!
+# Now includes 'map_weight' to control exactly how many MAP stacks an action generates.
+class_name PFAction
+extends PFEntity
+
+enum CostType { FREE, ONE, TWO, THREE, REACTION }
+
+var cost: CostType
+var map_weight: int = 0 # How many MAP stacks this action adds when completed
+
+# Constructor
+func _init(p_name: String, p_traits: Array[StringName], p_cost: CostType, p_map_weight: int = 0):
+	# Pass the name and traits up to PFEntity
+	super._init(p_name, p_traits)
+	
+	cost = p_cost
+	map_weight = p_map_weight
+
+# This is a virtual function. Specific actions (like Strike or Stride) will 
+# override this to perform their unique logic.
+func execute(user: PFActor, target: PFActor = null) -> bool:
+	print("%s performs %s!" % [user.entity_name, entity_name])
+	return true
