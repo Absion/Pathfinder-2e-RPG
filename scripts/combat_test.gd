@@ -162,3 +162,81 @@ func _ready():
 	
 	print("Bear actions after command: ", bear.actions_remaining)
 	bear.support_benefit()
+	
+	# ---------------------------------------------------------
+	# 7. SETUP VISUAL 3D ENVIRONMENT FOR CAMERA TEST
+	# ---------------------------------------------------------
+	print("\n--- TEST: 3D CAMERA RIG INITIALIZATION ---")
+	
+	# Create a Floor
+	var floor_mesh = CSGBox3D.new()
+	floor_mesh.size = Vector3(50, 1, 50)
+	floor_mesh.position = Vector3(0, -0.5, 0)
+	
+	# Create a simple checkerboard-like material for visual reference
+	var floor_mat = StandardMaterial3D.new()
+	floor_mat.albedo_color = Color(0.2, 0.5, 0.2)
+	floor_mesh.material = floor_mat
+	add_child(floor_mesh)
+	
+	# Create a Medium Player Token (Billboard Sprite) - Fits in 1 Square
+	var player_mesh = Sprite3D.new()
+	player_mesh.texture = preload("res://icon.svg")
+	player_mesh.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y # Always face camera horizontally
+	player_mesh.pixel_size = 0.015 # Scale the texture to fit
+	player_mesh.position = Vector3(0, 1.0, 0) # Standing on tile (0, 0)
+	player_mesh.modulate = Color(0.5, 0.8, 1.0) # Tint Light Blue
+	add_child(player_mesh)
+	
+	# Create a Large Monster Token (Billboard Sprite) - Fits in 4 Squares
+	var large_monster = Sprite3D.new()
+	large_monster.texture = preload("res://icon.svg")
+	large_monster.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	large_monster.pixel_size = 0.03 # Double size
+	large_monster.position = Vector3(2.5, 2.0, 2.5) # Centered over 4 tiles
+	large_monster.modulate = Color(1.0, 0.4, 0.4) # Tint Red
+	add_child(large_monster)
+	
+	# Lighting
+	var light = DirectionalLight3D.new()
+	light.rotation_degrees = Vector3(-45, 45, 0)
+	light.shadow_enabled = true
+	add_child(light)
+	
+	# Initialize Camera Rig
+	var camera_rig = PFCameraRig.new()
+	add_child(camera_rig)
+	
+	# Set the blue cube as the tracked target
+	camera_rig.tracked_target = player_mesh
+	camera_rig.focus_on_position(player_mesh.global_position, true)
+	
+	# Initialize Combat Grid
+	var combat_grid = PFCombatGrid.new()
+	add_child(combat_grid)
+	
+	# Draw the massive faint background grid for combat
+	combat_grid.draw_base_grid(50, 50)
+	
+	# Test drawing a 3x3 Movement range around the player
+	var move_tiles: Array[Vector3] = []
+	for x in range(-2, 3):
+		for z in range(-2, 3):
+			# Skip the exact tile the player is standing on (0,0)
+			if x == 0 and z == 0: continue
+			move_tiles.append(Vector3(x, 0, z))
+			
+	combat_grid.highlight_tiles(move_tiles, PFCombatGrid.HighlightColor.MOVEMENT_BLUE)
+	
+	# Test the cursor
+	combat_grid.update_cursor(Vector3(2, 0, 1))
+	
+	# Initialize UI
+	var ui_canvas = CanvasLayer.new()
+	add_child(ui_canvas)
+	
+	var action_menu = PFActionMenu.new()
+	ui_canvas.add_child(action_menu)
+	action_menu.bind_to_actor(hero)
+	
+	print("Camera Rig, Combat Grid, and Action Menu added!")

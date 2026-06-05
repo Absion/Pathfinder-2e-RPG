@@ -90,9 +90,32 @@ classDiagram
         +int damage_faces
     }
     PFItem <|-- PFWeapon
+    
+    %% Combat & Systems
+    class PFCombatGrid {
+        <<Manager>>
+        +MultiMeshInstance3D multimesh_instance
+        +draw_base_grid(width, height)
+        +highlight_tiles(tiles, color)
+    }
+
+    class PFCameraRig {
+        <<3D Controller>>
+        +float target_zoom
+        +float target_rotation_y
+        +focus_on_position(pos)
+    }
+    
+    class PFActionMenu {
+        <<UI Controller>>
+        +MenuPosition menu_position
+        +bind_to_actor(PFActor)
+    }
 ```
 
 ## Highlights
+- **2.5D Rendering:** Uses Orthographic `Camera3D` and `Sprite3D` billboarding to emulate an HD-2D aesthetic (Triangle Strategy/Octopath).
+- **High Performance Grid:** Uses highly optimized `MultiMeshInstance3D` to draw thousands of tactical highlights in a single draw call.
 - **Database Driven:** `PFDatabase` seeds and queries a local `pf2e_data.db` SQLite file. Schema changes are strictly managed.
 - **Relational Spell Variants:** Spells dynamically morph their behavior (range, damage, conditions) based on the number of actions used to cast them, handled cleanly by the `PFSpellVariant` object.
 - **Master Spellbook:** A single `PFSpellbook` manager tracks complex multi-class spell progressions, feats, innate spells, and extra slots simultaneously.
