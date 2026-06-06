@@ -4,7 +4,6 @@
 class_name PFProficiencySheet
 extends RefCounted
 
-var level: int
 var skills: Dictionary = {}
 var weapon_proficiencies: Dictionary = {}
 var armor_proficiencies: Dictionary = {}
@@ -20,8 +19,7 @@ const STANDARD_LORES: Array[StringName] = [
 	&"Tanning Lore", &"Theater Lore", &"Underworld Lore"
 ]
 
-func _init(p_level: int):
-	level = p_level
+func _init():
 	
 	# Default Skills (17 Core PF2e Skills)
 	var all_skills = [
@@ -76,10 +74,14 @@ func set_armor_rank(category: PFEquipmentConstants.ArmorCategory, rank: PFMathCo
 # Passes the actor's stored rank to the global math utility.
 # ---------------------------------------------------------
 
-func get_weapon_bonus(category: PFEquipmentConstants.WeaponCategory) -> int:
-	var rank = weapon_proficiencies.get(category, PFMathConstants.ProficiencyRank.UNTRAINED)
-	return PFProficiency.calculate_bonus(rank, level)
+func get_skill_bonus(skill: StringName, actor_level: int) -> int:
+	var rank = skills.get(skill, PFMathConstants.ProficiencyRank.UNTRAINED)
+	return PFProficiency.calculate_bonus(rank, actor_level)
 
-func get_armor_bonus(category: PFEquipmentConstants.ArmorCategory) -> int:
+func get_weapon_bonus(category: PFEquipmentConstants.WeaponCategory, actor_level: int) -> int:
+	var rank = weapon_proficiencies.get(category, PFMathConstants.ProficiencyRank.UNTRAINED)
+	return PFProficiency.calculate_bonus(rank, actor_level)
+
+func get_armor_bonus(category: PFEquipmentConstants.ArmorCategory, actor_level: int) -> int:
 	var rank = armor_proficiencies.get(category, PFMathConstants.ProficiencyRank.UNTRAINED)
-	return PFProficiency.calculate_bonus(rank, level)
+	return PFProficiency.calculate_bonus(rank, actor_level)

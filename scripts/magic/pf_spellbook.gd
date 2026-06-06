@@ -76,7 +76,7 @@ func get_max_slots(rank: int) -> int:
 	var total = 0
 	
 	# 1. Base Class Progression
-	var level = owner.sheet.level
+	var level = owner.level
 	if owner.actor_class:
 		match owner.actor_class.spell_progression:
 			PFMagicConstants.SpellProgression.FULL_CASTER:

@@ -148,7 +148,7 @@ func _ready():
 	print("\n--- TEST: MINIONS (FAMILIARS & ANIMAL COMPANIONS) ---")
 	
 	var familiar = PFFamiliar.new("Po", hero)
-	var bear = PFAnimalCompanion.new("Barnaby", hero, "Bear", hero.sheet.level, 30, 8, 6, 6, 3, 2, 3, -4, 1, 0, 25)
+	var bear = PFAnimalCompanion.new("Barnaby", hero, "Bear", hero.level, 30, 8, 6, 6, 3, 2, 3, -4, 1, 0, 25)
 	
 	print("%s (Familiar) Max HP: %d" % [familiar.entity_name, familiar.health.max_hp])
 	print("%s (Companion) Level updates to master's level: %d" % [bear.entity_name, bear.level])

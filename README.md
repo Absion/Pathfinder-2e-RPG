@@ -61,6 +61,26 @@ classDiagram
     }
     PFActor <|-- PFNpc
 
+    class PFMinion {
+        +PFActor master
+        +receive_command()
+    }
+    PFNpc <|-- PFMinion
+
+    class PFAnimalCompanion {
+        +String companion_type
+        +support_benefit()
+        +advanced_maneuver()
+    }
+    PFMinion <|-- PFAnimalCompanion
+
+    class PFFamiliar {
+        +Array familiar_abilities
+        +Array master_abilities
+        +update_stats_from_master()
+    }
+    PFMinion <|-- PFFamiliar
+
     %% Components
     class PFProficiencySheet {
         <<Component>>
@@ -106,6 +126,19 @@ classDiagram
         +int damage_faces
     }
     PFItem <|-- PFWeapon
+
+    class PFArmor {
+        +int ac_bonus
+        +int dex_cap
+    }
+    PFItem <|-- PFArmor
+
+    class PFShield {
+        +int ac_bonus
+        +int hardness
+        +int max_hp
+    }
+    PFItem <|-- PFShield
     
     %% Combat & Systems
     class PFCombatGrid {

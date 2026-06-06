@@ -216,7 +216,7 @@ func _update_ui():
 	name_label.text = bound_actor.entity_name.to_upper()
 	
 	if bound_actor.sheet:
-		level_label.text = "Lvl %d" % bound_actor.sheet.level
+		level_label.text = "Lvl %d" % bound_actor.level
 	else:
 		level_label.text = "Lvl ?"
 	

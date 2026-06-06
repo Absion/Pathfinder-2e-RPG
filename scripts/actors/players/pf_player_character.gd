@@ -61,7 +61,7 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int,
 	senses.initialize()
 	add_child(senses)
 	
-	sheet = PFProficiencySheet.new(p_level)
+	sheet = PFProficiencySheet.new()
 	inventory = PFInventory.new(self)
 	spellbook = PFSpellbook.new(self)
 
@@ -186,7 +186,7 @@ func get_ac() -> int:
 	if not armor: armor = PFArmor.new("Unarmored", [], 0, 0.0, PFEquipmentConstants.ArmorCategory.UNARMORED, PFEquipmentConstants.ArmorGroup.UNARMORED, 0, 99)
 	
 	var capped_dex = mini(attributes.dex_mod, armor.dex_cap)
-	base_ac += capped_dex + armor.ac_bonus + sheet.get_armor_bonus(armor.category)
+	base_ac += capped_dex + armor.ac_bonus + sheet.get_armor_bonus(armor.category, level)
 	if armor.is_broken(): base_ac -= 2 
 	return base_ac + get_condition_modifier(&"ac")
 
@@ -195,7 +195,7 @@ func get_strike_bonus(weapon: PFWeapon) -> int:
 	var stat_mod = attributes.dex_mod if weapon.weapon_type == PFEquipmentConstants.WeaponType.RANGED else attributes.str_mod
 	if weapon.has_trait(&"finesse") and attributes.dex_mod > attributes.str_mod:
 		stat_mod = attributes.dex_mod
-	base_bonus = stat_mod + sheet.get_weapon_bonus(weapon.category)
+	base_bonus = stat_mod + sheet.get_weapon_bonus(weapon.category, level)
 	base_bonus += weapon.potency_bonus 
 	
 	if weapon.is_broken():
@@ -207,7 +207,7 @@ func get_class_dc() -> int:
 		return 10
 	
 	var rank = actor_class.class_dc_rank
-	var prof_bonus = PFProficiency.calculate_bonus(rank, sheet.level)
+	var prof_bonus = PFProficiency.calculate_bonus(rank, level)
 	
 	var key_attr = selected_key_ability
 	if key_attr == &"" and actor_class.key_abilities.size() > 0:
@@ -220,7 +220,7 @@ func get_class_dc() -> int:
 func get_spell_dc() -> int:
 	if not actor_class or not actor_class.is_spellcaster: return 10
 	
-	var prof_bonus = PFProficiency.calculate_bonus(actor_class.spell_proficiency, sheet.level)
+	var prof_bonus = PFProficiency.calculate_bonus(actor_class.spell_proficiency, level)
 	
 	var key_attr = selected_key_ability
 	if key_attr == &"" and actor_class.key_abilities.size() > 0:
@@ -232,7 +232,7 @@ func get_spell_dc() -> int:
 func get_spell_attack() -> int:
 	if not actor_class or not actor_class.is_spellcaster: return 0
 	
-	var prof_bonus = PFProficiency.calculate_bonus(actor_class.spell_proficiency, sheet.level)
+	var prof_bonus = PFProficiency.calculate_bonus(actor_class.spell_proficiency, level)
 	
 	var key_attr = selected_key_ability
 	if key_attr == &"" and actor_class.key_abilities.size() > 0:
@@ -254,8 +254,7 @@ func get_strike_damage_bonus(weapon: PFWeapon) -> int:
 func get_skill_bonus(skill: StringName) -> int:
 	var ability = PFProficiency.get_skill_ability(skill)
 	var ability_mod = get_ability_modifier(ability)
-	var rank = sheet.skills.get(skill, PFMathConstants.ProficiencyRank.UNTRAINED)
-	var base_bonus = ability_mod + PFProficiency.calculate_bonus(rank, sheet.level)
+	var base_bonus = ability_mod + sheet.get_skill_bonus(skill, level)
 		
 	return base_bonus + get_condition_modifier(&"skill")
 
