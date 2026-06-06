@@ -15,7 +15,7 @@ func _ready():
 	var pf_db = preload("res://scripts/database/pf_database.gd").new()
 	pf_db._ready()
 	
-	var hero = PFActor.new("Valeros", [&"humanoid", &"human"], 5, false, 
+	var hero = PFPlayerCharacter.new("Valeros", [&"humanoid", &"human"], 5, 
 		68, 12, 9, 10,  # HP, Fort, Ref, Will
 		4, 2, 3, 0, 1, 1 # STR, DEX, CON, INT, WIS, CHA
 	)
@@ -30,13 +30,14 @@ func _ready():
 		hero.apply_deity(abadar)
 		print("Abadar Cleric Spells: ", abadar.cleric_spells)
 	
-	hero.auto_shield_block = true
+	add_child(hero)
 	
-	var orc = PFActor.new("Orc Brute", [&"humanoid", &"orc"], 5, true, 
+	var orc = PFNpc.new("Orc Brute", [&"humanoid", &"orc"], 5, 
 		75, 14, 8, 8, 
 		5, 1, 4, -1, 0, -1
 	)
 	orc.monster_stats = {"ac": 21, "attack": 15, "damage": 12}
+	add_child(orc)
 	
 	# ---------------------------------------------------------
 	# 2. SETUP ITEMS & ECONOMY
@@ -51,19 +52,19 @@ func _ready():
 	# Create a Magic Cloak (Requires Investment)
 	# (p_name, p_traits, p_level, p_price_gp, p_material, p_hardness, p_hp, p_bt, p_grade, p_bulk, p_bulk_reduction, p_requires_investment)
 	var cloak_of_elvenkind = PFItem.new("Cloak of Elvenkind", [&"magical", &"invested"], 4, 50.0, 
-		PFItem.ItemMaterial.STANDARD, 1, 5, 0, PFItem.MaterialGrade.STANDARD, 1, 0, true)
+		PFEquipmentConstants.ItemMaterial.STANDARD, 1, 5, 0, PFEquipmentConstants.MaterialGrade.STANDARD, 1, 0, true)
 	
 	# Create Weapons & Armor
-	var breastplate = PFArmor.new("Breastplate", [], 1, 8.0, PFArmor.Category.MEDIUM, PFArmor.Group.PLATE, 4, 1, -5, 16)
+	var breastplate = PFArmor.new("Breastplate", [], 1, 8.0, PFEquipmentConstants.ArmorCategory.MEDIUM, PFEquipmentConstants.ArmorGroup.PLATE, 4, 1, -5, 16)
 	var longsword = pf_db.get_weapon("longsword")
-	var dagger = PFWeapon.new("Dagger", [&"agile", &"finesse", &"thrown_10"], 1, 0.2, PFWeapon.WeaponType.MELEE, PFWeapon.Category.SIMPLE, PFWeapon.Group.KNIFE, 1, 4, PFDamage.Type.PIERCING, PFItem.ItemMaterial.STEEL, 3, 12)
+	var dagger = PFWeapon.new("Dagger", [&"agile", &"finesse", &"thrown_10"], 1, 0.2, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.SIMPLE, PFEquipmentConstants.WeaponGroup.KNIFE, 1, 4, PFCombatConstants.DamageType.PIERCING, PFEquipmentConstants.ItemMaterial.STEEL, 3, 12)
 	
 	# Create Shields
 	var buckler = pf_db.get_shield("buckler")
 	
 	var steel_shield = pf_db.get_shield("steel_shield")
 	# Test the dynamic reinforcing rune logic
-	steel_shield.apply_reinforcing_rune(PFShield.ReinforcingRune.MINOR)
+	steel_shield.apply_reinforcing_rune(PFEquipmentConstants.ReinforcingRune.MINOR)
 	
 	# ---------------------------------------------------------
 	# 3. TEST INVESTMENT MECHANICS
@@ -98,7 +99,7 @@ func _ready():
 	hero.use_action(raise_shield) # Should FAIL (Hand occupied by weapon)
 	
 	# Scenario B: Drop sword, hold a light non-weapon (e.g., a potion)
-	var potion = PFItem.new("Healing Potion", [&"consumable"], 1, 4.0, PFItem.ItemMaterial.STEEL, 1, 2)
+	var potion = PFItem.new("Healing Potion", [&"consumable"], 1, 4.0, PFEquipmentConstants.ItemMaterial.STEEL, 1, 2)
 	potion.bulk_value = 0 # Light item
 	
 	hero.inventory.release_item(true) # Drop sword
@@ -129,7 +130,7 @@ func _ready():
 	print("%s violently strikes %s!" % [orc.entity_name, hero.entity_name])
 	
 	# Trigger take_damage (Should intercept via Shield Block since auto_shield_block is true and shield is raised)
-	hero.take_damage(20, PFDamage.Type.SLASHING)
+	hero.take_damage(20, PFCombatConstants.DamageType.SLASHING)
 	
 	# Check shield state
 	print("\n--- POST-COMBAT SHIELD STATUS ---")
@@ -149,18 +150,18 @@ func _ready():
 	var familiar = PFFamiliar.new("Po", hero)
 	var bear = PFAnimalCompanion.new("Barnaby", hero, "Bear", hero.sheet.level, 30, 8, 6, 6, 3, 2, 3, -4, 1, 0, 25)
 	
-	print("%s (Familiar) Max HP: %d" % [familiar.entity_name, familiar.max_hp])
-	print("%s (Companion) Level updates to master's level: %d" % [bear.entity_name, bear.sheet.level])
+	print("%s (Familiar) Max HP: %d" % [familiar.entity_name, familiar.health.max_hp])
+	print("%s (Companion) Level updates to master's level: %d" % [bear.entity_name, bear.level])
 	
 	familiar.start_turn()
 	bear.start_turn()
-	print("Familiar actions at turn start: ", familiar.actions_remaining)
+	print("Familiar actions at turn start: ", familiar.action_economy.actions_remaining)
 	
 	print("\nAction: Hero Commands the Bear...")
-	hero.actions_remaining -= 1
+	hero.action_economy.actions_remaining -= 1
 	bear.receive_command()
 	
-	print("Bear actions after command: ", bear.actions_remaining)
+	print("Bear actions after command: ", bear.action_economy.actions_remaining)
 	bear.support_benefit()
 	
 	# ---------------------------------------------------------
@@ -203,40 +204,30 @@ func _ready():
 	light.shadow_enabled = true
 	add_child(light)
 	
-	# Initialize Camera Rig
-	var camera_rig = PFCameraRig.new()
-	add_child(camera_rig)
+	# Initialize Game Root
+	var game_root = PFGameRoot.new()
+	add_child(game_root)
 	
-	# Set the blue cube as the tracked target
-	camera_rig.tracked_target = player_mesh
-	camera_rig.focus_on_position(player_mesh.global_position, true)
+	# Register our new Combat Context
+	var combat_context = PFCombatContext.new()
+	combat_context.name = "CombatContext"
+	game_root.contexts["CombatContext"] = combat_context
 	
-	# Initialize Combat Grid
-	var combat_grid = PFCombatGrid.new()
-	add_child(combat_grid)
+	# Transition into it, passing the necessary test data
+	game_root.transition_to_context("CombatContext", {
+		"hero": hero,
+		"player_mesh": player_mesh
+	})
 	
-	# Draw the massive faint background grid for combat
-	combat_grid.draw_base_grid(50, 50)
-	
-	# Test drawing a 3x3 Movement range around the player
+	# We still highlight the tiles here for visual testing, 
+	# but we ask the context's grid manager to do it
 	var move_tiles: Array[Vector3] = []
 	for x in range(-2, 3):
 		for z in range(-2, 3):
-			# Skip the exact tile the player is standing on (0,0)
 			if x == 0 and z == 0: continue
 			move_tiles.append(Vector3(x, 0, z))
 			
-	combat_grid.highlight_tiles(move_tiles, PFCombatGrid.HighlightColor.MOVEMENT_BLUE)
+	combat_context.grid_manager.highlight_tiles(move_tiles, PFCombatGrid.HighlightColor.MOVEMENT_BLUE)
+	combat_context.grid_manager.update_cursor(Vector3(2, 0, 1))
 	
-	# Test the cursor
-	combat_grid.update_cursor(Vector3(2, 0, 1))
-	
-	# Initialize UI
-	var ui_canvas = CanvasLayer.new()
-	add_child(ui_canvas)
-	
-	var action_menu = PFActionMenu.new()
-	ui_canvas.add_child(action_menu)
-	action_menu.bind_to_actor(hero)
-	
-	print("Camera Rig, Combat Grid, and Action Menu added!")
+	print("Game Root initialized and transitioned to Combat Context!")

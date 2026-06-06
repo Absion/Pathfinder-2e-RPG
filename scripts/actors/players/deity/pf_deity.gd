@@ -1,4 +1,5 @@
 # pf_deity.gd
+## A divine entity granting domains, edicts, and anathemas to its followers.
 class_name PFDeity
 extends PFEntity
 
@@ -29,5 +30,5 @@ var curse_minor: String
 var curse_moderate: String
 var curse_major: String
 
-func _init(p_name: String = "", p_traits: Array[StringName] = [], p_rarity: PFEntity.Rarity = PFEntity.Rarity.COMMON):
+func _init(p_name: String = "", p_traits: Array[StringName] = [], p_rarity: PFBiographyConstants.Rarity = PFBiographyConstants.Rarity.COMMON):
 	super._init(p_name, p_traits, p_rarity)

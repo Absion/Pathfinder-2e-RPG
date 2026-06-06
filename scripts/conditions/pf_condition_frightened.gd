@@ -1,4 +1,5 @@
 # pf_condition_frightened.gd
+## Applies a status penalty to all checks and DCs.
 class_name PFConditionFrightened
 extends PFCondition
 

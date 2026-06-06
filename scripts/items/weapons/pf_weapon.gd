@@ -1,39 +1,33 @@
 # pf_weapon.gd
+## Offensive equipment used to make strikes against targets.
 class_name PFWeapon
-extends PFItem 
-
-enum WeaponType { MELEE, RANGED }
-enum Category { UNARMED, SIMPLE, MARTIAL, ADVANCED }
-enum Group { BRAWLING, SWORD, BOW, KNIFE, CLUB, SPEAR, AXE, POLEARM, FLURRY, FIREARM, DART, SLING, SHIELD, NONE }
-
-enum PotencyRune { NONE, PLUS_ONE, PLUS_TWO, PLUS_THREE }
-enum StrikingRune { NONE, STRIKING, GREATER, MAJOR }
+extends PFItem # Force Reparse 
 
 # Format: [Attack Bonus, RuneLevel, PriceCP, Prefix]
 const POTENCY_STATS = {
-	PotencyRune.NONE: [0, 0, 0, ""],
-	PotencyRune.PLUS_ONE: [1, 2, 3500, "+1 "],      # 35.0 gp -> 3500 cp
-	PotencyRune.PLUS_TWO: [2, 10, 93000, "+2 "],    # 930.0 gp -> 93000 cp
-	PotencyRune.PLUS_THREE: [3, 16, 893500, "+3 "]  # 8935.0 gp -> 893500 cp
+	PFEquipmentConstants.PotencyRune.NONE: [0, 0, 0, ""],
+	PFEquipmentConstants.PotencyRune.PLUS_ONE: [1, 2, 3500, "+1 "],      # 35.0 gp -> 3500 cp
+	PFEquipmentConstants.PotencyRune.PLUS_TWO: [2, 10, 93000, "+2 "],    # 930.0 gp -> 93000 cp
+	PFEquipmentConstants.PotencyRune.PLUS_THREE: [3, 16, 893500, "+3 "]  # 8935.0 gp -> 893500 cp
 }
 
 # Format: [Extra Dice, RuneLevel, PriceCP, Prefix]
 const STRIKING_STATS = {
-	StrikingRune.NONE: [0, 0, 0, ""],
-	StrikingRune.STRIKING: [1, 4, 6500, "Striking "],          # 65.0 gp -> 6500 cp
-	StrikingRune.GREATER: [2, 12, 106500, "Greater Striking "], # 1065.0 gp -> 106500 cp
-	StrikingRune.MAJOR: [3, 19, 3106500, "Major Striking "]     # 31065.0 gp -> 3106500 cp
+	PFEquipmentConstants.StrikingRune.NONE: [0, 0, 0, ""],
+	PFEquipmentConstants.StrikingRune.STRIKING: [1, 4, 6500, "Striking "],          # 65.0 gp -> 6500 cp
+	PFEquipmentConstants.StrikingRune.GREATER: [2, 12, 106500, "Greater Striking "], # 1065.0 gp -> 106500 cp
+	PFEquipmentConstants.StrikingRune.MAJOR: [3, 19, 3106500, "Major Striking "]     # 31065.0 gp -> 3106500 cp
 }
 
-var weapon_type: WeaponType
-var category: Category
-var group: Group
+var weapon_type: PFEquipmentConstants.WeaponType
+var category: PFEquipmentConstants.WeaponCategory
+var group: PFEquipmentConstants.WeaponGroup
 
 var potency_bonus: int = 0
 var dice_amount: int
 var die_faces: int
-var base_damage_type: PFDamage.Type
-var active_damage_type: PFDamage.Type 
+var base_damage_type: PFCombatConstants.DamageType
+var active_damage_type: PFCombatConstants.DamageType 
 var deadly_die: int
 var fatal_die: int
 
@@ -42,19 +36,19 @@ var base_name: String
 var base_dice_amount: int
 
 # Updated Constructor: Added p_price_gp
-func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int = 1, p_price_gp: float = 0.0,
-		p_type: WeaponType = WeaponType.MELEE, p_category: Category = Category.SIMPLE, p_group: Group = Group.NONE,
-		p_dice_amount: int = 1, p_die_faces: int = 4, p_damage_type: PFDamage.Type = PFDamage.Type.UNTYPED,
-		p_material: PFItem.ItemMaterial = PFItem.ItemMaterial.STEEL, p_hardness: int = 5, p_hp: int = 20,
+func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int = 1, p_price_gp: float = 0.0, 
+		   p_weapon_type: PFEquipmentConstants.WeaponType = PFEquipmentConstants.WeaponType.MELEE, p_category: PFEquipmentConstants.WeaponCategory = PFEquipmentConstants.WeaponCategory.SIMPLE, p_group: PFEquipmentConstants.WeaponGroup = PFEquipmentConstants.WeaponGroup.NONE, 
+		p_dice_amount: int = 1, p_die_faces: int = 4, p_damage_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.UNTYPED,
+		p_material: PFEquipmentConstants.ItemMaterial = PFEquipmentConstants.ItemMaterial.STEEL, p_hardness: int = 5, p_hp: int = 20,
 		p_deadly_die: int = 0, p_fatal_die: int = 0, 
-		p_grade: PFItem.MaterialGrade = PFItem.MaterialGrade.STANDARD):
+		p_grade: PFEquipmentConstants.MaterialGrade = PFEquipmentConstants.MaterialGrade.STANDARD):
 	
 	super._init(p_name, p_traits, p_level, p_price_gp, p_material, p_hardness, p_hp, 0, p_grade)
 	
 	base_name = p_name
 	base_dice_amount = p_dice_amount
 	
-	weapon_type = p_type
+	weapon_type = p_weapon_type
 	category = p_category
 	group = p_group
 	dice_amount = p_dice_amount
@@ -64,7 +58,7 @@ func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int =
 	deadly_die = p_deadly_die
 	fatal_die = p_fatal_die
 
-func apply_fundamental_runes(potency: PotencyRune, striking: StrikingRune) -> void:
+func apply_fundamental_runes(potency: PFEquipmentConstants.PotencyRune, striking: PFEquipmentConstants.StrikingRune) -> void:
 	var pot_stats = POTENCY_STATS[potency]
 	var str_stats = STRIKING_STATS[striking]
 	
@@ -88,15 +82,15 @@ func apply_fundamental_runes(potency: PotencyRune, striking: StrikingRune) -> vo
 		die_faces
 	])
 
-func set_versatile_type(new_type: PFDamage.Type) -> void:
+func set_versatile_type(new_type: PFCombatConstants.DamageType) -> void:
 	if new_type == base_damage_type:
 		active_damage_type = base_damage_type
 		return
 		
 	var is_valid = false
-	if new_type == PFDamage.Type.SLASHING and has_trait(&"versatile_s"): is_valid = true
-	elif new_type == PFDamage.Type.BLUDGEONING and has_trait(&"versatile_b"): is_valid = true
-	elif new_type == PFDamage.Type.PIERCING and has_trait(&"versatile_p"): is_valid = true
+	if new_type == PFCombatConstants.DamageType.SLASHING and has_trait(&"versatile_s"): is_valid = true
+	elif new_type == PFCombatConstants.DamageType.BLUDGEONING and has_trait(&"versatile_b"): is_valid = true
+	elif new_type == PFCombatConstants.DamageType.PIERCING and has_trait(&"versatile_p"): is_valid = true
 	
 	if is_valid: active_damage_type = new_type
 	else: push_error("Weapon lacks required versatile trait.")

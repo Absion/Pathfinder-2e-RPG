@@ -1,13 +1,12 @@
 # pf_proficiency.gd
+## Helper class representing a proficiency rank from Untrained to Legendary.
 class_name PFProficiency
 extends RefCounted
 
 # The exact mathematical values for PF2e Proficiency Ranks
-enum Rank { UNTRAINED = 0, TRAINED = 2, EXPERT = 4, MASTER = 6, LEGENDARY = 8 }
-
-# The core PF2e proficiency formula: Rank + Level (If you are at least Trained)
-static func calculate_bonus(rank: Rank, level: int) -> int:
-	if rank == Rank.UNTRAINED:
+# The core PF2e proficiency formula: PFMathConstants.ProficiencyRank + Level (If you are at least Trained)
+static func calculate_bonus(rank: PFMathConstants.ProficiencyRank, level: int) -> int:
+	if rank == PFMathConstants.ProficiencyRank.UNTRAINED:
 		return 0
 	return level + int(rank)
 

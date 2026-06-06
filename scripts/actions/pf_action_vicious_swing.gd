@@ -1,5 +1,6 @@
 # pf_action_vicious_swing.gd
 # A heavy attack. Costs 2 Actions, adds 2 to MAP (unless using Furious Focus).
+## A powerful two-action strike that deals additional weapon damage dice.
 class_name PFActionViciousSwing
 extends PFAction
 
@@ -9,7 +10,7 @@ func _init(has_furious_focus: bool = false):
 	var weight = 1 if has_furious_focus else 2
 	
 	# Costs TWO actions, map_weight varies based on feat
-	super._init("Vicious Swing", [&"attack"], CostType.TWO, weight)
+	super._init("Vicious Swing", [&"attack"], PFCombatConstants.ActionCost.TWO_ACTIONS, weight)
 
 func execute(user: PFActor, target: PFActor = null) -> bool:
 	if target == null:

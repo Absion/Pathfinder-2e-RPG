@@ -1,4 +1,5 @@
 # pf_condition.gd
+## An active effect or status applied to an actor.
 class_name PFCondition
 extends RefCounted
 

@@ -1,9 +1,10 @@
 # pf_action_fly.gd
+## Implements the Fly action for aerial movement.
 class_name PFActionFly
 extends PFAction
 
 func _init():
-	super._init("Fly", [&"move"], CostType.ONE)
+	super._init("Fly", [&"move"], PFCombatConstants.ActionCost.ONE_ACTION)
 
 func execute(user: PFActor, target: PFActor = null) -> bool:
 	# Check if the actor actually has a fly speed!

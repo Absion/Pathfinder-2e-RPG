@@ -1,11 +1,12 @@
 # pf_ancestry.gd
+## Represents an actor's biological heritage and innate traits.
 class_name PFAncestry
-extends PFEntity
+extends PFEntity # Force Reparse
 
 const VALID_ABILITIES: Array[StringName] = [&"STR", &"DEX", &"CON", &"INT", &"WIS", &"CHA", &"FREE"]
 
 var hp: int
-var size: PFEntity.Size
+var size: PFBiographyConstants.Size
 
 # --- MOVEMENT SPEEDS ---
 var speed: int
@@ -19,11 +20,11 @@ var ability_boosts: Array[StringName]
 var ability_flaws: Array[StringName]
 var alternate_ancestry_boosts: Array[StringName] = [&"FREE", &"FREE"]
 
-var known_languages: Array[PFLanguage.Type]
-var bonus_language_options: Array[PFLanguage.Type]
+var known_languages: Array[PFBiographyConstants.LanguageType]
+var bonus_language_options: Array[PFBiographyConstants.LanguageType]
 
 # --- SENSES ---
-var vision: PFEntity.Vision
+var vision: PFBiographyConstants.Vision
 var additional_senses: Array[PFSense]
 
 # --- SUB-SELECTIONS ---
@@ -49,13 +50,13 @@ var starting_gold: int
 func _init(
 		p_name: String = "", 
 		p_hp: int = 8, 
-		p_size: PFEntity.Size = PFEntity.Size.MEDIUM, 
+		p_size: PFBiographyConstants.Size = PFBiographyConstants.Size.MEDIUM, 
 		p_speed: int = 25, 
 		p_boosts: Array[StringName] = [], 
 		p_flaws: Array[StringName] = [], 
-		p_known_langs: Array[PFLanguage.Type] = [], 
-		p_bonus_langs: Array[PFLanguage.Type] = [], 
-		p_vision: PFEntity.Vision = PFEntity.Vision.NORMAL,
+		p_known_langs: Array[PFBiographyConstants.LanguageType] = [], 
+		p_bonus_langs: Array[PFBiographyConstants.LanguageType] = [], 
+		p_vision: PFBiographyConstants.Vision = PFBiographyConstants.Vision.NORMAL,
 		p_additional_senses: Array[PFSense] = [],
 		p_speed_fly: int = 0,   
 		p_speed_swim: int = 0,  
@@ -71,7 +72,7 @@ func _init(
 		p_common_anathema: Array[String] = [],
 		p_common_names: Array[String] = [],
 		p_traits: Array[StringName] = [], 
-		p_rarity: PFEntity.Rarity = PFEntity.Rarity.COMMON,
+		p_rarity: PFBiographyConstants.Rarity = PFBiographyConstants.Rarity.COMMON,
 		p_granted_abilities: Array[PFEntity] = [], 
 		p_granted_items: Array[PFItem] = [],
 		p_starting_gold: int = 15

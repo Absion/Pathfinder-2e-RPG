@@ -1,5 +1,6 @@
 # pf_proficiency_sheet.gd
 # A component attached to an actor that manages their specific proficiencies.
+## Stores and calculates all proficiency ranks for a player's skills and saves.
 class_name PFProficiencySheet
 extends RefCounted
 
@@ -31,32 +32,32 @@ func _init(p_level: int):
 	]
 	
 	for s in all_skills:
-		skills[s] = PFProficiency.Rank.UNTRAINED
+		skills[s] = PFMathConstants.ProficiencyRank.UNTRAINED
 		
 	# Default Weapon Proficiencies
-	weapon_proficiencies[PFWeapon.Category.UNARMED] = PFProficiency.Rank.UNTRAINED
-	weapon_proficiencies[PFWeapon.Category.SIMPLE] = PFProficiency.Rank.UNTRAINED
-	weapon_proficiencies[PFWeapon.Category.MARTIAL] = PFProficiency.Rank.UNTRAINED
-	weapon_proficiencies[PFWeapon.Category.ADVANCED] = PFProficiency.Rank.UNTRAINED
+	weapon_proficiencies[PFEquipmentConstants.WeaponCategory.UNARMED] = PFMathConstants.ProficiencyRank.UNTRAINED
+	weapon_proficiencies[PFEquipmentConstants.WeaponCategory.SIMPLE] = PFMathConstants.ProficiencyRank.UNTRAINED
+	weapon_proficiencies[PFEquipmentConstants.WeaponCategory.MARTIAL] = PFMathConstants.ProficiencyRank.UNTRAINED
+	weapon_proficiencies[PFEquipmentConstants.WeaponCategory.ADVANCED] = PFMathConstants.ProficiencyRank.UNTRAINED
 	
 	# Default Armor Proficiencies
-	armor_proficiencies[PFArmor.Category.UNARMORED] = PFProficiency.Rank.UNTRAINED
-	armor_proficiencies[PFArmor.Category.LIGHT] = PFProficiency.Rank.UNTRAINED
-	armor_proficiencies[PFArmor.Category.MEDIUM] = PFProficiency.Rank.UNTRAINED
-	armor_proficiencies[PFArmor.Category.HEAVY] = PFProficiency.Rank.UNTRAINED
+	armor_proficiencies[PFEquipmentConstants.ArmorCategory.UNARMORED] = PFMathConstants.ProficiencyRank.UNTRAINED
+	armor_proficiencies[PFEquipmentConstants.ArmorCategory.LIGHT] = PFMathConstants.ProficiencyRank.UNTRAINED
+	armor_proficiencies[PFEquipmentConstants.ArmorCategory.MEDIUM] = PFMathConstants.ProficiencyRank.UNTRAINED
+	armor_proficiencies[PFEquipmentConstants.ArmorCategory.HEAVY] = PFMathConstants.ProficiencyRank.UNTRAINED
 
 # ---------------------------------------------------------
 # SETTERS
 # ---------------------------------------------------------
 
-func add_lore_skill(lore_name: StringName, rank: PFProficiency.Rank = PFProficiency.Rank.TRAINED) -> void:
+func add_lore_skill(lore_name: StringName, rank: PFMathConstants.ProficiencyRank = PFMathConstants.ProficiencyRank.TRAINED) -> void:
 	if lore_name in STANDARD_LORES or str(lore_name).to_lower().ends_with("lore"):
 		skills[lore_name] = rank
 	else:
 		push_warning("Adding non-standard lore skill: " + lore_name)
 		skills[lore_name] = rank
 
-func set_skill_rank(skill: StringName, rank: PFProficiency.Rank) -> void:
+func set_skill_rank(skill: StringName, rank: PFMathConstants.ProficiencyRank) -> void:
 	if skills.has(skill): 
 		skills[skill] = rank
 	elif str(skill).to_lower().ends_with("lore"):
@@ -64,10 +65,10 @@ func set_skill_rank(skill: StringName, rank: PFProficiency.Rank) -> void:
 	else: 
 		push_error("Trying to set rank for invalid skill: " + skill)
 
-func set_weapon_rank(category: PFWeapon.Category, rank: PFProficiency.Rank) -> void:
+func set_weapon_rank(category: PFEquipmentConstants.WeaponCategory, rank: PFMathConstants.ProficiencyRank) -> void:
 	weapon_proficiencies[category] = rank
 
-func set_armor_rank(category: PFArmor.Category, rank: PFProficiency.Rank) -> void:
+func set_armor_rank(category: PFEquipmentConstants.ArmorCategory, rank: PFMathConstants.ProficiencyRank) -> void:
 	armor_proficiencies[category] = rank
 
 # ---------------------------------------------------------
@@ -75,10 +76,10 @@ func set_armor_rank(category: PFArmor.Category, rank: PFProficiency.Rank) -> voi
 # Passes the actor's stored rank to the global math utility.
 # ---------------------------------------------------------
 
-func get_weapon_bonus(category: PFWeapon.Category) -> int:
-	var rank = weapon_proficiencies.get(category, PFProficiency.Rank.UNTRAINED)
+func get_weapon_bonus(category: PFEquipmentConstants.WeaponCategory) -> int:
+	var rank = weapon_proficiencies.get(category, PFMathConstants.ProficiencyRank.UNTRAINED)
 	return PFProficiency.calculate_bonus(rank, level)
 
-func get_armor_bonus(category: PFArmor.Category) -> int:
-	var rank = armor_proficiencies.get(category, PFProficiency.Rank.UNTRAINED)
+func get_armor_bonus(category: PFEquipmentConstants.ArmorCategory) -> int:
+	var rank = armor_proficiencies.get(category, PFMathConstants.ProficiencyRank.UNTRAINED)
 	return PFProficiency.calculate_bonus(rank, level)

@@ -19,6 +19,12 @@ config/icon="res://icon.svg"
 
 PFDB="*uid://d1h7imqcawkjd"
 
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/stretch/mode="canvas_items"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/godot-sqlite/plugin.cfg")
@@ -30,10 +36,3 @@ enabled=PackedStringArray("res://addons/godot-sqlite/plugin.cfg")
 [rendering]
 
 rendering_device/driver.windows="d3d12"
-
-[display]
-
-window/size/viewport_width=1920
-window/size/viewport_height=1080
-window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"

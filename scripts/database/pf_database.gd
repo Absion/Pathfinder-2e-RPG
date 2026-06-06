@@ -1,5 +1,7 @@
 # pf_database.gd
-extends Node
+## A stateless singleton that parses sqlite data into GDScript Objects.
+class_name PFDatabase
+extends Node # Force Reparse
 
 const DB_PATH = "res://db/pf2e_data.db"
 var db
@@ -203,8 +205,8 @@ func _seed_data():
 		('fighter', 'Fighter', '', 10, 'STR,DEX', 4, 2, 4, 4, 2, 3, 4, 4, 4, 2, 2, 2, 2, 2, '[]', '[]', 0, 0, 0, 0, 0);")
 		
 	# Spells
-	var tr_arc_occ = JSON.stringify([PFEntity.MagicTradition.ARCANE, PFEntity.MagicTradition.OCCULT])
-	var tr_arc_pri = JSON.stringify([PFEntity.MagicTradition.ARCANE, PFEntity.MagicTradition.PRIMAL])
+	var tr_arc_occ = JSON.stringify([PFMagicConstants.MagicTradition.ARCANE, PFMagicConstants.MagicTradition.OCCULT])
+	var tr_arc_pri = JSON.stringify([PFMagicConstants.MagicTradition.ARCANE, PFMagicConstants.MagicTradition.PRIMAL])
 	
 	db.query("INSERT OR IGNORE INTO spells (id, name, traits, base_spell_rank, spell_category, traditions, saving_throw, is_attack, damage_type, scaling_rules, scaling_dice, description) VALUES 
 		('illusory_object', 'Illusory Object', 'illusion,visual', 1, 0, '" + tr_arc_occ + "', '', 0, '', 0, 0, 'You create an illusion of an object.');")
@@ -240,43 +242,43 @@ func get_weapon(id: String) -> PFWeapon:
 		return null
 		
 	var row = db.query_result[0]
-	var w = PFWeapon.new()
+	var new_weapon = PFWeapon.new()
 	
-	w.entity_name = row["name"]
-	w.base_name = row["name"]
+	new_weapon.entity_name = row["name"]
+	new_weapon.base_name = row["name"]
 	
 	var traits_array: Array[StringName] = []
 	if row["traits"] != "":
 		var split = row["traits"].split(",")
 		for t in split:
 			traits_array.append(StringName(t.strip_edges()))
-	w.traits = traits_array
+	new_weapon.traits = traits_array
 	
-	w.level = row["level"]
-	w.base_level = row["level"]
-	w.price_cp = row["price_cp"]
-	w.base_price_cp = row["price_cp"]
+	new_weapon.level = row["level"]
+	new_weapon.base_level = row["level"]
+	new_weapon.price_cp = row["price_cp"]
+	new_weapon.base_price_cp = row["price_cp"]
 	
-	w.item_material = row["material"]
-	w.hardness = row["hardness"]
-	w.max_hp = row["max_hp"]
-	w.current_hp = row["max_hp"]
-	w.broken_threshold = row["broken_threshold"]
-	w.grade = row["grade"]
-	w.bulk_value = row["bulk"]
-	w.base_bulk_value = row["bulk"]
+	new_weapon.item_material = row["material"]
+	new_weapon.hardness = row["hardness"]
+	new_weapon.max_hp = row["max_hp"]
+	new_weapon.current_hp = row["max_hp"]
+	new_weapon.broken_threshold = row["broken_threshold"]
+	new_weapon.grade = row["grade"]
+	new_weapon.bulk_value = row["bulk"]
+	new_weapon.base_bulk_value = row["bulk"]
 	
-	w.weapon_type = row["weapon_type"]
-	w.category = row["category"]
-	w.group = row["group_type"]
+	new_weapon.weapon_type = row["weapon_type"]
+	new_weapon.category = row["category"]
+	new_weapon.group = row["group_type"]
 	
-	w.base_dice_amount = row["damage_dice"]
-	w.dice_amount = row["damage_dice"]
-	w.die_faces = row["damage_faces"]
-	w.base_damage_type = row["damage_type"]
-	w.active_damage_type = row["damage_type"]
+	new_weapon.base_dice_amount = row["damage_dice"]
+	new_weapon.dice_amount = row["damage_dice"]
+	new_weapon.die_faces = row["damage_faces"]
+	new_weapon.base_damage_type = row["damage_type"]
+	new_weapon.active_damage_type = row["damage_type"]
 	
-	return w
+	return new_weapon
 
 func get_shield(id: String) -> PFShield:
 	db.query("SELECT * FROM shields WHERE id = '" + id + "'")
@@ -285,38 +287,38 @@ func get_shield(id: String) -> PFShield:
 		return null
 		
 	var row = db.query_result[0]
-	var s = PFShield.new()
+	var new_shield = PFShield.new()
 	
-	s.entity_name = row["name"]
-	s.base_name = row["name"]
+	new_shield.entity_name = row["name"]
+	new_shield.base_name = row["name"]
 	
 	var traits_array: Array[StringName] = []
 	if row["traits"] != "":
 		var split = row["traits"].split(",")
 		for t in split:
 			traits_array.append(StringName(t.strip_edges()))
-	s.traits = traits_array
+	new_shield.traits = traits_array
 	
-	s.level = row["level"]
-	s.base_level = row["level"]
-	s.price_cp = row["price_cp"]
-	s.base_price_cp = row["price_cp"]
+	new_shield.level = row["level"]
+	new_shield.base_level = row["level"]
+	new_shield.price_cp = row["price_cp"]
+	new_shield.base_price_cp = row["price_cp"]
 	
-	s.bulk_value = row["bulk"]
-	s.base_bulk_value = row["bulk"]
+	new_shield.bulk_value = row["bulk"]
+	new_shield.base_bulk_value = row["bulk"]
 	
-	s.ac_bonus = row["ac_bonus"]
-	s.speed_penalty = row["speed_penalty"]
+	new_shield.ac_bonus = row["ac_bonus"]
+	new_shield.speed_penalty = row["speed_penalty"]
 	
-	s.base_hardness = row["hardness"]
-	s.hardness = row["hardness"]
-	s.base_max_hp = row["max_hp"]
-	s.max_hp = row["max_hp"]
-	s.current_hp = row["max_hp"]
-	s.base_broken_threshold = row["broken_threshold"]
-	s.broken_threshold = row["broken_threshold"]
+	new_shield.base_hardness = row["hardness"]
+	new_shield.hardness = row["hardness"]
+	new_shield.base_max_hp = row["max_hp"]
+	new_shield.max_hp = row["max_hp"]
+	new_shield.current_hp = row["max_hp"]
+	new_shield.base_broken_threshold = row["broken_threshold"]
+	new_shield.broken_threshold = row["broken_threshold"]
 	
-	return s
+	return new_shield
 
 func get_ancestry(id: String) -> PFAncestry:
 	db.query("SELECT * FROM ancestries WHERE id = '" + id + "'")
@@ -325,20 +327,20 @@ func get_ancestry(id: String) -> PFAncestry:
 		return null
 		
 	var row = db.query_result[0]
-	var a = PFAncestry.new()
-	a.entity_name = row["name"]
-	a.hp = row["hp"]
-	a.size = row["size"] as PFEntity.Size
-	a.speed = row["speed"]
+	var new_ancestry = PFAncestry.new()
+	new_ancestry.entity_name = row["name"]
+	new_ancestry.hp = row["hp"]
+	new_ancestry.size = row["size"] as PFBiographyConstants.Size
+	new_ancestry.speed = row["speed"]
 	
 	if row["boosts"] != "":
 		for b in row["boosts"].split(","):
-			a.ability_boosts.append(StringName(b.strip_edges()))
+			new_ancestry.ability_boosts.append(StringName(b.strip_edges()))
 	if row["flaws"] != "":
 		for f in row["flaws"].split(","):
-			a.ability_flaws.append(StringName(f.strip_edges()))
+			new_ancestry.ability_flaws.append(StringName(f.strip_edges()))
 			
-	return a
+	return new_ancestry
 
 func get_background(id: String) -> PFBackground:
 	db.query("SELECT * FROM backgrounds WHERE id = '" + id + "'")
@@ -347,21 +349,21 @@ func get_background(id: String) -> PFBackground:
 		return null
 		
 	var row = db.query_result[0]
-	var b = PFBackground.new()
-	b.entity_name = row["name"]
-	b.background_description = row["description"]
+	var new_background = PFBackground.new()
+	new_background.entity_name = row["name"]
+	new_background.background_description = row["description"]
 	
 	if row["boosts"] != "":
 		for x in row["boosts"].split(","):
-			b.ability_boosts.append(StringName(x.strip_edges()))
+			new_background.ability_boosts.append(StringName(x.strip_edges()))
 	if row["skills"] != "":
 		for x in row["skills"].split(","):
-			b.trained_skills.append(StringName(x.strip_edges()))
+			new_background.trained_skills.append(StringName(x.strip_edges()))
 	if row["lores"] != "":
 		for x in row["lores"].split(","):
-			b.trained_lores.append(StringName(x.strip_edges()))
+			new_background.trained_lores.append(StringName(x.strip_edges()))
 			
-	return b
+	return new_background
 
 func get_pf_class(id: String) -> PFClass:
 	db.query("SELECT * FROM classes WHERE id = '" + id + "'")
@@ -370,52 +372,52 @@ func get_pf_class(id: String) -> PFClass:
 		return null
 		
 	var row = db.query_result[0]
-	var c = PFClass.new()
-	c.entity_name = row["name"]
-	c.hp_per_level = row["hp_per_level"]
-	c.perception_rank = row["perception_rank"] as PFProficiency.Rank
-	c.class_dc_rank = row["class_dc_rank"] as PFProficiency.Rank
-	c.trained_skills_count = row["trained_skills_count"]
+	var new_class = PFClass.new()
+	new_class.entity_name = row["name"]
+	new_class.hp_per_level = row["hp_per_level"]
+	new_class.perception_rank = row["perception_rank"] as PFMathConstants.ProficiencyRank
+	new_class.class_dc_rank = row["class_dc_rank"] as PFMathConstants.ProficiencyRank
+	new_class.trained_skills_count = row["trained_skills_count"]
 	
 	if row["forced_edicts"] and row["forced_edicts"] != "":
 		var parsed = JSON.parse_string(row["forced_edicts"])
-		if parsed: c.forced_edicts.assign(parsed)
+		if parsed: new_class.forced_edicts.assign(parsed)
 		
 	if row["forced_anathema"] and row["forced_anathema"] != "":
 		var parsed = JSON.parse_string(row["forced_anathema"])
-		if parsed: c.forced_anathema.assign(parsed)
+		if parsed: new_class.forced_anathema.assign(parsed)
 		
-	c.is_spellcaster = (row["is_spellcaster"] == 1)
-	c.caster_type = row["caster_type"] as PFEntity.CasterType
-	c.spell_tradition = row["spell_tradition"] as PFEntity.MagicTradition
-	c.spell_proficiency = row["spell_proficiency"] as PFProficiency.Rank
-	c.spell_progression = row["spell_progression"] as PFEntity.SpellProgression
+	new_class.is_spellcaster = (row["is_spellcaster"] == 1)
+	new_class.caster_type = row["caster_type"] as PFMagicConstants.CasterType
+	new_class.spell_tradition = row["spell_tradition"] as PFMagicConstants.MagicTradition
+	new_class.spell_proficiency = row["spell_proficiency"] as PFMathConstants.ProficiencyRank
+	new_class.spell_progression = row["spell_progression"] as PFMagicConstants.SpellProgression
 	
 	if row["key_abilities"] != "":
 		for k in row["key_abilities"].split(","):
-			c.key_abilities.append(StringName(k.strip_edges()))
+			new_class.key_abilities.append(StringName(k.strip_edges()))
 			
-	c.saving_throws = {
-		"fort": row["save_fort"] as PFProficiency.Rank,
-		"ref": row["save_ref"] as PFProficiency.Rank,
-		"will": row["save_will"] as PFProficiency.Rank
+	new_class.saving_throws = {
+		"fort": row["save_fort"] as PFMathConstants.ProficiencyRank,
+		"ref": row["save_ref"] as PFMathConstants.ProficiencyRank,
+		"will": row["save_will"] as PFMathConstants.ProficiencyRank
 	}
 	
-	c.weapon_proficiencies = {
-		PFWeapon.Category.UNARMED: row["weapon_unarmed"] as PFProficiency.Rank,
-		PFWeapon.Category.SIMPLE: row["weapon_simple"] as PFProficiency.Rank,
-		PFWeapon.Category.MARTIAL: row["weapon_martial"] as PFProficiency.Rank,
-		PFWeapon.Category.ADVANCED: row["weapon_advanced"] as PFProficiency.Rank
+	new_class.weapon_proficiencies = {
+		PFEquipmentConstants.WeaponCategory.UNARMED: row["weapon_unarmed"] as PFMathConstants.ProficiencyRank,
+		PFEquipmentConstants.WeaponCategory.SIMPLE: row["weapon_simple"] as PFMathConstants.ProficiencyRank,
+		PFEquipmentConstants.WeaponCategory.MARTIAL: row["weapon_martial"] as PFMathConstants.ProficiencyRank,
+		PFEquipmentConstants.WeaponCategory.ADVANCED: row["weapon_advanced"] as PFMathConstants.ProficiencyRank
 	}
 	
-	c.armor_proficiencies = {
-		PFArmor.Category.UNARMORED: row["armor_unarmored"] as PFProficiency.Rank,
-		PFArmor.Category.LIGHT: row["armor_light"] as PFProficiency.Rank,
-		PFArmor.Category.MEDIUM: row["armor_medium"] as PFProficiency.Rank,
-		PFArmor.Category.HEAVY: row["armor_heavy"] as PFProficiency.Rank
+	new_class.armor_proficiencies = {
+		PFEquipmentConstants.ArmorCategory.UNARMORED: row["armor_unarmored"] as PFMathConstants.ProficiencyRank,
+		PFEquipmentConstants.ArmorCategory.LIGHT: row["armor_light"] as PFMathConstants.ProficiencyRank,
+		PFEquipmentConstants.ArmorCategory.MEDIUM: row["armor_medium"] as PFMathConstants.ProficiencyRank,
+		PFEquipmentConstants.ArmorCategory.HEAVY: row["armor_heavy"] as PFMathConstants.ProficiencyRank
 	}
 	
-	return c
+	return new_class
 
 func get_pf_spell(id: String) -> PFSpell:
 	db.query("SELECT * FROM spells WHERE id = '" + id + "'")
@@ -424,48 +426,48 @@ func get_pf_spell(id: String) -> PFSpell:
 		return null
 		
 	var row = db.query_result[0]
-	var s = PFSpell.new()
-	s.entity_name = row["name"]
-	s.base_spell_rank = row["base_spell_rank"]
-	s.spell_category = row["spell_category"] as PFEntity.SpellCategory
-	s.saving_throw = row["saving_throw"]
-	s.is_attack = (row["is_attack"] == 1)
-	s.damage_type = StringName(row["damage_type"])
-	s.scaling_rules = row["scaling_rules"] as PFEntity.ScalingType
-	s.scaling_dice = row["scaling_dice"]
-	s.description = row["description"]
+	var new_spell = PFSpell.new()
+	new_spell.entity_name = row["name"]
+	new_spell.base_spell_rank = row["base_spell_rank"]
+	new_spell.spell_category = row["spell_category"] as PFMagicConstants.SpellCategory
+	new_spell.saving_throw = row["saving_throw"]
+	new_spell.is_attack = (row["is_attack"] == 1)
+	new_spell.damage_type = StringName(row["damage_type"])
+	new_spell.scaling_rules = row["scaling_rules"] as PFMagicConstants.ScalingType
+	new_spell.scaling_dice = row["scaling_dice"]
+	new_spell.description = row["description"]
 	
 	if row["traits"] != "":
 		for t in row["traits"].split(","):
-			s.traits.append(StringName(t.strip_edges()))
+			new_spell.traits.append(StringName(t.strip_edges()))
 			
 	if row["traditions"] and row["traditions"] != "":
 		var parsed_traditions = JSON.parse_string(row["traditions"])
 		if parsed_traditions: 
 			for tr in parsed_traditions:
-				s.traditions.append(tr as PFEntity.MagicTradition)
+				new_spell.traditions.append(tr as PFMagicConstants.MagicTradition)
 				
 	# Fetch Variants
 	db.query("SELECT * FROM spell_variants WHERE spell_id = '" + id + "'")
 	for v_row in db.query_result:
-		var v = PFSpellVariant.new()
-		v.action_cost = v_row["action_cost"] as PFEntity.ActionCost
-		v.spell_range = v_row["spell_range"] as PFEntity.Distance
-		v.target = v_row["target"]
-		v.duration = v_row["duration"]
-		v.damage_dice = v_row["damage_dice"]
-		v.damage_faces = v_row["damage_faces"]
-		v.special_effects = v_row["special_effects"]
+		var new_variant = PFSpellVariant.new()
+		new_variant.action_cost = v_row["action_cost"] as PFCombatConstants.ActionCost
+		new_variant.spell_range = v_row["spell_range"] as PFMathConstants.Distance
+		new_variant.target = v_row["target"]
+		new_variant.duration = v_row["duration"]
+		new_variant.damage_dice = v_row["damage_dice"]
+		new_variant.damage_faces = v_row["damage_faces"]
+		new_variant.special_effects = v_row["special_effects"]
 		
 		if v_row["applied_conditions"] and v_row["applied_conditions"] != "":
 			var parsed_conds = JSON.parse_string(v_row["applied_conditions"])
 			if parsed_conds:
 				for c in parsed_conds:
-					v.applied_conditions.append(StringName(c))
+					new_variant.applied_conditions.append(StringName(c))
 					
-		s.variants.append(v)
+		new_spell.variants.append(new_variant)
 			
-	return s
+	return new_spell
 
 func get_pf_deity(id: String) -> PFDeity:
 	db.query("SELECT * FROM deities WHERE id = '" + id + "'")
@@ -474,51 +476,51 @@ func get_pf_deity(id: String) -> PFDeity:
 		return null
 		
 	var row = db.query_result[0]
-	var d = PFDeity.new()
-	d.entity_name = row["name"]
-	d.category = row["category"]
-	d.religious_symbol = row["religious_symbol"]
-	d.sacred_animal = row["sacred_animal"]
-	d.divine_sanctification = row["divine_sanctification"]
-	d.divine_skill = StringName(row["divine_skill"])
-	d.favored_weapon = row["favored_weapon"]
-	d.boon_minor = row["boon_minor"]
-	d.boon_moderate = row["boon_moderate"]
-	d.boon_major = row["boon_major"]
-	d.curse_minor = row["curse_minor"]
-	d.curse_moderate = row["curse_moderate"]
-	d.curse_major = row["curse_major"]
+	var new_deity = PFDeity.new()
+	new_deity.entity_name = row["name"]
+	new_deity.category = row["category"]
+	new_deity.religious_symbol = row["religious_symbol"]
+	new_deity.sacred_animal = row["sacred_animal"]
+	new_deity.divine_sanctification = row["divine_sanctification"]
+	new_deity.divine_skill = StringName(row["divine_skill"])
+	new_deity.favored_weapon = row["favored_weapon"]
+	new_deity.boon_minor = row["boon_minor"]
+	new_deity.boon_moderate = row["boon_moderate"]
+	new_deity.boon_major = row["boon_major"]
+	new_deity.curse_minor = row["curse_minor"]
+	new_deity.curse_moderate = row["curse_moderate"]
+	new_deity.curse_major = row["curse_major"]
 	
 	# Parse all the JSON Arrays
 	var parsed_edicts = JSON.parse_string(row["edicts"])
-	if parsed_edicts: d.edicts.assign(parsed_edicts)
+	if parsed_edicts: new_deity.edicts.assign(parsed_edicts)
 	
 	var parsed_anathema = JSON.parse_string(row["anathema"])
-	if parsed_anathema: d.anathema.assign(parsed_anathema)
+	if parsed_anathema: new_deity.anathema.assign(parsed_anathema)
 	
 	var parsed_areas = JSON.parse_string(row["areas_of_concern"])
-	if parsed_areas: d.areas_of_concern.assign(parsed_areas)
+	if parsed_areas: new_deity.areas_of_concern.assign(parsed_areas)
 	
 	var parsed_colors = JSON.parse_string(row["sacred_colors"])
-	if parsed_colors: d.sacred_colors.assign(parsed_colors)
+	if parsed_colors: new_deity.sacred_colors.assign(parsed_colors)
 	
 	var parsed_pantheons = JSON.parse_string(row["pantheons"])
-	if parsed_pantheons: d.pantheons.assign(parsed_pantheons)
+	if parsed_pantheons: new_deity.pantheons.assign(parsed_pantheons)
 	
 	var parsed_attributes = JSON.parse_string(row["divine_attributes"])
 	if parsed_attributes: 
-		for a in parsed_attributes: d.divine_attributes.append(StringName(a))
+		for attribute in parsed_attributes: new_deity.divine_attributes.append(StringName(attribute))
 		
 	var parsed_fonts = JSON.parse_string(row["divine_font"])
-	if parsed_fonts: d.divine_font.assign(parsed_fonts)
+	if parsed_fonts: new_deity.divine_font.assign(parsed_fonts)
 	
 	var parsed_domains = JSON.parse_string(row["domains"])
-	if parsed_domains: d.domains.assign(parsed_domains)
+	if parsed_domains: new_deity.domains.assign(parsed_domains)
 	
 	var parsed_alt_domains = JSON.parse_string(row["alternate_domains"])
-	if parsed_alt_domains: d.alternate_domains.assign(parsed_alt_domains)
+	if parsed_alt_domains: new_deity.alternate_domains.assign(parsed_alt_domains)
 	
 	var parsed_spells = JSON.parse_string(row["cleric_spells"])
-	if parsed_spells: d.cleric_spells = parsed_spells
+	if parsed_spells: new_deity.cleric_spells = parsed_spells
 	
-	return d
+	return new_deity

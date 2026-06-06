@@ -1,4 +1,5 @@
 # pf_combat_grid.gd
+## Renders the tactical battlefield and calculates PF2E diagonal distance math.
 class_name PFCombatGrid
 extends Node3D
 
@@ -141,9 +142,9 @@ func draw_base_grid(width: int = 50, height: int = 50):
 	
 	for x in range(-half_w, width - half_w):
 		for z in range(-half_h, height - half_h):
-			var t = Transform3D()
-			t.origin = Vector3(x, 0, z)
-			mm.set_instance_transform(i, t)
+			var grid_transform = Transform3D()
+			grid_transform.origin = Vector3(x, 0, z)
+			mm.set_instance_transform(i, grid_transform)
 			mm.set_instance_color(i, faint_color)
 			i += 1
 

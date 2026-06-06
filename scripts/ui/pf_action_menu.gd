@@ -1,4 +1,5 @@
 # pf_action_menu.gd
+## The dynamic programmatic UI for selecting combat actions.
 class_name PFActionMenu
 extends Control
 
@@ -219,14 +220,14 @@ func _update_ui():
 	else:
 		level_label.text = "Lvl ?"
 	
-	hp_bar.max_value = bound_actor.max_hp
-	hp_bar.value = bound_actor.current_hp
-	hp_label.text = "%d/%d" % [bound_actor.current_hp, bound_actor.max_hp]
+	hp_bar.max_value = bound_actor.health.max_hp
+	hp_bar.value = bound_actor.health.current_hp
+	hp_label.text = "%d/%d" % [bound_actor.health.current_hp, bound_actor.health.max_hp]
 	
 	var diamonds = ""
-	for i in range(bound_actor.actions_remaining):
+	for i in range(bound_actor.action_economy.actions_remaining):
 		diamonds += "♦ "
-	for i in range(3 - bound_actor.actions_remaining):
+	for i in range(3 - bound_actor.action_economy.actions_remaining):
 		diamonds += "♢ "
 		
 	action_diamonds_label.text = diamonds.strip_edges()

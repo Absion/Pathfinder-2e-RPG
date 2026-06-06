@@ -1,5 +1,6 @@
 # pf_action_flurry.gd
 # Validates using the new strict Weapon Category and Group Enums.
+## Implements the Monk's Flurry of Blows action, allowing two strikes for one action.
 class_name PFActionFlurry
 extends PFAction
 
@@ -8,7 +9,7 @@ var has_monastic_weaponry: bool
 var in_monastic_archer_stance: bool
 
 func _init(p_weapon: PFWeapon, p_has_monastic_weaponry: bool = false, p_in_monastic_archer_stance: bool = false):
-	super._init("Flurry of Blows", [&"flourish"], CostType.ONE)
+	super._init("Flurry of Blows", [&"flourish"], PFCombatConstants.ActionCost.ONE_ACTION)
 	weapon = p_weapon
 	has_monastic_weaponry = p_has_monastic_weaponry
 	in_monastic_archer_stance = p_in_monastic_archer_stance
@@ -24,7 +25,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	
 	if in_monastic_archer_stance:
 		# We check the strict Group Enum rather than an arbitrary trait
-		var is_bow_group = weapon.group == PFWeapon.Group.BOW
+		var is_bow_group = weapon.group == PFEquipmentConstants.WeaponGroup.BOW
 		var is_specific_bow = weapon.entity_name == "Longbow" or weapon.entity_name == "Shortbow"
 		var is_monk_bow = is_bow_group and weapon.has_trait(&"monk")
 		
@@ -35,7 +36,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			
 	else:
 		# We check the strict Category Enum for Unarmed attacks
-		var is_unarmed_category = weapon.category == PFWeapon.Category.UNARMED
+		var is_unarmed_category = weapon.category == PFEquipmentConstants.WeaponCategory.UNARMED
 		var is_valid_monk_weapon = weapon.has_trait(&"monk") and has_monastic_weaponry
 		
 		if is_unarmed_category or is_valid_monk_weapon:

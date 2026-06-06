@@ -1,5 +1,6 @@
 # pf_action_strike.gd
 # The core attack action for the engine.
+## Standard offensive attack action using an equipped weapon or unarmed attack.
 class_name PFActionStrike
 extends PFAction
 
@@ -10,7 +11,7 @@ func _init(p_weapon: PFWeapon):
 	initial_traits.append_array(p_weapon.traits)
 	
 	weapon = p_weapon
-	super._init("Strike with " + p_weapon.entity_name, initial_traits, CostType.ONE, 1)
+	super._init("Strike with " + p_weapon.entity_name, initial_traits, PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
 func execute(user: PFActor, target: PFActor = null) -> bool:
 	if target == null:
@@ -45,7 +46,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	print("\n>>> %s attacks %s with %s!" % [user.entity_name, target.entity_name, weapon.entity_name])
 	print("    Attack Roll: %s + Bonus: %d + MAP: %d = Total: %d vs AC %d" % [roll_string, base_attack_bonus, map_penalty, roll_total, target_ac])
 	
-	if degree == PFDice.Degree.FAIL or degree == PFDice.Degree.CRIT_FAIL:
+	if degree == PFMathConstants.DegreeOfSuccess.FAIL or degree == PFMathConstants.DegreeOfSuccess.CRIT_FAIL:
 		print("    Miss.")
 		return true
 
@@ -54,16 +55,16 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	# ---------------------------------------------------------
 	
 	var final_damage_type = weapon.active_damage_type
-	if has_trait(&"concussive") and final_damage_type == PFDamage.Type.PIERCING:
-		var resists_p = target.resistances.has(PFDamage.Type.PIERCING) or target.immunities.has(PFDamage.Type.PIERCING)
-		var weak_b = target.weaknesses.has(PFDamage.Type.BLUDGEONING)
+	if has_trait(&"concussive") and final_damage_type == PFCombatConstants.DamageType.PIERCING:
+		var resists_p = target.resistances.has(PFCombatConstants.DamageType.PIERCING) or target.immunities.has(PFCombatConstants.DamageType.PIERCING)
+		var weak_b = target.weaknesses.has(PFCombatConstants.DamageType.BLUDGEONING)
 		
 		if resists_p or weak_b:
-			final_damage_type = PFDamage.Type.BLUDGEONING
+			final_damage_type = PFCombatConstants.DamageType.BLUDGEONING
 			print("    > Concussive Trait triggers: Projectile shatters, dealing Bludgeoning instead!")
 
 	var current_die_faces = weapon.die_faces
-	if degree == PFDice.Degree.CRIT_SUCCESS and weapon.fatal_die > 0:
+	if degree == PFMathConstants.DegreeOfSuccess.CRIT_SUCCESS and weapon.fatal_die > 0:
 		current_die_faces = weapon.fatal_die
 		print("    > Fatal Trait triggers: Base die upgraded to d%d!" % weapon.fatal_die)
 
@@ -76,7 +77,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	# ---------------------------------------------------------
 	# 4. APPLY MULTIPLIERS & EXTRA DICE
 	# ---------------------------------------------------------
-	if degree == PFDice.Degree.CRIT_SUCCESS:
+	if degree == PFMathConstants.DegreeOfSuccess.CRIT_SUCCESS:
 		print("    *** CRITICAL HIT! ***")
 		print("    Base Rolled: %sd%d %s = %d + %d = %d Base Damage" % [weapon.dice_amount, current_die_faces, dice_str, damage_result.total, damage_stat, base_total])
 		
@@ -96,7 +97,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		# Send final damage to the target, passing the weapon traits for Sanctification/Material checks!
 		target.take_damage(crit_damage, final_damage_type, weapon.traits)
 		
-	elif degree == PFDice.Degree.SUCCESS:
+	elif degree == PFMathConstants.DegreeOfSuccess.SUCCESS:
 		print("    * HIT! *")
 		print("    Damage Rolled: %sd%d %s = %d + %d = %d Total Damage." % [weapon.dice_amount, current_die_faces, dice_str, damage_result.total, damage_stat, base_total])
 		

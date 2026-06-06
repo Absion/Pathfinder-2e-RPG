@@ -1,41 +1,20 @@
 # pf_sense.gd
+## Represents a specialized sense like Darkvision or Tremorsense.
 class_name PFSense
 extends RefCounted
 
-enum Type { 
-	VISION, 
-	HEARING, 
-	SCENT, 
-	TREMORSENSE, 
-	ECHOLOCATION, 
-	LIFESENSE, 
-	THOUGHTSENSE, 
-	WAVESENSE, 
-	MOTIONSENSE,
-	APPARITION_SIGHT,
-	SPIRITSENSE,
-	TOUCH,
-	TASTE
-}
-
-enum Acuity { 
-	PRECISE, 
-	IMPRECISE, 
-	VAGUE 
-}
-
-var type: Type
-var acuity: Acuity
+var type: PFBiographyConstants.SenseType
+var acuity: PFBiographyConstants.SenseAcuity
 var range_ft: int # 0 indicates an unlimited/standard range
 
-func _init(p_type: Type, p_acuity: Acuity, p_range_ft: int = 0):
+func _init(p_type: PFBiographyConstants.SenseType, p_acuity: PFBiographyConstants.SenseAcuity, p_range_ft: int = 0):
 	type = p_type
 	acuity = p_acuity
 	range_ft = p_range_ft
 
 func get_sense_string() -> String:
-	var type_name = Type.keys()[type].capitalize().replace("_", " ")
-	var acuity_name = Acuity.keys()[acuity].capitalize()
+	var type_name = PFBiographyConstants.SenseType.keys()[type].capitalize().replace("_", " ")
+	var acuity_name = PFBiographyConstants.SenseAcuity.keys()[acuity].capitalize()
 	
 	if range_ft > 0:
 		return "%s (%s) %d ft." % [type_name, acuity_name, range_ft]

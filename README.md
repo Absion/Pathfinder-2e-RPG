@@ -25,41 +25,57 @@ classDiagram
         +get_pf_class(id) PFClass
     }
 
-    %% Actors
+    %% Base Actor
     class PFActor {
-        +int max_hp
-        +PFProficiencySheet sheet
-        +PFInventory inventory
-        +PFSpellbook spellbook
-        +get_spell_dc() int
-        +get_spell_attack() int
+        <<Base Class>>
+        +int level
+        +PFHealthComponent health
+        +PFActionComponent action_economy
+        +Array conditions
+        +get_ac()* int
+        +get_strike_bonus()* int
+        +get_spell_dc()* int
     }
     PFEntity <|-- PFActor
     
-    class PFPlayerActor {
-        +PFClass actor_class
-        +PFAncestry ancestry
+    %% Hybrid Inheritance
+    class PFPlayerCharacter {
+        +PFProficiencySheet sheet
+        +PFInventory inventory
+        +PFSpellbook spellbook
+        +PFAttributesComponent attributes
+        +PFMovementComponent movement
+        +PFSensesComponent senses
+        +get_ac() int
     }
-    PFActor <|-- PFPlayerActor
+    PFActor <|-- PFPlayerCharacter
 
-    %% Sub-Systems
-    class PFSpellbook {
-        <<Manager>>
-        +Array known_spells
-        +Dictionary repertoire
-        +Dictionary prepared_spells
-        +get_max_slots(rank) int
+    class PFNpc {
+        +Dictionary monster_stats
+        +PFInventory inventory
+        +PFSpellbook spellbook
+        +PFAttributesComponent attributes
+        +PFMovementComponent movement
+        +PFSensesComponent senses
+        +get_ac() int
     }
-    PFActor *-- PFSpellbook : owns
+    PFActor <|-- PFNpc
+
+    %% Components
+    class PFProficiencySheet {
+        <<Component>>
+        +int level
+        +calculate_proficiency()
+    }
+    PFPlayerCharacter *-- PFProficiencySheet : owns
 
     class PFInventory {
-        <<Manager>>
+        <<Component>>
         +Array items
         +int copper_pieces
         +get_total_bulk() int
     }
-    PFActor *-- PFInventory : owns
-
+    
     %% Magic
     class PFSpell {
         +int base_spell_rank
@@ -118,5 +134,6 @@ classDiagram
 - **High Performance Grid:** Uses highly optimized `MultiMeshInstance3D` to draw thousands of tactical highlights in a single draw call.
 - **Database Driven:** `PFDatabase` seeds and queries a local `pf2e_data.db` SQLite file. Schema changes are strictly managed.
 - **Relational Spell Variants:** Spells dynamically morph their behavior (range, damage, conditions) based on the number of actions used to cast them, handled cleanly by the `PFSpellVariant` object.
+- **Component Architecture:** Actors utilize a decoupled component model (`PFAttributesComponent`, `PFHealthComponent`, `PFActionComponent`) to avoid monolithic classes. 
+- **Polymorphic Unified Math:** Systems request combat math (e.g. `get_ac()`) from the base `PFActor`, and the subclass (`PFPlayerCharacter` or `PFNpc`) handles its unique calculation (Proficiency Matrix vs GMG Monster Scaling).
 - **Master Spellbook:** A single `PFSpellbook` manager tracks complex multi-class spell progressions, feats, innate spells, and extra slots simultaneously.
-- **Monster Optimization:** NPCs completely bypass expensive proficiency matrix calculations for instantaneous processing.

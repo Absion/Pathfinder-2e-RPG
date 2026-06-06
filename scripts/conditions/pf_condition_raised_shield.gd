@@ -1,4 +1,5 @@
 # pf_condition_raised_shield.gd
+## Grants a circumstance bonus to AC while active.
 class_name PFConditionRaisedShield
 extends PFCondition
 

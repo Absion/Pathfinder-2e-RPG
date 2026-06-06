@@ -1,4 +1,5 @@
 # pf_background.gd
+## Represents an actor's history, providing skills and ability boosts.
 class_name PFBackground
 extends PFEntity
 
@@ -14,7 +15,7 @@ func _init(
 		p_lores: Array[StringName] = [], 
 		p_desc: String = "",
 		p_traits: Array[StringName] = [],
-		p_rarity: PFEntity.Rarity = PFEntity.Rarity.COMMON
+		p_rarity: PFBiographyConstants.Rarity = PFBiographyConstants.Rarity.COMMON
 	):
 	
 	super._init(p_name, p_traits, p_rarity)

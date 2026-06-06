@@ -1,4 +1,5 @@
 # pf_camera_rig.gd
+## Controls the 2.5D orthographic camera with panning, zooming, and isometric rotation.
 class_name PFCameraRig
 extends Node3D
 

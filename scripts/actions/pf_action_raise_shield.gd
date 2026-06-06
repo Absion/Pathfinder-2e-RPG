@@ -1,9 +1,10 @@
 # pf_action_raise_shield.gd
+## Grants the actor a circumstance bonus to AC by raising an equipped shield.
 class_name PFActionRaiseShield
 extends PFAction
 
 func _init():
-	super._init("Raise a Shield", [], CostType.ONE, 0)
+	super._init("Raise a Shield", [], PFCombatConstants.ActionCost.ONE_ACTION, 0)
 
 func execute(user: PFActor, target: PFActor = null) -> bool:
 	# 1. Find a shield that is being wielded

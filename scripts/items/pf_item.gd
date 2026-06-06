@@ -1,12 +1,10 @@
 # pf_item.gd
+## Base class for all physical items in the game world.
 class_name PFItem
-extends PFEntity
+extends PFEntity # Force Reparse
 
-enum ItemMaterial { STANDARD, WOOD, IRON, STEEL, COLD_IRON, SILVER, ADAMANTINE, MITHRAL, DRAGONHIDE, ORICHALCUM }
-enum MaterialGrade { LOW, STANDARD, HIGH }
-
-var item_material: ItemMaterial
-var grade: MaterialGrade
+var item_material: PFEquipmentConstants.ItemMaterial
+var grade: PFEquipmentConstants.MaterialGrade
 
 var level: int
 var base_level: int
@@ -36,8 +34,8 @@ var requires_investment: bool = false # NEW
 
 # Updated Constructor
 func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int = 1, p_price_gp: float = 0.0, 
-		   p_material: ItemMaterial = ItemMaterial.STANDARD, p_hardness: int = 0, p_hp: int = 0, p_bt: int = 0, 
-		   p_grade: MaterialGrade = MaterialGrade.STANDARD, p_bulk: int = 1, 
+		   p_material: PFEquipmentConstants.ItemMaterial = PFEquipmentConstants.ItemMaterial.STANDARD, p_hardness: int = 0, p_hp: int = 0, p_bt: int = 0, 
+		   p_grade: PFEquipmentConstants.MaterialGrade = PFEquipmentConstants.MaterialGrade.STANDARD, p_bulk: int = 1, 
 		   p_bulk_reduction: int = 0, p_requires_investment: bool = false): # NEW
 	super._init(p_name, p_traits)
 	

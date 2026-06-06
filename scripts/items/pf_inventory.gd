@@ -1,4 +1,5 @@
 # pf_inventory.gd
+## Component that safely manages an actor's equipped items and total bulk.
 class_name PFInventory
 extends RefCounted
 
@@ -90,7 +91,7 @@ func set_max_invested_items(new_limit: int) -> void:
 	print("    > %s's investment capacity changed to %d." % [owner.entity_name, max_invested_items])
 
 func invest_item(item: PFItem) -> void:
-	if owner.is_monster:
+	if owner is PFNpc:
 		invested_items.append(item)
 		return
 		
@@ -195,7 +196,7 @@ static func format_copper_to_string(total_cp: int) -> String:
 # ---------------------------------------------------------
 
 func get_total_bulk() -> int:
-	if owner.is_monster: return 0
+	if owner is PFNpc: return 0
 		
 	var total_bulk_units: int = 0
 	
@@ -217,10 +218,12 @@ func _calculate_container_contents(container: PFItem) -> int:
 	return 0
 
 func get_encumbered_limit() -> int:
-	return (5 + owner.str_mod) * 10
+	var str_mod = owner.attributes.str_mod if "attributes" in owner and owner.attributes else 0
+	return (5 + str_mod) * 10
 
 func get_maximum_bulk_limit() -> int:
-	return (10 + owner.str_mod) * 10
+	var str_mod = owner.attributes.str_mod if "attributes" in owner and owner.attributes else 0
+	return (10 + str_mod) * 10
 
 func is_encumbered() -> bool:
 	return get_total_bulk() >= get_encumbered_limit()

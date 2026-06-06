@@ -1,21 +1,22 @@
 # pf_class.gd
+## Defines the progression, proficiencies, and abilities gained as an actor levels up.
 class_name PFClass
 extends PFEntity
 
 var hp_per_level: int
 var key_abilities: Array[StringName]
 
-var perception_rank: PFProficiency.Rank
-var class_dc_rank: PFProficiency.Rank
-var saving_throws: Dictionary # e.g. { "fort": PFProficiency.Rank.EXPERT, ... }
+var perception_rank: PFMathConstants.ProficiencyRank
+var class_dc_rank: PFMathConstants.ProficiencyRank
+var saving_throws: Dictionary # e.g. { "fort": PFMathConstants.ProficiencyRank.EXPERT, ... }
 var trained_skills_count: int # 3 + INT mod usually
 
 # --- SPELLCASTING ---
 var is_spellcaster: bool
-var caster_type: PFEntity.CasterType
-var spell_tradition: PFEntity.MagicTradition
-var spell_proficiency: PFProficiency.Rank
-var spell_progression: PFEntity.SpellProgression
+var caster_type: PFMagicConstants.CasterType
+var spell_tradition: PFMagicConstants.MagicTradition
+var spell_proficiency: PFMathConstants.ProficiencyRank
+var spell_progression: PFMagicConstants.SpellProgression
 
 var weapon_proficiencies: Dictionary
 var armor_proficiencies: Dictionary
@@ -28,8 +29,8 @@ func _init(
 		p_name: String = "", 
 		p_hp: int = 8, 
 		p_key_abilities: Array[StringName] = [],
-		p_perception: PFProficiency.Rank = PFProficiency.Rank.TRAINED,
-		p_class_dc: PFProficiency.Rank = PFProficiency.Rank.TRAINED,
+		p_perception: PFMathConstants.ProficiencyRank = PFMathConstants.ProficiencyRank.TRAINED,
+		p_class_dc: PFMathConstants.ProficiencyRank = PFMathConstants.ProficiencyRank.TRAINED,
 		p_saves: Dictionary = {},
 		p_skills_count: int = 3,
 		p_weapons: Dictionary = {},
@@ -38,12 +39,12 @@ func _init(
 		p_forced_edicts: Array[String] = [],
 		p_forced_anathema: Array[String] = [],
 		p_is_spellcaster: bool = false,
-		p_caster_type: PFEntity.CasterType = PFEntity.CasterType.NONE,
-		p_spell_tradition: PFEntity.MagicTradition = PFEntity.MagicTradition.NONE,
-		p_spell_proficiency: PFProficiency.Rank = PFProficiency.Rank.UNTRAINED,
-		p_spell_progression: PFEntity.SpellProgression = PFEntity.SpellProgression.NONE,
+		p_caster_type: PFMagicConstants.CasterType = PFMagicConstants.CasterType.NONE,
+		p_spell_tradition: PFMagicConstants.MagicTradition = PFMagicConstants.MagicTradition.NONE,
+		p_spell_proficiency: PFMathConstants.ProficiencyRank = PFMathConstants.ProficiencyRank.UNTRAINED,
+		p_spell_progression: PFMagicConstants.SpellProgression = PFMagicConstants.SpellProgression.NONE,
 		p_traits: Array[StringName] = [],
-		p_rarity: PFEntity.Rarity = PFEntity.Rarity.COMMON
+		p_rarity: PFBiographyConstants.Rarity = PFBiographyConstants.Rarity.COMMON
 	):
 	
 	super._init(p_name, p_traits, p_rarity)

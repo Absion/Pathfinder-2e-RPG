@@ -1,8 +1,9 @@
 # pf_condition_persistent.gd
+## Deals damage automatically at the end of the actor's turn.
 class_name PFConditionPersistent
 extends PFCondition
 
-var damage_type: PFDamage.Type
+var damage_type: PFCombatConstants.DamageType
 var dice_amount: int
 var die_faces: int
 
@@ -11,7 +12,7 @@ var damage_multiplier: int
 var recovery_dc: int 
 
 # Updated Constructor
-func _init(p_type: PFDamage.Type, p_dice: int, p_faces: int, p_multiplier: int = 1, p_dc: int = 15):
+func _init(p_type: PFCombatConstants.DamageType, p_dice: int, p_faces: int, p_multiplier: int = 1, p_dc: int = 15):
 	damage_type = p_type
 	dice_amount = p_dice
 	die_faces = p_faces

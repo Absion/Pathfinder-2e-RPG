@@ -1,15 +1,38 @@
 # PATHFINDER 2E ENGINE: 2.5D TACTICAL RPG ARCHITECTURE
 **If you are an AI assistant starting a new session, READ THIS FILE FIRST.**
 
-## 1. Core Philosophies
+## 1. Core Design Pillars
+All code written for this project must adhere to the following pillars:
+1. **Readable**
+2. **Testable**
+3. **Understandable**
+4. **Maintainable**
+5. **Scalable**
+6. **Extensible**
+*(Compromises to these pillars should only be made for explicitly necessary performance optimizations or security constraints).*
+
+---
+
+## 2. Global Architecture: Contexts & Dependency Injection
+To avoid a tangled web of global Autoloads, the project uses a **Context & Service** architecture:
+1. **`PFGameRoot`**: The absolute top-level node. Keeps global state (current save file, master volume) and transitions between Contexts.
+2. **Contexts**: Discrete game states (e.g., `PFMainMenuContext`, `PFCombatContext`, `PFOverworldContext`) that manage their own isolated rules and nodes.
+3. **Services**: Managers (like `TurnManager`, `GridManager`) are instantiated as node children of a Context.
+4. **Dependency Injection**: Services are built via `build_services()`, given their dependencies via `bind_services()`, and initialized via `setup()`.
+5. **Autoload Exception**: `PFDatabase` remains a global Autoload *only* because it is a stateless reader of an SQLite database. No mutable game state is allowed in Autoloads.
+
+---
+
+## 3. Core Philosophies
 1. **The Compendium Pattern (SQLite > .tres):** We do NOT use Godot `.tres` resource files for standard database entries. All static data (items, spells, classes, ancestries) is stored in a relational SQLite database (`res://db/pf2e_data.db`) and instantiated at runtime via `pf_database.gd`. 
 2. **Enums Over Strings:** Everything uses strict integers and Enums (`PFEntity.ActionCost`, `PFEntity.Size`, `PFEntity.Distance`, etc.) to keep database queries lightning fast and memory safe.
 3. **Single Source of Truth:** Actors do not hold redundant variables for equipped gear. If you need to know what an actor is holding or wearing, you MUST query their `PFInventory` component directly.
 4. **Monster Optimization:** NPCs completely bypass expensive proficiency matrix calculations. If `is_monster = true`, they return hardcoded DCs, AC, and attacks directly from their `monster_stats` dictionary.
+5. **Mandatory Documentation:** Every class and significant method MUST be prefixed with Godot 4 `##` docstrings so the editor can generate rich tooltips and in-editor documentation. Single-letter variables (`w`, `s`, `x` outside of coordinates) are strictly forbidden to ensure legibility.
 
 ---
 
-## 2. Rendering Pipeline & Perspective (2.5D HD-2D)
+## 4. Rendering Pipeline & Perspective (2.5D HD-2D)
 The game utilizes a "2.5D HD-2D" rendering pipeline, heavily inspired by titles like Triangle Strategy and Octopath Traveler.
 * **Camera Rig (`PFCameraRig`):** A custom 3D gimbal camera using **Orthographic** projection to simulate an isometric perspective without distance distortion (Standard rotation: X: -30°, Y: 45°, Z: 0°). Supports WASD/Edge panning, mouse-drag rotation, and smooth zooming.
 * **World Space & Grid (`PFCombatGrid`):** The environment is strictly 3D. The tactical grid is drawn using `MultiMeshInstance3D` to render thousands of dynamic tile highlights (movement bounds, AoE templates) in a single draw call. `PFCombatGrid` internally handles Pathfinder 2e diagonal distance math (5ft-10ft-5ft).
@@ -18,7 +41,7 @@ The game utilizes a "2.5D HD-2D" rendering pipeline, heavily inspired by titles 
 
 ---
 
-## 3. Database & Instantiation (`pf_database.gd`)
+## 5. Database & Instantiation (`pf_database.gd`)
 The SQLite database is the source of all game data. It contains tables for: `classes`, `spells`, `spell_variants`, `deities`, `weapons`, `shields`, `ancestries`, and `backgrounds`.
 * JSON arrays stored in the database (e.g., traits, ability boosts, divine fonts) are parsed inside `pf_database.gd` getters.
 * **Relational Magic:** Spells are split into `spells` (core identity) and `spell_variants` (relational table bound by `spell_id`). Variants dictate action cost (including `ONE_ROUND` / `TWO_ROUNDS`), range, targets, and damage dice for specific cast methods.
@@ -26,7 +49,7 @@ The SQLite database is the source of all game data. It contains tables for: `cla
 
 ---
 
-## 4. Item & Equipment Architecture
+## 6. Item & Equipment Architecture
 All items inherit from `PFEntity` -> `PFItem`.
 * **Economy:** The absolute source of truth for value is `price_cp` (copper pieces). floats are converted to copper upon initialization. Always use `PFInventory.format_copper_to_string(price_cp)` for UI displays.
 * **Durability:** Items track `hardness`, `max_hp`, `current_hp`, and `broken_threshold`.
@@ -35,8 +58,20 @@ All items inherit from `PFEntity` -> `PFItem`.
 
 ---
 
-## 5. Inventory & Hand Tracking (`PFInventory`)
-The `PFInventory` class manages all bulk, economy, and equipment states.
+## 7. Composition Over Inheritance (Inventory & Entities)
+The engine heavily favors **Composition**
+
+### 1. Hybrid Inheritance Architecture (Actors)
+Pathfinder is a game of highly specific rules where Players and Monsters operate on entirely different mathematical chassis (Proficiency vs GMG Scaling). 
+
+To cleanly separate this logic while maintaining flexibility, the engine uses **Hybrid Inheritance**.
+`PFActor` is the base class for any targetable entity. It extends `Node3D`. It handles core logic like `health`, `action_economy`, and `conditions`.
+
+It branches into strictly typed subclasses:
+* **`PFPlayerCharacter`**: Guaranteed to contain a `PFProficiencySheet`, `PFInventory`, and `PFSpellbook`. Calculates stats based on deep Pathfinder math.
+* **`PFNpc`**: Lightweight containers for Monsters and Minions. Calculates stats via direct `monster_stats` dictionaries using GMG scaling rules.
+* **`PFConstruct`**: Entities like doors and pillars that have `health` but no `action_economy` or `inventory`.
+
 * **Investment:** Magic items with `requires_investment = true` MUST be added to the `invested_items` array before they can be equipped/wielded. The `max_invested_items` limit is dynamic (default 10) and bypassed by monsters.
 * **Hand Occupancy:** Hands are tracked via `held_main_hand`, `held_off_hand`, and `two_handed_item`. 
 * **Wielding vs Holding:** A weapon must be passed through `.wield_item()` to be considered active for combat (`is_wielded = true`).
@@ -44,7 +79,7 @@ The `PFInventory` class manages all bulk, economy, and equipment states.
 
 ---
 
-## 6. Magic System (`PFSpellbook`)
+## 8. Magic System (`PFSpellbook`)
 Every `PFActor` instantiates a `PFSpellbook`.
 * The spellbook holds hardcoded progression arrays mapping character levels to available spell slots based on their class type (None, Full Caster, Bounded Caster).
 * Calculates max slots by adding base class slots + any `extra_slots` granted by feats.
@@ -53,9 +88,10 @@ Every `PFActor` instantiates a `PFSpellbook`.
 
 ---
 
-## 7. AI Code Generation Directives
+## 9. AI Code Generation Directives
 When generating GDScript for this project, you MUST adhere to the following rules:
 1. **Never use `.tres` for data.** If asked to create a new weapon, spell, or class, write the SQL `INSERT` statement for `pf_database.gd`, do NOT generate a Godot Resource.
-2. **Never duplicate equipment states.** If an actor attacks, check `actor.inventory.held_main_hand`. Do not create an `equipped_weapon` variable on the Actor.
-3. **Use Vector3 for spatial logic.** Do not attempt to calculate 2D isometric grid conversions. Rely entirely on the 3D engine for RayCasting, distances, and areas of effect. 
-4. **Use `price_cp` strictly.** Never do math with Gold Pieces (`gp`) outside of initial database seeding; all internal engine math operates on integers of copper.
+2. **Call Down, Signal Up.** Parent nodes call methods on their children. Child nodes NEVER reference their parents (`get_parent()` is banned for game logic). Children communicate exclusively upwards via `Signals`.
+3. **Favor Composition.** Never add sprawling variables (like `is_poisoned` or `max_mana`) to `PFActor`. Create a modular component node instead.
+4. **Use Vector3 for spatial logic.** Do not attempt to calculate 2D isometric grid conversions. Rely entirely on the 3D engine for RayCasting, distances, and areas of effect. 
+5. **Use `price_cp` strictly.** Never do math with Gold Pieces (`gp`) outside of initial database seeding; all internal engine math operates on integers of copper.
