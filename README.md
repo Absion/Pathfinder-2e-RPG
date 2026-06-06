@@ -32,9 +32,9 @@ classDiagram
         +PFHealthComponent health
         +PFActionComponent action_economy
         +Array conditions
-        +get_ac()* int
-        +get_strike_bonus()* int
-        +get_spell_dc()* int
+        +get_ac() int
+        +get_strike_bonus() int
+        +get_spell_dc() int
     }
     PFEntity <|-- PFActor
     
