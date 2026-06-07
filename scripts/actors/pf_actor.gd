@@ -43,22 +43,42 @@ func apply_condition(new_condition: PFCondition) -> void:
 	if not new_condition.on_apply(self):
 		return
 
-	for c in conditions:
-		if c.condition_name == new_condition.condition_name:
-			if new_condition.value > c.value:
-				c.value = new_condition.value
-				print("%s's %s worsens to %d!" % [entity_name, c.condition_name, c.value])
-			return
-			
+	# We now append all conditions instead of overriding. 
+	# get_condition_modifier will calculate the strongest ones.
 	conditions.append(new_condition)
 	print("%s is now %s %d!" % [entity_name, new_condition.condition_name, new_condition.value])
 
 func get_condition_modifier(context: StringName) -> int:
-	var total_mod = 0
+	var max_bonus = 0
+	var max_penalty = 0
+	
 	for c in conditions:
 		if c.is_active:
-			total_mod += c.get_modifier(context)
-	return total_mod
+			var mod = c.get_modifier(context)
+			if mod > max_bonus:
+				max_bonus = mod
+			elif mod < max_penalty:
+				max_penalty = mod
+				
+	return max_bonus + max_penalty
+
+func get_actor_bulk() -> int:
+	var base_bulk = 60 # Default Medium (6 Bulk)
+	if "size" in self:
+		var s = self.get("size")
+		match s:
+			PFBiographyConstants.Size.TINY: base_bulk = 10
+			PFBiographyConstants.Size.SMALL: base_bulk = 30
+			PFBiographyConstants.Size.MEDIUM: base_bulk = 60
+			PFBiographyConstants.Size.LARGE: base_bulk = 120
+			PFBiographyConstants.Size.HUGE: base_bulk = 240
+			PFBiographyConstants.Size.GARGANTUAN: base_bulk = 480
+			
+	var inventory_bulk = 0
+	if "inventory" in self and self.get("inventory") != null:
+		inventory_bulk = self.get("inventory").get_total_bulk()
+		
+	return base_bulk + inventory_bulk
 
 # ---------------------------------------------------------
 # THE UNIFIED MATH DELEGATES (VIRTUAL)

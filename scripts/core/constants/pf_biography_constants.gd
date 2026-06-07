@@ -10,3 +10,13 @@ enum Vision { NORMAL, LOW_LIGHT, DARKVISION }
 enum SenseType { VISION, HEARING, SCENT, TOUCH, TASTE, TREMORSENSE, LIFESENSE, MAGIC_SENSE }
 enum SenseAcuity { PRECISE, IMPRECISE, VAGUE }
 enum Rarity { COMMON, UNCOMMON, RARE, UNIQUE }
+
+## Returns a mathematical representation of size where Small and Medium are identical.
+static func get_effective_size(size: Size) -> int:
+	match size:
+		Size.TINY: return 0
+		Size.SMALL, Size.MEDIUM: return 1
+		Size.LARGE: return 2
+		Size.HUGE: return 3
+		Size.GARGANTUAN: return 4
+		_: return 1

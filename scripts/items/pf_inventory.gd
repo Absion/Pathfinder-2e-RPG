@@ -41,6 +41,14 @@ func equip_item(item: PFItem) -> void:
 	if item.requires_investment and not invested_items.has(item):
 		print("    > [!] %s requires investment before it can be used!" % item.entity_name)
 		return
+		
+	# Size enforcement for Armor
+	if item is PFArmor:
+		var a_size = PFBiographyConstants.get_effective_size(owner.size) if "size" in owner else 1
+		var i_size = PFBiographyConstants.get_effective_size(item.size)
+		if a_size != i_size:
+			print("    > [ERROR] %s cannot wear %s. Armor must be the exact size!" % [owner.entity_name, item.entity_name])
+			return
 	
 	worn_items.append(item)
 
@@ -110,6 +118,22 @@ func wield_item(item: PFItem, main_hand: bool = true) -> void:
 		print("[!] %s requires investment!" % item.entity_name)
 		return
 		
+	# Size enforcement for Weapons
+	if item is PFWeapon:
+		var a_size = PFBiographyConstants.get_effective_size(owner.size) if "size" in owner else 1
+		var i_size = PFBiographyConstants.get_effective_size(item.size)
+		var diff = i_size - a_size
+		
+		if abs(diff) > 1:
+			print("    > [ERROR] %s cannot effectively wield %s due to the massive size difference!" % [owner.entity_name, item.entity_name])
+			return
+		
+		if diff == 1:
+			print("    > [WARNING] %s wields %s but it is oversized! Applying Clumsy 1." % [owner.entity_name, item.entity_name])
+			var clumsy = PFCondition.new("clumsy", 1)
+			# We'll tag it with the item instance to remove it later, or the actor system will recalculate it.
+			owner.apply_condition(clumsy)
+			
 	# Mark as wielded
 	item.is_wielded = true
 	hold_item(item, main_hand)
@@ -195,27 +219,51 @@ static func format_copper_to_string(total_cp: int) -> String:
 # BULK CALCULATIONS
 # ---------------------------------------------------------
 
+func get_perceived_bulk(item: PFItem) -> int:
+	var a_size = PFBiographyConstants.get_effective_size(owner.size) if "size" in owner else 1
+	var i_size = PFBiographyConstants.get_effective_size(item.size)
+	
+	if a_size == i_size:
+		return item.bulk_value
+		
+	var diff = a_size - i_size
+	
+	if diff > 0:
+		# Actor is larger than item
+		if diff == 1:
+			return int(item.bulk_value / 10)
+		else:
+			return 0 # Negligible
+	else:
+		# Actor is smaller than item
+		var multiplier = pow(2, -diff)
+		return int(item.bulk_value * multiplier)
+
 func get_total_bulk() -> int:
-	if owner is PFNpc: return 0
+	# NPCs and Monsters don't track encumbrance normally
+	if owner is PFNpc and not owner is PFMinion: return 0
 		
 	var total_bulk_units: int = 0
 	
 	for item in items + worn_items:
-		total_bulk_units += item.bulk_value
-	if held_main_hand: total_bulk_units += held_main_hand.bulk_value
-	if held_off_hand: total_bulk_units += held_off_hand.bulk_value
-	if two_handed_item: total_bulk_units += two_handed_item.bulk_value
+		total_bulk_units += get_perceived_bulk(item)
+	if held_main_hand: total_bulk_units += get_perceived_bulk(held_main_hand)
+	if held_off_hand: total_bulk_units += get_perceived_bulk(held_off_hand)
+	if two_handed_item: total_bulk_units += get_perceived_bulk(two_handed_item)
 		
 	for container in containers:
-		total_bulk_units += container.bulk_value
+		total_bulk_units += get_perceived_bulk(container)
 		# Subtract the container's bulk reduction
 		total_bulk_units += maxi(0, _calculate_container_contents(container) - container.bulk_reduction_value)
 		
 	return total_bulk_units
 
 func _calculate_container_contents(container: PFItem) -> int:
-	# Placeholder for nested container logic
-	return 0
+	if not "stored_items" in container: return 0
+	var total = 0
+	for item in container.get("stored_items"):
+		total += get_perceived_bulk(item)
+	return total
 
 func get_encumbered_limit() -> int:
 	var str_mod = owner.attributes.str_mod if "attributes" in owner and owner.attributes else 0
@@ -227,3 +275,9 @@ func get_maximum_bulk_limit() -> int:
 
 func is_encumbered() -> bool:
 	return get_total_bulk() >= get_encumbered_limit()
+
+func can_carry(item_bulk: int) -> bool:
+	return (get_total_bulk() + item_bulk) <= get_maximum_bulk_limit()
+
+func can_drag(item_bulk: int) -> bool:
+	return (get_total_bulk() + item_bulk) <= (get_maximum_bulk_limit() * 2)

@@ -11,6 +11,8 @@ var base_level: int
 var is_wielded: bool = false # NEW: Tracks if the item is in a hand or stowed
 var is_weapon: bool = false
 
+var size: PFBiographyConstants.Size = PFBiographyConstants.Size.MEDIUM
+
 # --- ECONOMY ---
 # The absolute source of truth for the item's value (1 gp = 100 cp)
 var price_cp: int
@@ -36,9 +38,10 @@ var requires_investment: bool = false # NEW
 func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int = 1, p_price_gp: float = 0.0, 
 		   p_material: PFEquipmentConstants.ItemMaterial = PFEquipmentConstants.ItemMaterial.STANDARD, p_hardness: int = 0, p_hp: int = 0, p_bt: int = 0, 
 		   p_grade: PFEquipmentConstants.MaterialGrade = PFEquipmentConstants.MaterialGrade.STANDARD, p_bulk: int = 1, 
-		   p_bulk_reduction: int = 0, p_requires_investment: bool = false): # NEW
+		   p_bulk_reduction: int = 0, p_requires_investment: bool = false, p_size: PFBiographyConstants.Size = PFBiographyConstants.Size.MEDIUM): # NEW
 	super._init(p_name, p_traits)
 	
+	size = p_size
 	level = p_level
 	base_level = p_level
 	
@@ -52,7 +55,17 @@ func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int =
 	grade = p_grade
 	
 	bulk_value = p_bulk
-	base_bulk_value = p_bulk
+	
+	# Scale bulk natively based on the size of the item
+	var eff_size = PFBiographyConstants.get_effective_size(size)
+	if eff_size == 0: # Tiny
+		bulk_value = int(bulk_value * 0.5)
+	elif eff_size == 2: # Large
+		bulk_value = bulk_value * 2
+	elif eff_size >= 3: # Huge/Gargantuan
+		bulk_value = bulk_value * 4
+		
+	base_bulk_value = bulk_value
 	bulk_reduction_value = p_bulk_reduction
 	
 	hardness = p_hardness
@@ -70,6 +83,14 @@ func set_price_from_gp(gp_float: float) -> void:
 
 func get_price_string() -> String:
 	return PFInventory.format_copper_to_string(price_cp)
+
+func get_selling_price_cp() -> int:
+	var multiplier = 1.0
+	var eff_size = PFBiographyConstants.get_effective_size(size)
+	if eff_size == 2: multiplier = 2.0
+	elif eff_size >= 3: multiplier = 4.0
+	# Base selling price is usually 50% of buying price.
+	return int(base_price_cp * multiplier * 0.5)
 
 # ---------------------------------------------------------
 # DURABILITY & DAMAGE

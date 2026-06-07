@@ -27,7 +27,7 @@ To avoid a tangled web of global Autoloads, the project uses a **Context & Servi
 1. **The Compendium Pattern (SQLite > .tres):** We do NOT use Godot `.tres` resource files for standard database entries. All static data (items, spells, classes, ancestries) is stored in a relational SQLite database (`res://db/pf2e_data.db`) and instantiated at runtime via `pf_database.gd`. 
 2. **Enums Over Strings:** Everything uses strict integers and Enums (`PFEntity.ActionCost`, `PFEntity.Size`, `PFEntity.Distance`, etc.) to keep database queries lightning fast and memory safe.
 3. **Single Source of Truth:** Actors do not hold redundant variables for equipped gear. If you need to know what an actor is holding or wearing, you MUST query their `PFInventory` component directly.
-4. **Monster Optimization:** NPCs completely bypass expensive proficiency matrix calculations. If `is_monster = true`, they return hardcoded DCs, AC, and attacks directly from their `monster_stats` dictionary.
+4. **Monster Optimization:** NPCs completely bypass expensive proficiency matrix calculations. Due to polymorphism, `PFNpc` instances natively return hardcoded DCs, AC, and attacks directly from their `monster_stats` dictionary without needing boolean flags.
 5. **Mandatory Documentation:** Every class and significant method MUST be prefixed with Godot 4 `##` docstrings so the editor can generate rich tooltips and in-editor documentation. Single-letter variables (`w`, `s`, `x` outside of coordinates) are strictly forbidden to ensure legibility.
 
 ---
@@ -37,7 +37,7 @@ The game utilizes a "2.5D HD-2D" rendering pipeline, heavily inspired by titles 
 * **Camera Rig (`PFCameraRig`):** A custom 3D gimbal camera using **Orthographic** projection to simulate an isometric perspective without distance distortion (Standard rotation: X: -30°, Y: 45°, Z: 0°). Supports WASD/Edge panning, mouse-drag rotation, and smooth zooming.
 * **World Space & Grid (`PFCombatGrid`):** The environment is strictly 3D. The tactical grid is drawn using `MultiMeshInstance3D` to render thousands of dynamic tile highlights (movement bounds, AoE templates) in a single draw call. `PFCombatGrid` internally handles Pathfinder 2e diagonal distance math (5ft-10ft-5ft).
 * **Entity Visualization:** Actors and interactive objects are rendered using `Sprite3D` nodes with `Billboard = Y-Billboard` and `Alpha Cut = Discard`. This ensures tokens constantly face the camera even when the rig rotates 360 degrees.
-* **Programmatic UI (`PFActionMenu`):** Complex, highly dynamic battle UI (like the Action Menu) is built **programmatically via GDScript** rather than relying on brittle `.tscn` nodes. The UI exists on a separate `CanvasLayer` and uses explicit anchors (e.g., `set_anchors_and_offsets_preset`) to maintain flawless resolution scaling across the screen.
+* **Programmatic UI (`PFActionMenu`):** Complex, highly dynamic battle UI (like the Action Menu) is built **programmatically via GDScript** rather than relying on brittle `.tscn` nodes. The UI exists on a separate `CanvasLayer` and uses explicit anchors (e.g., `set_anchors_and_offsets_preset`) to maintain flawless resolution scaling across the screen. Use `Camera3D.unproject_position(Vector3)` to accurately project world coordinates onto health bars or floating text.
 
 ---
 
@@ -58,7 +58,16 @@ All items inherit from `PFEntity` -> `PFItem`.
 
 ---
 
-## 7. Composition Over Inheritance (Inventory & Entities)
+## 7. Bulk, Sizing & Encumbrance (Perceived Bulk Matrix)
+The Engine strictly handles physical sizes and weights without manually adjusting base item stats:
+* **Item Sizing:** All items have a physical `size` (`PFBiographyConstants.Size`). Large items inherently weigh double and sell for double; Tiny items halve the weight. Buying prices remain standard.
+* **Perceived Bulk:** An actor's size dynamically alters how they experience an item's weight. A `Large` PC inherently divides the bulk of standard-sized items by 10, experiencing them as `1L` (Light bulk).
+* **Equipment Bounds:** `PFInventory` enforces physical restraints. Armor must be the *exact* size of the wearer (Small and Medium are mathematically interchangeable). Weapons can be wielded if they are 1 size larger, but the Engine dynamically injects the `clumsy 1` condition natively onto the wielder.
+* **Encumbrance Limits:** Players have strict `can_carry()` and `can_drag()` limits derived from `10 + STR`.
+
+---
+
+## 8. Composition Over Inheritance (Inventory & Entities)
 The engine heavily favors **Composition**
 
 ### 1. Hybrid Inheritance Architecture (Actors)
@@ -66,6 +75,8 @@ Pathfinder is a game of highly specific rules where Players and Monsters operate
 
 To cleanly separate this logic while maintaining flexibility, the engine uses **Hybrid Inheritance**.
 `PFActor` is the base class for any targetable entity. It extends `Node3D`. It handles core logic like `health`, `action_economy`, and `conditions`.
+
+* **Dynamic Condition Stacking:** The Engine prevents illegal status stacking natively. `apply_condition` appends all statuses (retaining history). When an actor requests their current penalty via `get_condition_modifier()`, the Engine isolates the single strongest bonus and single strongest penalty of that type, ignoring all duplicates or weaker modifiers.
 
 It branches into strictly typed subclasses:
 * **`PFPlayerCharacter`**: Guaranteed to contain a `PFProficiencySheet`, `PFInventory`, and `PFSpellbook`. Calculates stats based on deep Pathfinder math.
@@ -79,7 +90,7 @@ It branches into strictly typed subclasses:
 
 ---
 
-## 8. Magic System (`PFSpellbook`)
+## 9. Magic System (`PFSpellbook`)
 Every `PFActor` instantiates a `PFSpellbook`.
 * The spellbook holds hardcoded progression arrays mapping character levels to available spell slots based on their class type (None, Full Caster, Bounded Caster).
 * Calculates max slots by adding base class slots + any `extra_slots` granted by feats.
@@ -88,10 +99,110 @@ Every `PFActor` instantiates a `PFSpellbook`.
 
 ---
 
-## 9. AI Code Generation Directives
+## 10. Environmental Asset Architecture (2D vs. 3D Rules)
+The game uses a strict framework to determine when an environmental object should be a 3D model versus a 2D sprite. 
+
+### Rule 1: The Terrain (Strict 3D)
+* **Condition:** The object represents the floor, cliffs, stairs, or fundamental grid geometry.
+* **Node Structure:** Must use `GridMap` or `MeshInstance3D`.
+* **Reasoning:** Pathfinder 2e relies heavily on elevation and grid movement. The ground must be mathematically 3D to support accurate pathfinding, distance metrics, and vertical line of sight.
+
+### Rule 2: The Elevation & Interior Rule (Strict 3D)
+* **Condition:** A character can stand ON TOP OF the object (e.g., stacked crates, a balcony, a wagon) or go INSIDE the object (e.g., a tavern, a castle).
+* **Node Structure:** `MeshInstance3D` + `StaticBody3D`. Apply a 2D pixel-art texture to the 3D material to match the aesthetic.
+* **Reasoning:** Characters standing on flat 2D sprites create catastrophic depth illusions. Complex stacking or interior navigation requires structural 3D collision boundaries.
+
+### Rule 3: The Cover Rule / 2.5D Hybrid Trick (2D Art + 3D Physics)
+* **Condition:** The object blocks movement or provides mechanical PF2e cover (e.g., standard +2 AC), but is generally symmetrical/radial and characters cannot stand on top of it (e.g., trees, boulders, individual barrels, lampposts).
+* **Node Structure:** A `StaticBody3D` root containing:
+    1. `CollisionShape3D` (Usually a CylinderShape3D or SphereShape3D to handle 3D RayCast interceptions for cover math).
+    2. `Sprite3D` (The 2D artwork, set to `Y-Billboard` and `Alpha Cut = Discard`).
+* **Reasoning:** This allows the 3D engine to accurately evaluate Line of Effect and Line of Sight for ranged attacks, while keeping the asset pipeline incredibly lean.
+
+### Rule 4: The Set Dressing Rule (Pure 2D)
+* **Condition:** The object is purely visual, does not block movement, and provides no cover mechanics (e.g., small rugs, scattered papers, wall banners).
+* **Node Structure:** `Sprite3D` only (No physics bodies). For floor-based items, set the Sprite3D rotation to lay flat on the X/Z plane instead of using billboard flags.
+
+---
+
+## 11. Asset Management & Dynamic Loading (Implicit Paths)
+To keep the SQLite database lightweight and highly performant, we never store raw image data (BLOBs) or absolute string file paths in database tables. The engine relies on an "Implicit Path" architecture to link 2D assets.
+
+### The Naming Convention Rule
+The file name of the 2D asset (`.png` or `.webp`) MUST identically match the `id` string of the corresponding entry in the SQLite database.
+* **Database `id`:** `"orc_brute"` -> Folder/File base: `orc_brute`
+* **Database `id`:** `"steel_shield"` -> File: `steel_shield.png`
+
+### Strict Directory Structure
+Assets are grouped into standardized directory trees. Factory methods construct loading paths dynamically based on asset categories:
+* **Monsters/NPCs:** `res://assets/sprites/actors/`
+* **Weapons:** `res://assets/sprites/weapons/`
+* **Armor/Shields:** `res://assets/sprites/armor/`
+* **Items/Loot:** `res://assets/sprites/items/`
+
+### Factory Instantiation & Fallbacks
+When a factory method constructs an object from an SQLite database query, it dynamically attempts to verify the file path. It must check resource availability using `ResourceLoader.exists()` and swap to a system placeholder if the graphic asset is unbaked to prevent crashes.
+
+---
+
+## 12. The Archetypal Rig System (PC Paper Dolls)
+To support a modular equipment appearance system without drawing unique frames for every combination of ancestry and weapon, player characters utilize a **Rig-Based Archetype System** grouped by animation stance.
+
+### The Archetype Matrix
+Every PC is assigned a visual rig comprised of two variables: **Posture** and **Physique**.
+
+1. **Posture (The Animation Rig):** Dictates the idle stance and combat loops. All characters sharing a Posture share identical pixel coordinates for hand, neck, and footprint attachments.
+   * *Standard:* Balanced, classic hero posture.
+   * *Elegant:* Upright, formal, or magic-oriented stance.
+   * *Savage:* Wide-set, hunched, aggressive stance.
+2. **Physique (The Strength Morph):** Dynamically swapped based on the character's physical attributes (e.g., Strength score tiers).
+   * *Skinny / Lean*
+   * *Default*
+   * *Muscular*
+
+### Bipedal Scale Uniformity & Non-Standard Anatomies
+* **Standard Scaling:** Ancestries sharing standard bipedal anatomy but differing in mechanical size do not get custom sprites. The engine applies a uniform `scale` adjustment to the root `Node3D`. For example, if a character like Sludge uses a Large form with the Savage posture, the system handles the size difference computationally without needing new hand-drawn frames.
+* To counter automatic child scaling (such as a Small character holding a Medium weapon), weapons compute a local inverse modifier: `Child_Weapon_Scale = Target_Weapon_Size_Scale / Actor_Root_Scale`.
+* **Unique Exceptions:** Radically non-bipedal or asymmetrical characters (e.g., Centaurs, Sprites) are exempt from the archetype system. They maintain completely standalone sprite sheets and custom layers.
+* **PC vs Monster Split:** Monsters utilize **Baked Sprites**. Their weapons and armor are drawn directly onto their flat base image. The inventory component still manages their mathematical calculations, but their visible asset frame does not update upon receiving equipment.
+
+---
+
+## 13. Anatomy, Silhouettes, and Gendered Physiques
+To ensure high-fidelity apparel fitting, the engine enforces a strict Gendered Silhouette system. Because male and female silhouettes alter the outer pixel boundaries of the torso and limbs, armor layers must match the silhouette perfectly.
+
+### The Silhouette Suffix Convention
+The `Physique` definition incorporates a gender/silhouette suffix, applied rigidly to all base bodies and apparel overlays.
+* **Format:** `[item_id]_[posture]_[physique]_[silhouette].png`
+* **Base Body:** `body_human_savage_muscular_m.png` / `body_orc_savage_muscular_f.png`
+* **Armor Overlay:** `steel_breastplate_savage_muscular_m.png` / `steel_breastplate_savage_muscular_f.png`
+* *Weapon Exemption:* Because hand coordinates are completely locked by the character's chosen *Posture*, weapons do not feature silhouette suffixes.
+
+### The Protrusion Layering System
+Anatomical additions extending outside standard armor spaces (Horns, Tails, Beast Hair) reside on independent sprite layers stacked above the base body. Equipment in the database utilizes metadata tags (e.g., `hides_hair`, `hides_horns`). When a full-face helm or heavy cowl is assigned, the engine reads the tag and toggles the `visible` parameter of the corresponding protrusion layer to false to halt visual clipping.
+
+---
+
+## 14. Shader-Driven Materials & Runes
+To prevent exponential asset bloat from multiplying weapons and armor by Pathfinder's material types and property runes, the visual system relies heavily on `ShaderMaterial` processing.
+
+### The Grayscale Base Rule
+All equipment sprite sheets are drawn by artists using high-contrast grayscale or generic steel values. True colorization, specular shine, and magical traits are pushed programmatically to the GPU via shader parameters.
+
+### Material & Rune Parameter Passes
+* **Material Tinting:** The renderer maps `PFItem.ItemMaterial` to specific color vectors (e.g., Dark blue-black for Cold Iron, high-specular pale blue for Silver, deep shimmering green for Adamantine).
+* **Property Runes:** Magic effects leverage noise textures and emissions bounded within the sprite's alpha channel mask:
+    * *Flaming:* Vertical scrolling noise multiplied by hot red-orange emission.
+    * *Shadow:* Negative emission mask with a trailing black smoke particle emitter.
+    * *Astral:* Panning cosmic star texture blended across the active weapon fragments.
+
+---
+
+## 15. AI Code Generation Directives
 When generating GDScript for this project, you MUST adhere to the following rules:
 1. **Never use `.tres` for data.** If asked to create a new weapon, spell, or class, write the SQL `INSERT` statement for `pf_database.gd`, do NOT generate a Godot Resource.
 2. **Call Down, Signal Up.** Parent nodes call methods on their children. Child nodes NEVER reference their parents (`get_parent()` is banned for game logic). Children communicate exclusively upwards via `Signals`.
 3. **Favor Composition.** Never add sprawling variables (like `is_poisoned` or `max_mana`) to `PFActor`. Create a modular component node instead.
 4. **Use Vector3 for spatial logic.** Do not attempt to calculate 2D isometric grid conversions. Rely entirely on the 3D engine for RayCasting, distances, and areas of effect. 
 5. **Use `price_cp` strictly.** Never do math with Gold Pieces (`gp`) outside of initial database seeding; all internal engine math operates on integers of copper.
+6. **Pass Shader Parameters Programmatically.** When equipment loads, update its materials dynamically via `.set_shader_parameter()`. Never generate hardcoded materials per variant.
