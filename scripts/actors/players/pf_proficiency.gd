@@ -12,32 +12,15 @@ static func calculate_bonus(rank: PFMathConstants.ProficiencyRank, level: int) -
 
 # Maps every specific skill to its governing attribute
 static func get_skill_ability(skill: StringName) -> StringName:
-	var skill_lower = str(skill).to_lower()
-
-	# Pattern match the 17 Core PF2e Skills
-	match skill_lower:
-		# Strength
-		"athletics": 
-			return &"STR"
+	var db = PFDatabase.get_instance()
+	if db:
+		var data = db.get_skill_data(skill)
+		if not data.is_empty() and data.has("key_ability"):
+			return StringName(data["key_ability"])
 			
-		# Dexterity
-		"acrobatics", "stealth", "thievery": 
-			return &"DEX"
-			
-		# Intelligence
-		"arcana", "crafting", "occultism", "society": 
-			return &"INT"
-			
-		# Wisdom
-		"medicine", "nature", "religion", "survival": 
-			return &"WIS"
-			
-		# Charisma
-		"deception", "diplomacy", "intimidation", "performance": 
-			return &"CHA"
-			
-		_:
-			if skill_lower.ends_with("lore"):
-				return &"INT"
-			push_warning("Unknown skill '%s'. Defaulting to INT." % skill)
-			return &"INT"
+	# Fallback for dynamic Lores not explicitly in DB
+	if str(skill).to_lower().ends_with("lore"):
+		return &"INT"
+		
+	push_warning("Unknown skill '%s'. Defaulting to INT." % skill)
+	return &"INT"

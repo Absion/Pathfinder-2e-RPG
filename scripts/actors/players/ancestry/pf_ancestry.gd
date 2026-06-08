@@ -6,7 +6,7 @@ extends PFEntity # Force Reparse
 const VALID_ABILITIES: Array[StringName] = [&"STR", &"DEX", &"CON", &"INT", &"WIS", &"CHA", &"FREE"]
 
 var hp: int
-var size: PFBiographyConstants.Size
+var size_id: StringName
 
 # --- MOVEMENT SPEEDS ---
 var speed: int
@@ -20,8 +20,8 @@ var ability_boosts: Array[StringName]
 var ability_flaws: Array[StringName]
 var alternate_ancestry_boosts: Array[StringName] = [&"FREE", &"FREE"]
 
-var known_languages: Array[PFBiographyConstants.LanguageType]
-var bonus_language_options: Array[PFBiographyConstants.LanguageType]
+var known_languages: Array[StringName]
+var bonus_language_options: Array[StringName]
 
 # --- SENSES ---
 var vision: PFBiographyConstants.Vision
@@ -36,8 +36,8 @@ var ancestry_description: String
 var physical_description: String
 var societal_description: String
 var common_beliefs: String
-var common_edicts: Array[String]
-var common_anathema: Array[String]
+var common_edicts: Array[StringName]
+var common_anathema: Array[StringName]
 var common_names: Array[String]
 
 # --- STARTING ASSETS ---
@@ -50,12 +50,12 @@ var starting_gold: int
 func _init(
 		p_name: String = "", 
 		p_hp: int = 8, 
-		p_size: PFBiographyConstants.Size = PFBiographyConstants.Size.MEDIUM, 
+		p_size_id: StringName = &"medium", 
 		p_speed: int = 25, 
 		p_boosts: Array[StringName] = [], 
 		p_flaws: Array[StringName] = [], 
-		p_known_langs: Array[PFBiographyConstants.LanguageType] = [], 
-		p_bonus_langs: Array[PFBiographyConstants.LanguageType] = [], 
+		p_known_langs: Array[StringName] = [], 
+		p_bonus_langs: Array[StringName] = [], 
 		p_vision: PFBiographyConstants.Vision = PFBiographyConstants.Vision.NORMAL,
 		p_additional_senses: Array[PFSense] = [],
 		p_speed_fly: int = 0,   
@@ -68,8 +68,8 @@ func _init(
 		p_physical_description: String = "",
 		p_societal_description: String = "",
 		p_common_beliefs: String = "",
-		p_common_edicts: Array[String] = [],
-		p_common_anathema: Array[String] = [],
+		p_common_edicts: Array[StringName] = [],
+		p_common_anathema: Array[StringName] = [],
 		p_common_names: Array[String] = [],
 		p_traits: Array[StringName] = [], 
 		p_rarity: PFBiographyConstants.Rarity = PFBiographyConstants.Rarity.COMMON,
@@ -84,7 +84,7 @@ func _init(
 	_validate_abilities(p_flaws, "ability_flaws")
 	
 	hp = p_hp
-	size = p_size
+	size_id = p_size_id
 	speed = p_speed
 	speed_fly = p_speed_fly
 	speed_swim = p_speed_swim
@@ -122,7 +122,7 @@ func _init(
 # --- DATA SETTERS ---
 
 # Helper function to assign massive blocks of text cleanly after initialization
-func set_lore(p_ancestry_desc: String, p_physical_desc: String, p_societal_desc: String, p_beliefs: String, p_edicts: Array[String], p_anathema: Array[String], p_names: Array[String]) -> void:
+func set_lore(p_ancestry_desc: String, p_physical_desc: String, p_societal_desc: String, p_beliefs: String, p_edicts: Array[StringName], p_anathema: Array[StringName], p_names: Array[String]) -> void:
 	ancestry_description = p_ancestry_desc
 	physical_description = p_physical_desc
 	societal_description = p_societal_desc

@@ -12,7 +12,7 @@ var spellbook: PFSpellbook
 
 # --- NPC STATS ---
 var monster_stats: Dictionary = {}
-var size: PFBiographyConstants.Size = PFBiographyConstants.Size.MEDIUM
+var size_id: StringName = &"medium"
 var npc_spell_dc: int = 10
 var npc_spell_attack: int = 0
 var description: String = ""

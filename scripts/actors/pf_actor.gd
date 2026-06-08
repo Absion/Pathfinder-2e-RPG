@@ -49,30 +49,44 @@ func apply_condition(new_condition: PFCondition) -> void:
 	print("%s is now %s %d!" % [entity_name, new_condition.condition_name, new_condition.value])
 
 func get_condition_modifier(context: StringName) -> int:
-	var max_bonus = 0
-	var max_penalty = 0
+	var highest_status_bonus = 0
+	var highest_circumstance_bonus = 0
+	var highest_item_bonus = 0
+	
+	var highest_status_penalty = 0
+	var highest_circumstance_penalty = 0
+	var highest_item_penalty = 0
+	
+	var untyped_sum = 0
 	
 	for c in conditions:
 		if c.is_active:
 			var mod = c.get_modifier(context)
-			if mod > max_bonus:
-				max_bonus = mod
-			elif mod < max_penalty:
-				max_penalty = mod
+			if mod == 0: continue
+			
+			if c.modifier_type == "status":
+				if mod > 0: highest_status_bonus = maxi(highest_status_bonus, mod)
+				else: highest_status_penalty = mini(highest_status_penalty, mod)
+			elif c.modifier_type == "circumstance":
+				if mod > 0: highest_circumstance_bonus = maxi(highest_circumstance_bonus, mod)
+				else: highest_circumstance_penalty = mini(highest_circumstance_penalty, mod)
+			elif c.modifier_type == "item":
+				if mod > 0: highest_item_bonus = maxi(highest_item_bonus, mod)
+				else: highest_item_penalty = mini(highest_item_penalty, mod)
+			else:
+				untyped_sum += mod
 				
-	return max_bonus + max_penalty
+	return highest_status_bonus + highest_circumstance_bonus + highest_item_bonus + \
+		   highest_status_penalty + highest_circumstance_penalty + highest_item_penalty + \
+		   untyped_sum
 
 func get_actor_bulk() -> int:
 	var base_bulk = 60 # Default Medium (6 Bulk)
-	if "size" in self:
-		var s = self.get("size")
-		match s:
-			PFBiographyConstants.Size.TINY: base_bulk = 10
-			PFBiographyConstants.Size.SMALL: base_bulk = 30
-			PFBiographyConstants.Size.MEDIUM: base_bulk = 60
-			PFBiographyConstants.Size.LARGE: base_bulk = 120
-			PFBiographyConstants.Size.HUGE: base_bulk = 240
-			PFBiographyConstants.Size.GARGANTUAN: base_bulk = 480
+	if "size_id" in self:
+		var db_inst = PFDatabase.get_instance()
+		var size_data = db_inst.get_size_data(self.get("size_id")) if db_inst else null
+		if size_data:
+			base_bulk = size_data.get("base_bulk", 60)
 			
 	var inventory_bulk = 0
 	if "inventory" in self and self.get("inventory") != null:

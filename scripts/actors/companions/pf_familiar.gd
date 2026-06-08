@@ -5,21 +5,22 @@ class_name PFFamiliar
 extends PFMinion
 
 # --- ABILITIES ---
-var familiar_abilities: Array[String] = []
-var master_abilities: Array[String] = []
+var max_abilities: int = 2
+var required_abilities_discount: int = 0
+var familiar_abilities: Array[StringName] = []
+var master_abilities: Array[StringName] = []
+
+# --- SPECIFIC FAMILIARS ---
+var is_specific_familiar: bool = false
+var specific_familiar_id: StringName = &""
 
 # --- INITIALIZATION ---
 func _init(p_name: String, p_master: PFActor):
-	var traits: Array[StringName] = [&"animal"] # Familiars can be animals or other types, usually tiny
+	var init_traits: Array[StringName] = [&"animal", &"minion"]
 	
-	# Pass base stats. HP is 5 * master level. Base saves will be derived in update_stats_from_master.
-	super._init(p_name, p_master, traits, p_master.level, 
-		5 * p_master.level, # HP
-		0, 0, 0, # Saves
-		-4, 3, 0, -4, 0, 0, # Arbitrary stat array for a tiny creature
-		25)
+	super._init(p_name, p_master, init_traits, p_master.level, 5 * p_master.level, 0, 0, 0, -4, 3, 0, -4, 0, 0, 25)
 	
-	size = PFBiographyConstants.Size.TINY
+	size_id = &"tiny"
 	update_stats_from_master()
 	
 # --- STATS ---
@@ -28,12 +29,92 @@ func update_stats_from_master() -> void:
 	health.max_hp = 5 * master.level
 	health.current_hp = mini(health.current_hp, health.max_hp)
 	
-	# For now, derive spellcasting mod from highest mental stat of master
-	var spellcasting_mod = max(master.attributes.int_mod, max(master.attributes.wis_mod, master.attributes.cha_mod))
+	print("    > %s updates HP (%d)." % [entity_name, health.max_hp])
+
+# ---------------------------------------------------------
+# THE UNIFIED MATH DELEGATES (OVERRIDE)
+# ---------------------------------------------------------
+
+func _get_master_spellcasting_mod() -> int:
+	if master.has_method("get_spellcasting_mod"):
+		return master.get_spellcasting_mod()
+	return 0
+
+func get_ac() -> int:
+	# Familiar AC = 10 + master's level + master's spellcasting mod
+	var base_ac = 10 + master.level + _get_master_spellcasting_mod()
+	return base_ac + get_condition_modifier(&"ac")
+
+func get_strike_bonus(weapon: PFWeapon) -> int:
+	# Familiar attacks = master's level + master's spellcasting mod
+	var base_bonus = master.level + _get_master_spellcasting_mod()
 	
-	# Saves and AC usually equal master level + spellcasting mod
-	attributes.fort_save.base_value = master.level + spellcasting_mod
-	attributes.ref_save.base_value = master.level + spellcasting_mod
-	attributes.will_save.base_value = master.level + spellcasting_mod
+	if weapon and weapon.is_broken():
+		base_bonus -= 2
+		
+	return base_bonus + get_condition_modifier(&"attack")
+
+func get_spell_dc() -> int:
+	return 10 + master.level + _get_master_spellcasting_mod()
+
+func get_spell_attack() -> int:
+	return master.level + _get_master_spellcasting_mod()
+
+func get_skill_bonus(skill: StringName) -> int:
+	var base_bonus = master.level
+	# Acrobatics and Stealth use level + spellcasting mod
+	if skill == &"acrobatics" or skill == &"stealth":
+		base_bonus += _get_master_spellcasting_mod()
+		
+	return base_bonus + get_condition_modifier(&"skill")
+
+func get_save_modifier(save_type: StringName) -> int:
+	# Familiar saves = master's level + master's spellcasting mod
+	var base_save = master.level + _get_master_spellcasting_mod()
+	return base_save + get_condition_modifier(&"save")
+
+# ---------------------------------------------------------
+# SPECIFIC FAMILIARS
+# ---------------------------------------------------------
+
+func apply_specific_familiar(db_id: StringName) -> bool:
+	var db = PFDatabase.get_instance()
+	if not db:
+		push_error("PFFamiliar: Database missing.")
+		return false
+		
+	var data = db.get_specific_familiar(db_id)
+	if data.is_empty():
+		return false
+		
+	var effective_max_abilities = max_abilities + required_abilities_discount
+	if effective_max_abilities < data["required_abilities"]:
+		push_warning("PFFamiliar: Master does not have enough max abilities (%d) for %s (Requires %d)." % [effective_max_abilities, data["name"], data["required_abilities"]])
+		return false
+		
+	# Lock into specific familiar
+	is_specific_familiar = true
+	specific_familiar_id = db_id
+	entity_name = str(data["name"])
 	
-	print("    > %s updates HP (%d) and Saves to match master's spellcasting mod (+%d)." % [entity_name, health.max_hp, spellcasting_mod])
+	# Reset generic abilities but keep track of how many we spent
+	familiar_abilities.clear()
+	master_abilities.clear()
+	
+	if data["granted_abilities"] and data["granted_abilities"] != "":
+		var parsed = JSON.parse_string(data["granted_abilities"])
+		if parsed:
+			for a in parsed: familiar_abilities.append(StringName(a))
+			
+	if data["unique_abilities"] and data["unique_abilities"] != "":
+		var parsed = JSON.parse_string(data["unique_abilities"])
+		if parsed:
+			for a in parsed: familiar_abilities.append(StringName(a))
+			
+	if data["traits"] and data["traits"] != "":
+		var parsed = JSON.parse_string(data["traits"])
+		if parsed:
+			for t in parsed: traits.append(StringName(t))
+			
+	print("%s is now a Specific Familiar: %s!" % [master.entity_name, entity_name])
+	return true

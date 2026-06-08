@@ -3,17 +3,18 @@ extends Node
 
 func _ready():
 	print("==================================================")
-	print("   PATHFINDER 2E ENGINE: UNIFIED SYSTEMS TEST")
 	print("==================================================")
-	
-	# ---------------------------------------------------------
 	# 1. SETUP ACTORS
 	# ---------------------------------------------------------
 	print("\n--- TEST: ACTOR CREATION ---")
 	
 	# Initialize Database for test
-	var pf_db = preload("res://scripts/database/pf_database.gd").new()
-	pf_db._ready()
+	var pf_db = PFDatabase.get_instance()
+	if pf_db == null:
+		pf_db = preload("res://scripts/database/pf_database.gd").new()
+		pf_db.name = "PFDB"
+		get_tree().root.add_child(pf_db)
+		pf_db._ready()
 	
 	var hero = PFPlayerCharacter.new("Valeros", [&"humanoid", &"human"], 5, 
 		68, 12, 9, 10,  # HP, Fort, Ref, Will
@@ -23,7 +24,7 @@ func _ready():
 	# Apply DB data
 	hero.apply_ancestry(pf_db.get_ancestry("human"))
 	hero.apply_background(pf_db.get_background("farmhand"))
-	hero.apply_class(pf_db.get_pf_class("fighter"))
+	hero.apply_class(&"wizard")
 	
 	var abadar = pf_db.get_pf_deity("abadar")
 	if abadar:
@@ -38,6 +39,42 @@ func _ready():
 	)
 	orc.monster_stats = {"ac": 21, "attack": 15, "damage": 12}
 	add_child(orc)
+	
+	# ---------------------------------------------------------
+	# 1.5. TEST BELIEFS AND LORES
+	# ---------------------------------------------------------
+	print("\n--- TEST: DATA-DRIVEN BELIEFS & LORES ---")
+	
+	print("Hero Beliefs (Edicts): ", hero.edicts)
+	print("Hero Beliefs (Anathemas): ", hero.anathema)
+	
+	if hero.anathema.has(&"steal"):
+		print("SUCCESS: Hero correctly inherited the 'steal' anathema from Abadar!")
+	else:
+		push_error("FAIL: Hero is missing Abadar's 'steal' anathema!")
+		
+	print("Hero's base Athletics modifier (STR): ", hero.get_skill_bonus(&"athletics"))
+	print("Hero's base Custom Lore modifier (INT): ", hero.get_skill_bonus(&"custom_lore"))
+	
+	hero.sheet.set_skill_rank(&"athletics", PFMathConstants.ProficiencyRank.TRAINED)
+	hero.sheet.set_skill_rank(&"custom_lore", PFMathConstants.ProficiencyRank.EXPERT)
+	
+	print("Hero's Trained Athletics modifier: ", hero.get_skill_bonus(&"athletics"))
+	print("Hero's Expert Custom Lore modifier: ", hero.get_skill_bonus(&"custom_lore"))
+	
+	print("\n--- TEST: DATA-DRIVEN HERITAGES ---")
+	print("Hero Vision before Heritage: ", hero.senses.vision)
+	print("Hero Traits before Heritage: ", hero.traits)
+	
+	var half_elf = pf_db.get_heritage("half_elf")
+	if half_elf:
+		hero.apply_heritage(half_elf)
+		print("Hero Vision after Heritage: ", hero.senses.vision)
+		print("Hero Traits after Heritage: ", hero.traits)
+		if hero.senses.vision == PFBiographyConstants.Vision.LOW_LIGHT and hero.traits.has(&"elf"):
+			print("SUCCESS: Hero properly inherited Half-Elf vision and traits!")
+		else:
+			push_error("FAIL: Hero failed to inherit Half-Elf properties!")
 	
 	# ---------------------------------------------------------
 	# 2. SETUP ITEMS & ECONOMY
@@ -148,21 +185,80 @@ func _ready():
 	print("\n--- TEST: MINIONS (FAMILIARS & ANIMAL COMPANIONS) ---")
 	
 	var familiar = PFFamiliar.new("Po", hero)
-	var bear = PFAnimalCompanion.new("Barnaby", hero, "Bear", hero.level, 30, 8, 6, 6, 3, 2, 3, -4, 1, 0, 25)
+	print("%s (Familiar) Max HP: %d, AC: %d" % [familiar.entity_name, familiar.health.max_hp, familiar.get_ac()])
+	print("%s Acrobatics: +%d, Athletics: +%d" % [familiar.entity_name, familiar.get_skill_bonus(&"acrobatics"), familiar.get_skill_bonus(&"athletics")])
 	
-	print("%s (Familiar) Max HP: %d" % [familiar.entity_name, familiar.health.max_hp])
-	print("%s (Companion) Level updates to master's level: %d" % [bear.entity_name, bear.level])
+	print("\n--- TEST: SPECIFIC FAMILIARS ---")
+	print("Attempting to transform into Faerie Dragon (Requires 3 abilities)...")
+	var success = familiar.apply_specific_familiar(&"faerie_dragon")
+	if not success:
+		print("Failed! As expected, Po only has 2 max abilities.")
+		print("Upgrading max_abilities to 4 (e.g. Witch or Improved Familiar Feat)...")
+		familiar.max_abilities = 4
+		success = familiar.apply_specific_familiar(&"faerie_dragon")
+		if success:
+			print("Success! Po is now a Faerie Dragon.")
+			print("Familiar Abilities: ", familiar.familiar_abilities)
+			print("Traits: ", familiar.traits)
 	
-	familiar.start_turn()
-	bear.start_turn()
-	print("Familiar actions at turn start: ", familiar.action_economy.actions_remaining)
+	print("\n--- TEST: DATA-DRIVEN ANIMAL COMPANION SCALING ---")
+	print("Direct DB Fetch for Bear: ", pf_db.get_animal_companion_data(&"bear"))
 	
-	print("\nAction: Hero Commands the Bear...")
-	hero.action_economy.actions_remaining -= 1
-	bear.receive_command()
+	var bear = PFAnimalCompanion.new("Barnaby", hero, &"bear")
+	if bear.base_data.is_empty():
+		push_error("FATAL: Bear base_data is empty in combat_test.gd! Skipping bear tests.")
+	else:
+		print("%s the %s starts at Level %d." % [bear.entity_name, bear.base_data["name"], bear.level])
+		print("%s Max HP: %d (Base 8 + (6 + %d) * %d)" % [bear.entity_name, bear.health.max_hp, bear.base_data["con_mod"], bear.level])
+		print("%s STR Mod: %d, Unarmed Proficiency: %s" % [bear.entity_name, bear.attributes.strength, PFMathConstants.ProficiencyRank.keys()[bear.sheet.weapon_proficiencies.get(PFEquipmentConstants.WeaponCategory.UNARMED, 0)]])
+		
+		bear.set_stage(PFAnimalCompanion.CompanionStage.MATURE)
+		print("%s Max HP after Mature: %d" % [bear.entity_name, bear.health.max_hp])
+		print("%s STR Mod after Mature: %d, Unarmed Proficiency: %s" % [bear.entity_name, bear.attributes.strength, PFMathConstants.ProficiencyRank.keys()[bear.sheet.weapon_proficiencies.get(PFEquipmentConstants.WeaponCategory.UNARMED, 0)]])
+		
+		bear.set_stage(PFAnimalCompanion.CompanionStage.SAVAGE)
+		print("%s Max HP after Savage: %d" % [bear.entity_name, bear.health.max_hp])
+		print("%s STR Mod after Savage: %d, Unarmed Proficiency: %s" % [bear.entity_name, bear.attributes.strength, PFMathConstants.ProficiencyRank.keys()[bear.sheet.weapon_proficiencies.get(PFEquipmentConstants.WeaponCategory.UNARMED, 0)]])
+		
+		familiar.start_turn()
+		bear.start_turn()
+		print("\nFamiliar actions at turn start: ", familiar.action_economy.actions_remaining)
+		
+		print("\nAction: Hero Commands the Bear...")
+		hero.action_economy.actions_remaining -= 1
+		bear.receive_command()
+		
+		print("Bear actions after command: ", bear.action_economy.actions_remaining)
+		bear.support_benefit()
+		bear.advanced_maneuver()
+		
+	print("\n--- TEST: CLASSES & SPELLCASTING ---")
+	print("Attempting to apply Wizard class to Valeros...")
+	hero.apply_class(&"wizard")
 	
-	print("Bear actions after command: ", bear.action_economy.actions_remaining)
-	bear.support_benefit()
+	if hero.actor_class:
+		print("Valeros is now a level %d %s!" % [hero.level, hero.actor_class.entity_name])
+		print("Spellbook initialized? ", hero.spellbook != null)
+		if hero.spellbook:
+			print("Max Slots for Rank 1: ", hero.spellbook.get_max_slots(1))
+			print("Max Slots for Rank 2: ", hero.spellbook.get_max_slots(2))
+			print("Max Slots for Rank 3: ", hero.spellbook.get_max_slots(3))
+			
+			var shield_spell = PFSpell.new(&"shield")
+			var fireball_spell = PFSpell.new(&"fireball")
+			
+			hero.spellbook.cantrips.append(shield_spell)
+			hero.spellbook.repertoire[3] = [fireball_spell]
+			
+			print("Casting Shield...")
+			hero.spellbook.cast_spell(shield_spell)
+			
+			print("Casting Fireball at Rank 3...")
+			hero.spellbook.cast_spell(fireball_spell)
+			print("Casting Fireball again at Rank 3...")
+			hero.spellbook.cast_spell(fireball_spell)
+			print("Casting Fireball one more time at Rank 3...")
+			hero.spellbook.cast_spell(fireball_spell)
 	
 	# ---------------------------------------------------------
 	# 7. SETUP VISUAL 3D ENVIRONMENT FOR CAMERA TEST

@@ -24,8 +24,8 @@ To avoid a tangled web of global Autoloads, the project uses a **Context & Servi
 ---
 
 ## 3. Core Philosophies
-1. **The Compendium Pattern (SQLite > .tres):** We do NOT use Godot `.tres` resource files for standard database entries. All static data (items, spells, classes, ancestries) is stored in a relational SQLite database (`res://db/pf2e_data.db`) and instantiated at runtime via `pf_database.gd`. 
-2. **Enums Over Strings:** Everything uses strict integers and Enums (`PFEntity.ActionCost`, `PFEntity.Size`, `PFEntity.Distance`, etc.) to keep database queries lightning fast and memory safe.
+1. **Absolute Data/Logic Separation (The Compendium Pattern):** Game logic (`.gd` scripts) must **never** contain hardcoded content. All classes, ancestries, weapons, UI strings, cutscene text, dialogue, descriptions, and **core systemic definitions (Sizes, Traits)** live exclusively within the relational SQLite database (`res://db/pf2e_data.db`). Code components only query, route, and render this data.
+2. **Dynamic System Caching (StringNames over Enums):** To allow for infinite engine extensibility without rewriting code, foundational concepts (like `Size` or `Traits`) are not hardcoded Enums. They are loaded from the database at startup and cached in fast `StringName` dictionaries for high-speed logic routing. Strict integers and Enums are reserved only for immutable core logic (e.g., `PFEntity.ActionCost`, `PFEntity.Distance`).
 3. **Single Source of Truth:** Actors do not hold redundant variables for equipped gear. If you need to know what an actor is holding or wearing, you MUST query their `PFInventory` component directly.
 4. **Monster Optimization:** NPCs completely bypass expensive proficiency matrix calculations. Due to polymorphism, `PFNpc` instances natively return hardcoded DCs, AC, and attacks directly from their `monster_stats` dictionary without needing boolean flags.
 5. **Mandatory Documentation:** Every class and significant method MUST be prefixed with Godot 4 `##` docstrings so the editor can generate rich tooltips and in-editor documentation. Single-letter variables (`w`, `s`, `x` outside of coordinates) are strictly forbidden to ensure legibility.
@@ -42,16 +42,19 @@ The game utilizes a "2.5D HD-2D" rendering pipeline, heavily inspired by titles 
 ---
 
 ## 5. Database & Instantiation (`pf_database.gd`)
-The SQLite database is the source of all game data. It contains tables for: `classes`, `spells`, `spell_variants`, `deities`, `weapons`, `shields`, `ancestries`, and `backgrounds`.
-* JSON arrays stored in the database (e.g., traits, ability boosts, divine fonts) are parsed inside `pf_database.gd` getters.
+The SQLite database is the absolute source of truth for all content, systemic rules, and narrative data. 
+* **Core Rule Tables:** `sizes` (defines grid footprint and bulk multipliers) and `traits` (defines UI tooltips and mechanical hook tags).
+* **Mechanics Tables:** `classes`, `spells`, `spell_variants`, `deities`, `weapons`, `shields`, `ancestries`, and `backgrounds`.
+* **Narrative & UI Tables:** `ui_strings`, `item_descriptions`, `dialogue_trees`, and `cutscenes`. UI components and dialogue managers must pull their text dynamically based on string IDs to support global localization and rapid editing.
+* **JSON Parsing:** JSON arrays stored in the database (e.g., traits, ability boosts, divine fonts) are parsed inside `pf_database.gd` getters.
 * **Relational Magic:** Spells are split into `spells` (core identity) and `spell_variants` (relational table bound by `spell_id`). Variants dictate action cost (including `ONE_ROUND` / `TWO_ROUNDS`), range, targets, and damage dice for specific cast methods.
-* **Instantiation:** When creating an item, call the factory methods (e.g., `PFDatabase.get_weapon("longsword")`). This returns a fully constructed GDScript object (`PFWeapon`, `PFShield`, etc.) ready to be added to an inventory.
+* **Instantiation:** When creating an item or fetching dialogue, call the factory methods (e.g., `PFDatabase.get_weapon("longsword")` or `PFDatabase.get_string("ui_menu_start")`). This returns a fully constructed GDScript object ready for engine use.
 
 ---
 
 ## 6. Item & Equipment Architecture
 All items inherit from `PFEntity` -> `PFItem`.
-* **Economy:** The absolute source of truth for value is `price_cp` (copper pieces). floats are converted to copper upon initialization. Always use `PFInventory.format_copper_to_string(price_cp)` for UI displays.
+* **Economy:** The absolute source of truth for value is `price_cp` (copper pieces). Floats are converted to copper upon initialization. Always use `PFInventory.format_copper_to_string(price_cp)` for UI displays.
 * **Durability:** Items track `hardness`, `max_hp`, `current_hp`, and `broken_threshold`.
 * **Runes:** Weapons and Armors handle runes via `.apply_fundamental_runes()`. Shields handle them via `.apply_reinforcing_rune()`. Applying a rune automatically recalculates the item's level, copper price, max HP/Hardness, and dynamically updates its `entity_name` (e.g., prepending "+1 Striking").
 * **Shield Block:** Shield damage blocking logic resides in `PFShield.can_block(damage_type)`, checking against an array of `blockable_damage_types`.
@@ -59,9 +62,9 @@ All items inherit from `PFEntity` -> `PFItem`.
 ---
 
 ## 7. Bulk, Sizing & Encumbrance (Perceived Bulk Matrix)
-The Engine strictly handles physical sizes and weights without manually adjusting base item stats:
-* **Item Sizing:** All items have a physical `size` (`PFBiographyConstants.Size`). Large items inherently weigh double and sell for double; Tiny items halve the weight. Buying prices remain standard.
-* **Perceived Bulk:** An actor's size dynamically alters how they experience an item's weight. A `Large` PC inherently divides the bulk of standard-sized items by 10, experiencing them as `1L` (Light bulk).
+The Engine strictly handles physical sizes and weights without manually adjusting base item stats, deriving logic dynamically from the `sizes` database table:
+* **Item Sizing:** All items have a physical `size_id` (e.g., `"medium"`, `"large"`). Larger items scale mathematically based on the definitions in the database. Buying prices remain standard.
+* **Perceived Bulk:** An actor's size dynamically alters how they experience an item's weight. A `"large"` PC inherently divides the bulk of standard-sized items by 10, experiencing them as `1L` (Light bulk).
 * **Equipment Bounds:** `PFInventory` enforces physical restraints. Armor must be the *exact* size of the wearer (Small and Medium are mathematically interchangeable). Weapons can be wielded if they are 1 size larger, but the Engine dynamically injects the `clumsy 1` condition natively onto the wielder.
 * **Encumbrance Limits:** Players have strict `can_carry()` and `can_drag()` limits derived from `10 + STR`.
 
@@ -161,7 +164,7 @@ Every PC is assigned a visual rig comprised of two variables: **Posture** and **
    * *Muscular*
 
 ### Bipedal Scale Uniformity & Non-Standard Anatomies
-* **Standard Scaling:** Ancestries sharing standard bipedal anatomy but differing in mechanical size do not get custom sprites. The engine applies a uniform `scale` adjustment to the root `Node3D`. For example, if a character like Sludge uses a Large form with the Savage posture, the system handles the size difference computationally without needing new hand-drawn frames.
+* **Standard Scaling:** Ancestries sharing standard bipedal anatomy but differing in mechanical size do not get custom sprites. The engine applies a uniform `scale` adjustment to the root `Node3D`. For example, if a character uses a Large form with the Savage posture, the system handles the size difference computationally without needing new hand-drawn frames.
 * To counter automatic child scaling (such as a Small character holding a Medium weapon), weapons compute a local inverse modifier: `Child_Weapon_Scale = Target_Weapon_Size_Scale / Actor_Root_Scale`.
 * **Unique Exceptions:** Radically non-bipedal or asymmetrical characters (e.g., Centaurs, Sprites) are exempt from the archetype system. They maintain completely standalone sprite sheets and custom layers.
 * **PC vs Monster Split:** Monsters utilize **Baked Sprites**. Their weapons and armor are drawn directly onto their flat base image. The inventory component still manages their mathematical calculations, but their visible asset frame does not update upon receiving equipment.
@@ -198,11 +201,32 @@ All equipment sprite sheets are drawn by artists using high-contrast grayscale o
 
 ---
 
-## 15. AI Code Generation Directives
+## 15. Data-Driven Logic Bridging (Traits & Conditions)
+To ensure the engine remains entirely data-driven, game logic components handle systemic rules (Traits, Conditions, Weapon Properties) using three distinct bridging patterns rather than hardcoded booleans.
+
+### Pattern 1: The Tag & Hook System (Static Rule Alteration)
+For traits that alter foundational math (e.g., Agile, Finesse), the `traits` database table utilizes `mechanic_hook` and `hook_value` columns.
+* GDScript does not check `if trait == "agile"`. 
+* GDScript checks `if trait.mechanic_hook == "modifies_map"` and applies the database-defined `hook_value`.
+
+### Pattern 2: The Modifier Matrix (Standardized Conditions)
+Conditions that apply numerical buffs or debuffs (e.g., Frightened, Clumsy, Inspire Courage) are fully parameterized in the `conditions` table.
+* **Columns:** `modifier_type` (Status, Circumstance, Item), `target_stat` (AC, Will, Str_Checks, All), and `multiplier`.
+* The `PFProficiencySheet` dynamically reads these columns and applies the math automatically. No condition-specific GDScript is written for numerical modifiers.
+
+### Pattern 3: The Strategy Pattern (Complex Behaviors)
+For conditions or traits that inject new behaviors, turn-based triggers, or action restrictions (e.g., Persistent Damage, Fascinated, Stunned), the database utilizes a `script_path` column.
+* The engine dynamically loads the isolated `.gd` script path provided by the database and attaches it to the `PFActor` as a child node.
+* These injected scripts listen for Context signals (e.g., `on_turn_end`, `on_action_attempted`) to execute their highly specific logic.
+
+---
+
+## 16. AI Code Generation Directives
 When generating GDScript for this project, you MUST adhere to the following rules:
 1. **Never use `.tres` for data.** If asked to create a new weapon, spell, or class, write the SQL `INSERT` statement for `pf_database.gd`, do NOT generate a Godot Resource.
-2. **Call Down, Signal Up.** Parent nodes call methods on their children. Child nodes NEVER reference their parents (`get_parent()` is banned for game logic). Children communicate exclusively upwards via `Signals`.
-3. **Favor Composition.** Never add sprawling variables (like `is_poisoned` or `max_mana`) to `PFActor`. Create a modular component node instead.
-4. **Use Vector3 for spatial logic.** Do not attempt to calculate 2D isometric grid conversions. Rely entirely on the 3D engine for RayCasting, distances, and areas of effect. 
-5. **Use `price_cp` strictly.** Never do math with Gold Pieces (`gp`) outside of initial database seeding; all internal engine math operates on integers of copper.
-6. **Pass Shader Parameters Programmatically.** When equipment loads, update its materials dynamically via `.set_shader_parameter()`. Never generate hardcoded materials per variant.
+2. **Never hardcode strings or core definitions.** Do not generate GDScript containing hardcoded dialogue, item lore, UI strings, or core mechanic tags (like Sizes or Traits). All systemic rules and narrative text MUST be queried from the SQLite database.
+3. **Call Down, Signal Up.** Parent nodes call methods on their children. Child nodes NEVER reference their parents (`get_parent()` is banned for game logic). Children communicate exclusively upwards via `Signals`.
+4. **Favor Composition.** Never add sprawling variables (like `is_poisoned` or `max_mana`) to `PFActor`. Create a modular component node instead.
+5. **Use Vector3 for spatial logic.** Do not attempt to calculate 2D isometric grid conversions. Rely entirely on the 3D engine for RayCasting, distances, and areas of effect. 
+6. **Use `price_cp` strictly.** Never do math with Gold Pieces (`gp`) outside of initial database seeding; all internal engine math operates on integers of copper.
+7. **Pass Shader Parameters Programmatically.** When equipment loads, update its materials dynamically via `.set_shader_parameter()`. Never generate hardcoded materials per variant.

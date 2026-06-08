@@ -1,41 +1,40 @@
 # pf_spell.gd
-## A magical spell defining core tradition, category, and saving throws.
+## Represents a magical spell that can be cast by an actor.
 class_name PFSpell
 extends PFEntity
+
 var base_spell_rank: int
-var spell_category: PFMagicConstants.SpellCategory
-var traditions: Array[PFMagicConstants.MagicTradition]
-
-var saving_throw: String # e.g. "Will", "Basic Reflex"
-var is_attack: bool
-var damage_type: StringName
-
-var variants: Array[PFSpellVariant] = []
-
-var scaling_rules: PFMagicConstants.ScalingType
-var scaling_dice: int
+var cast_time: String # 1, 2, 3, reaction, free
+var range_ft: int
+var targets: String
+var saving_throw: String
+var duration: String
+var is_cantrip: bool
 var description: String
 
-func _init(p_name: String = "", p_traits: Array[StringName] = [], p_rarity: PFBiographyConstants.Rarity = PFBiographyConstants.Rarity.COMMON):
-	super._init(p_name, p_traits, p_rarity)
-
-func get_damage_dice(cast_rank: int, action_cost: PFCombatConstants.ActionCost) -> int:
-	var base_dice = 0
+func _init(p_id: StringName):
+	var db = PFDatabase.get_instance()
+	var s_data = db.get_spell_data(p_id)
 	
-	# Find the matching variant to get the base damage dice
-	for v in variants:
-		if v.action_cost == action_cost:
-			base_dice = v.damage_dice
-			break
+	if s_data.is_empty():
+		entity_name = "Unknown Spell"
+		return
+		
+	var spell_traits: Array[StringName] = []
+	if s_data["traits"] and s_data["traits"] != "":
+		var parsed = JSON.parse_string(s_data["traits"])
+		if parsed:
+			for t in parsed: spell_traits.append(StringName(t))
 			
-	if scaling_rules == PFMagicConstants.ScalingType.NONE or scaling_dice == 0:
-		return base_dice
-		
-	# PF2e heightening math
-	var rank_difference = cast_rank - base_spell_rank
-	if rank_difference <= 0:
-		return base_dice
-		
-	# Divide rank_difference by the scaling rule (e.g. PLUS_TWO means divide by 2)
-	var multiplier = rank_difference / scaling_rules
-	return base_dice + (multiplier * scaling_dice)
+	entity_name = str(s_data["name"])
+	traits = spell_traits
+	rarity = PFBiographyConstants.Rarity.COMMON
+	
+	base_spell_rank = s_data["base_spell_rank"]
+	cast_time = str(s_data["cast_time"])
+	range_ft = s_data["range_ft"]
+	targets = str(s_data["targets"])
+	saving_throw = str(s_data["saving_throw"])
+	duration = str(s_data["duration"])
+	is_cantrip = s_data["is_cantrip"] == 1
+	description = str(s_data["description"])

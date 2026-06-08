@@ -8,9 +8,9 @@ extends PFNpc
 var master: PFActor
 
 # --- INITIALIZATION ---
-func _init(p_name: String, p_master: PFActor, p_traits: Array[StringName], p_level: int,
-		p_hp: int, p_fort: int, p_ref: int, p_will: int,
-		p_str: int, p_dex: int, p_con: int, p_int: int, p_wis: int, p_cha: int,
+func _init(p_name: String, p_master: PFActor, p_traits: Array[StringName] = [], p_level: int = 1,
+		p_hp: int = 1, p_fort: int = 0, p_ref: int = 0, p_will: int = 0,
+		p_str: int = 0, p_dex: int = 0, p_con: int = 0, p_int: int = 0, p_wis: int = 0, p_cha: int = 0,
 		p_speed_land: int = 25, p_speed_fly: int = 0, p_speed_swim: int = 0,
 		p_speed_climb: int = 0, p_speed_burrow: int = 0):
 	

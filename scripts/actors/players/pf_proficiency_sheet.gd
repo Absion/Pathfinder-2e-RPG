@@ -8,29 +8,13 @@ var skills: Dictionary = {}
 var weapon_proficiencies: Dictionary = {}
 var armor_proficiencies: Dictionary = {}
 
-const STANDARD_LORES: Array[StringName] = [
-	&"Academia Lore", &"Accounting Lore", &"Architecture Lore", &"Art Lore", 
-	&"Circus Lore", &"Engineering Lore", &"Farming Lore", &"Fishing Lore", 
-	&"Fortune-Telling Lore", &"Games Lore", &"Genealogy Lore", &"Gladiatorial Lore", 
-	&"Guild Lore", &"Heraldry Lore", &"Herbalism Lore", &"Hunting Lore", 
-	&"Labor Lore", &"Legal Lore", &"Library Lore", &"Mercantile Lore", 
-	&"Midwifery Lore", &"Milling Lore", &"Mining Lore", &"Piloting Lore", 
-	&"Sailing Lore", &"Scouting Lore", &"Scribing Lore", &"Stabling Lore", 
-	&"Tanning Lore", &"Theater Lore", &"Underworld Lore"
-]
-
 func _init():
-	
-	# Default Skills (17 Core PF2e Skills)
-	var all_skills = [
-		&"acrobatics", &"arcana", &"athletics", &"crafting", 
-		&"deception", &"diplomacy", &"intimidation", &"medicine", 
-		&"nature", &"occultism", &"perception", &"performance", 
-		&"religion", &"society", &"stealth", &"survival", &"thievery"
-	]
-	
-	for s in all_skills:
-		skills[s] = PFMathConstants.ProficiencyRank.UNTRAINED
+	# Initialize Core Skills
+	var db = PFDatabase.get_instance()
+	if db:
+		var core_skills = db.get_core_skills()
+		for s in core_skills:
+			skills[s] = PFMathConstants.ProficiencyRank.UNTRAINED
 		
 	# Default Weapon Proficiencies
 	weapon_proficiencies[PFEquipmentConstants.WeaponCategory.UNARMED] = PFMathConstants.ProficiencyRank.UNTRAINED
@@ -49,7 +33,14 @@ func _init():
 # ---------------------------------------------------------
 
 func add_lore_skill(lore_name: StringName, rank: PFMathConstants.ProficiencyRank = PFMathConstants.ProficiencyRank.TRAINED) -> void:
-	if lore_name in STANDARD_LORES or str(lore_name).to_lower().ends_with("lore"):
+	var db = PFDatabase.get_instance()
+	var is_standard = false
+	if db:
+		var data = db.get_skill_data(lore_name)
+		if not data.is_empty() and data.get("is_lore", 0) == 1:
+			is_standard = true
+			
+	if is_standard or str(lore_name).to_lower().ends_with("lore"):
 		skills[lore_name] = rank
 	else:
 		push_warning("Adding non-standard lore skill: " + lore_name)

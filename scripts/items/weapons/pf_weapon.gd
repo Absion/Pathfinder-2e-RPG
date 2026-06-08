@@ -1,7 +1,7 @@
 # pf_weapon.gd
 ## Offensive equipment used to make strikes against targets.
 class_name PFWeapon
-extends PFItem # Force Reparse 
+extends PFItem
 
 # Format: [Attack Bonus, RuneLevel, PriceCP, Prefix]
 const POTENCY_STATS = {

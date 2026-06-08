@@ -61,8 +61,11 @@ var signature_spells: Array[PFSpell] = []
 var repertoire: Dictionary = {}
 var prepared_spells: Dictionary = {}
 var innate_spells: Dictionary = {}
+var cantrips: Array[PFSpell] = []
 
 # --- SLOT TRACKING ---
+var max_focus_points: int = 0
+var focus_points: int = 0
 # Maps Rank (int) -> amount (int)
 var extra_slots: Dictionary = {} 
 var current_slots: Dictionary = {}
@@ -134,3 +137,30 @@ func restore_daily_slots() -> void:
 		var max_s = get_max_slots(rank)
 		if max_s > 0:
 			current_slots[rank] = max_s
+	
+	focus_points = max_focus_points
+
+# --- CASTING INTERFACE ---
+
+func expend_slot(rank: int) -> bool:
+	if current_slots.has(rank) and current_slots[rank] > 0:
+		current_slots[rank] -= 1
+		print("%s expended a Rank %d spell slot. (%d remaining)" % [owner.entity_name, rank, current_slots[rank]])
+		return true
+	print("%s tried to cast a Rank %d spell but has no slots left!" % [owner.entity_name, rank])
+	return false
+
+func cast_spell(spell: PFSpell, rank_cast_at: int = -1) -> bool:
+	if spell.is_cantrip:
+		print("%s casts the cantrip %s!" % [owner.entity_name, spell.entity_name])
+		return true
+		
+	var actual_rank = rank_cast_at if rank_cast_at > 0 else spell.base_spell_rank
+	
+	# For now, we assume if they call this, they are trying to expend a slot.
+	# Later we can differentiate innate spells (1/day tracking) and focus spells (cost 1 focus point).
+	if expend_slot(actual_rank):
+		print("%s successfully casts %s at Rank %d!" % [owner.entity_name, spell.entity_name, actual_rank])
+		return true
+	
+	return false

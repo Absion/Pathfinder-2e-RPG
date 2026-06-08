@@ -11,7 +11,7 @@ var base_level: int
 var is_wielded: bool = false # NEW: Tracks if the item is in a hand or stowed
 var is_weapon: bool = false
 
-var size: PFBiographyConstants.Size = PFBiographyConstants.Size.MEDIUM
+var size_id: StringName = &"medium"
 
 # --- ECONOMY ---
 # The absolute source of truth for the item's value (1 gp = 100 cp)
@@ -38,10 +38,10 @@ var requires_investment: bool = false # NEW
 func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int = 1, p_price_gp: float = 0.0, 
 		   p_material: PFEquipmentConstants.ItemMaterial = PFEquipmentConstants.ItemMaterial.STANDARD, p_hardness: int = 0, p_hp: int = 0, p_bt: int = 0, 
 		   p_grade: PFEquipmentConstants.MaterialGrade = PFEquipmentConstants.MaterialGrade.STANDARD, p_bulk: int = 1, 
-		   p_bulk_reduction: int = 0, p_requires_investment: bool = false, p_size: PFBiographyConstants.Size = PFBiographyConstants.Size.MEDIUM): # NEW
+		   p_bulk_reduction: int = 0, p_requires_investment: bool = false, p_size_id: StringName = &"medium"): # NEW
 	super._init(p_name, p_traits)
 	
-	size = p_size
+	size_id = p_size_id
 	level = p_level
 	base_level = p_level
 	
@@ -57,7 +57,12 @@ func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int =
 	bulk_value = p_bulk
 	
 	# Scale bulk natively based on the size of the item
-	var eff_size = PFBiographyConstants.get_effective_size(size)
+	var eff_size = 1
+	var pf_db = Engine.get_main_loop().root.get_node_or_null("PFDatabase") if Engine.get_main_loop() else null
+	if pf_db:
+		var size_data = pf_db.get_size_data(size_id)
+		eff_size = size_data.get("effective_size", 1) if size_data else 1
+	
 	if eff_size == 0: # Tiny
 		bulk_value = int(bulk_value * 0.5)
 	elif eff_size == 2: # Large
@@ -86,7 +91,12 @@ func get_price_string() -> String:
 
 func get_selling_price_cp() -> int:
 	var multiplier = 1.0
-	var eff_size = PFBiographyConstants.get_effective_size(size)
+	var eff_size = 1
+	var pf_db = Engine.get_main_loop().root.get_node_or_null("PFDatabase") if Engine.get_main_loop() else null
+	if pf_db:
+		var size_data = pf_db.get_size_data(size_id)
+		eff_size = size_data.get("effective_size", 1) if size_data else 1
+	
 	if eff_size == 2: multiplier = 2.0
 	elif eff_size >= 3: multiplier = 4.0
 	# Base selling price is usually 50% of buying price.

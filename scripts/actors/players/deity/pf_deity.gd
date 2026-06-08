@@ -4,8 +4,8 @@ class_name PFDeity
 extends PFEntity
 
 var category: String
-var edicts: Array[String]
-var anathema: Array[String]
+var edicts: Array[StringName]
+var anathema: Array[StringName]
 var areas_of_concern: Array[String]
 var religious_symbol: String
 var sacred_animal: String

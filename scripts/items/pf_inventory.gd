@@ -44,8 +44,13 @@ func equip_item(item: PFItem) -> void:
 		
 	# Size enforcement for Armor
 	if item is PFArmor:
-		var a_size = PFBiographyConstants.get_effective_size(owner.size) if "size" in owner else 1
-		var i_size = PFBiographyConstants.get_effective_size(item.size)
+		var db_inst = PFDatabase.get_instance()
+		var owner_size_data = db_inst.get_size_data(owner.size_id) if (db_inst and "size_id" in owner) else null
+		var a_size = owner_size_data.get("effective_size", 1) if owner_size_data else 1
+		
+		var item_size_data = db_inst.get_size_data(item.size_id) if db_inst else null
+		var i_size = item_size_data.get("effective_size", 1) if item_size_data else 1
+		
 		if a_size != i_size:
 			print("    > [ERROR] %s cannot wear %s. Armor must be the exact size!" % [owner.entity_name, item.entity_name])
 			return
@@ -120,8 +125,12 @@ func wield_item(item: PFItem, main_hand: bool = true) -> void:
 		
 	# Size enforcement for Weapons
 	if item is PFWeapon:
-		var a_size = PFBiographyConstants.get_effective_size(owner.size) if "size" in owner else 1
-		var i_size = PFBiographyConstants.get_effective_size(item.size)
+		var db_inst = PFDatabase.get_instance()
+		var owner_size_data = db_inst.get_size_data(owner.size_id) if (db_inst and "size_id" in owner) else null
+		var a_size = owner_size_data.get("effective_size", 1) if owner_size_data else 1
+		
+		var item_size_data = db_inst.get_size_data(item.size_id) if db_inst else null
+		var i_size = item_size_data.get("effective_size", 1) if item_size_data else 1
 		var diff = i_size - a_size
 		
 		if abs(diff) > 1:
@@ -130,7 +139,7 @@ func wield_item(item: PFItem, main_hand: bool = true) -> void:
 		
 		if diff == 1:
 			print("    > [WARNING] %s wields %s but it is oversized! Applying Clumsy 1." % [owner.entity_name, item.entity_name])
-			var clumsy = PFCondition.new("clumsy", 1)
+			var clumsy = PFCondition.new(&"clumsy")
 			# We'll tag it with the item instance to remove it later, or the actor system will recalculate it.
 			owner.apply_condition(clumsy)
 			
@@ -220,8 +229,12 @@ static func format_copper_to_string(total_cp: int) -> String:
 # ---------------------------------------------------------
 
 func get_perceived_bulk(item: PFItem) -> int:
-	var a_size = PFBiographyConstants.get_effective_size(owner.size) if "size" in owner else 1
-	var i_size = PFBiographyConstants.get_effective_size(item.size)
+	var db_inst = PFDatabase.get_instance()
+	var owner_size_data = db_inst.get_size_data(owner.size_id) if (db_inst and "size_id" in owner) else null
+	var a_size = owner_size_data.get("effective_size", 1) if owner_size_data else 1
+	
+	var item_size_data = db_inst.get_size_data(item.size_id) if db_inst else null
+	var i_size = item_size_data.get("effective_size", 1) if item_size_data else 1
 	
 	if a_size == i_size:
 		return item.bulk_value

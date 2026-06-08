@@ -22,8 +22,8 @@ var weapon_proficiencies: Dictionary
 var armor_proficiencies: Dictionary
 var class_description: String
 
-var forced_edicts: Array[String]
-var forced_anathema: Array[String]
+var forced_edicts: Array[StringName]
+var forced_anathema: Array[StringName]
 
 func _init(
 		p_name: String = "", 
@@ -36,8 +36,8 @@ func _init(
 		p_weapons: Dictionary = {},
 		p_armors: Dictionary = {},
 		p_desc: String = "",
-		p_forced_edicts: Array[String] = [],
-		p_forced_anathema: Array[String] = [],
+		p_forced_edicts: Array[StringName] = [],
+		p_forced_anathema: Array[StringName] = [],
 		p_is_spellcaster: bool = false,
 		p_caster_type: PFMagicConstants.CasterType = PFMagicConstants.CasterType.NONE,
 		p_spell_tradition: PFMagicConstants.MagicTradition = PFMagicConstants.MagicTradition.NONE,

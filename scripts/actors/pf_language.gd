@@ -5,25 +5,18 @@ extends RefCounted
 
 # The master list of game languages
 # Maps languages to their PF2e rarities
-static func get_rarity(language: PFBiographyConstants.LanguageType) -> PFBiographyConstants.Rarity:
-	match language:
-		# Uncommon Languages
-		PFBiographyConstants.LanguageType.DRACONIC, PFBiographyConstants.LanguageType.SYLVAN, PFBiographyConstants.LanguageType.UNDERCOMMON:
-			return PFBiographyConstants.Rarity.UNCOMMON
-		
-		# Rare Languages (Placeholder for future expansion)
-		# PFBiographyConstants.LanguageType.SOMETHING_RARE: 
-		#	return PFBiographyConstants.Rarity.RARE
+static func get_rarity(language: StringName) -> PFBiographyConstants.Rarity:
+	var db = PFDatabase.get_instance()
+	if db:
+		var data = db.get_language_data(language)
+		if not data.is_empty():
+			return data.get("rarity", PFBiographyConstants.Rarity.COMMON) as PFBiographyConstants.Rarity
 			
-		# Common Languages (Default)
-		_:
-			return PFBiographyConstants.Rarity.COMMON
+	return PFBiographyConstants.Rarity.COMMON
 
 # Helper for the Character Creator UI to fetch "any other languages to which you have access"
-static func get_all_common_languages() -> Array[PFBiographyConstants.LanguageType]:
-	var common_langs: Array[PFBiographyConstants.LanguageType] = []
-	for key in PFBiographyConstants.LanguageType.keys():
-		var lang = PFBiographyConstants.LanguageType[key] as PFBiographyConstants.LanguageType
-		if get_rarity(lang) == PFBiographyConstants.Rarity.COMMON:
-			common_langs.append(lang)
-	return common_langs
+static func get_all_common_languages() -> Array[StringName]:
+	var db = PFDatabase.get_instance()
+	if db:
+		return db.get_all_common_languages()
+	return []

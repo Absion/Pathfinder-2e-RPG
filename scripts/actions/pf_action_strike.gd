@@ -23,7 +23,16 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	# ---------------------------------------------------------
 	
 	var base_attack_bonus = user.get_strike_bonus(weapon)
-	var map_penalty = mini(user.attack_stacks, 2) * (-4 if has_trait(&"agile") else -5)
+	
+	var base_map = -5
+	var db_inst = PFDatabase.get_instance()
+	for t in weapon.traits:
+		var trait_data = db_inst.get_trait_data(t) if db_inst else null
+		if trait_data and trait_data.get("mechanic_hook") == "modifies_map":
+			# Use the positive hook value as a penalty (e.g., agile provides 4, penalty is -4)
+			base_map = -trait_data.get("hook_value", 4)
+			
+	var map_penalty = mini(user.attack_stacks, 2) * base_map
 	var total_attack_bonus = base_attack_bonus + map_penalty 
 	
 	# ---------------------------------------------------------

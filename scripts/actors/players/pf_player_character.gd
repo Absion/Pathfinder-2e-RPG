@@ -14,20 +14,21 @@ var spellbook: PFSpellbook
 # --- LORE & BACKGROUND ---
 var description: String
 var gender: PFBiographyConstants.Gender = PFBiographyConstants.Gender.UNKNOWN
-var size: PFBiographyConstants.Size = PFBiographyConstants.Size.MEDIUM
-var birthplace: PFBiographyConstants.Region = PFBiographyConstants.Region.UNKNOWN
-var nationality: PFBiographyConstants.Region = PFBiographyConstants.Region.UNKNOWN
-var languages: Array[PFBiographyConstants.LanguageType] = []
+var size_id: StringName = &"medium"
+var birthplace: StringName = &"unknown"
+var nationality: StringName = &"unknown"
+var languages: Array[StringName] = []
 var ancestry: PFAncestry
+var heritage: PFHeritage
 var background: PFBackground
 var actor_class: PFClass
 var deity: PFDeity
 var selected_key_ability: StringName = &""
 var bonus_language_slots: int = 0
-var available_bonus_languages: Array[PFBiographyConstants.LanguageType] = []
+var available_bonus_languages: Array[StringName] = []
 
-var edicts: Array[String] = []
-var anathema: Array[String] = []
+var edicts: Array[StringName] = []
+var anathema: Array[StringName] = []
 
 func _init(p_name: String, p_traits: Array[StringName], p_level: int,
 		p_hp: int, p_fort: int, p_ref: int, p_will: int,
@@ -36,8 +37,8 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int,
 		p_speed_climb: int = 0, p_speed_burrow: int = 0,
 		p_description: String = "", 
 		p_gender: PFBiographyConstants.Gender = PFBiographyConstants.Gender.UNKNOWN, 
-		p_birthplace: PFBiographyConstants.Region = PFBiographyConstants.Region.UNKNOWN, 
-		p_nationality: PFBiographyConstants.Region = PFBiographyConstants.Region.UNKNOWN,
+		p_birthplace: StringName = &"unknown", 
+		p_nationality: StringName = &"unknown",
 		p_has_spirit: bool = true):
 			
 	# Call PFActor initialization
@@ -71,15 +72,15 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int,
 func set_description(new_description: String) -> void:
 	description = new_description
 
-func set_biography(new_gender: PFBiographyConstants.Gender, new_birthplace: PFBiographyConstants.Region, new_nationality: PFBiographyConstants.Region) -> void:
+func set_biography(new_gender: PFBiographyConstants.Gender, new_birthplace: StringName, new_nationality: StringName) -> void:
 	gender = new_gender
 	birthplace = new_birthplace
 	nationality = new_nationality
 	print("    > %s's biography updated: PFBiographyConstants.Gender [%s], Birthplace [%s], Nationality [%s]." % [
 		entity_name, 
 		PFBiographyConstants.Gender.keys()[gender], 
-		PFBiographyConstants.Region.keys()[birthplace], 
-		PFBiographyConstants.Region.keys()[nationality]
+		birthplace, 
+		nationality
 	])
 
 func apply_ancestry(new_ancestry: PFAncestry) -> void:
@@ -87,7 +88,7 @@ func apply_ancestry(new_ancestry: PFAncestry) -> void:
 	
 	health.max_hp += ancestry.hp 
 	health.current_hp = health.max_hp
-	size = ancestry.size
+	size_id = ancestry.size_id
 	
 # Apply all inherited movement speeds
 	movement.speed_land = ancestry.speed
@@ -139,38 +140,96 @@ func apply_ancestry(new_ancestry: PFAncestry) -> void:
 	if movement.speed_swim > 0: print("    > Gained Swim Speed: %d ft." % movement.speed_swim)
 	if movement.speed_climb > 0: print("    > Gained Climb Speed: %d ft." % movement.speed_climb)
 
-func add_bonus_language_option(lang: PFBiographyConstants.LanguageType) -> void:
+func apply_heritage(new_heritage: PFHeritage) -> void:
+	heritage = new_heritage
+	
+	health.max_hp += heritage.hp_bonus
+	health.current_hp = health.max_hp
+	
+	if heritage.size_id != &"":
+		size_id = heritage.size_id
+		
+	movement.speed_land += heritage.speed_bonus
+	
+	if heritage.vision_override != -1: # -1 indicates no change
+		senses.vision = heritage.vision_override as PFBiographyConstants.Vision
+		
+	for t in heritage.granted_traits:
+		if not traits.has(t):
+			traits.append(t)
+			
+	# Append any granted abilities to the inventory or action components later
+	# for ability in heritage.granted_abilities: ...
+	
+	print("    > %s inherited %s!" % [entity_name, heritage.entity_name])
+
+func add_bonus_language_option(lang: StringName) -> void:
 	if not languages.has(lang) and not available_bonus_languages.has(lang):
 		available_bonus_languages.append(lang)
-		print("    > %s gained access to select %s!" % [entity_name, PFBiographyConstants.LanguageType.keys()[lang]])
+		print("    > %s gained access to select %s!" % [entity_name, lang])
 
-func learn_language(lang: PFBiographyConstants.LanguageType) -> void:
+func learn_language(lang: StringName) -> void:
 	if not languages.has(lang):
 		languages.append(lang)
-		print("    > %s learned %s!" % [entity_name, PFBiographyConstants.LanguageType.keys()[lang]])
+		print("    > %s learned %s!" % [entity_name, lang])
 		
 		if available_bonus_languages.has(lang):
 			available_bonus_languages.erase(lang)
 
 func apply_background(new_background: PFBackground) -> void:
 	background = new_background
-	print("%s selected Background: %s" % [entity_name, new_background.entity_name])
-	# Ability boosts will be applied by the level up/character creator system
+	for t in background.traits:
+		if not traits.has(t):
+			traits.append(t)
+	print("    > %s was a %s!" % [entity_name, background.entity_name])
 
-func apply_class(new_class: PFClass) -> void:
-	actor_class = new_class
+func apply_class(class_id: StringName) -> void:
+	var db = PFDatabase.get_instance()
+	if not db: return
 	
-	# Automatically adopt any forced edicts/anathemas
-	if actor_class.forced_edicts.size() > 0:
-		for e in actor_class.forced_edicts:
-			if not edicts.has(e): edicts.append(e)
+	var c_data = db.get_class_data(class_id)
+	if c_data.is_empty(): return
+	
+	actor_class = PFClass.new(
+		str(c_data["name"]),
+		c_data["hp_per_level"],
+		([] as Array[StringName]), # Key abilities parsed below
+		c_data["perception_rank"] as PFMathConstants.ProficiencyRank,
+		c_data["class_dc_rank"] as PFMathConstants.ProficiencyRank,
+		{
+			"fort": c_data["fort_rank"] as PFMathConstants.ProficiencyRank,
+			"ref": c_data["ref_rank"] as PFMathConstants.ProficiencyRank,
+			"will": c_data["will_rank"] as PFMathConstants.ProficiencyRank
+		},
+		c_data["trained_skills_count"],
+		{}, {}, str(c_data["description"]), ([] as Array[StringName]), ([] as Array[StringName]),
+		c_data["is_spellcaster"] == 1,
+		c_data["caster_type"] as PFMagicConstants.CasterType,
+		c_data["spell_tradition"] as PFMagicConstants.MagicTradition,
+		c_data["spell_proficiency"] as PFMathConstants.ProficiencyRank,
+		c_data["spell_progression"] as PFMagicConstants.SpellProgression
+	)
+	
+	if c_data["key_abilities"] and c_data["key_abilities"] != "":
+		var parsed = JSON.parse_string(c_data["key_abilities"])
+		if parsed:
+			for k in parsed: actor_class.key_abilities.append(StringName(k))
 			
-	if actor_class.forced_anathema.size() > 0:
-		for a in actor_class.forced_anathema:
-			if not anathema.has(a): anathema.append(a)
-			
-	print("%s selected Class: %s" % [entity_name, new_class.entity_name])
-	# Stats updates will be handled by the character creator system
+	# Apply HP
+	health.max_hp += actor_class.hp_per_level * level
+	health.current_hp = health.max_hp
+	
+	# Apply Proficiencies
+	sheet.set_skill_rank(&"perception", actor_class.perception_rank)
+	sheet.set_skill_rank(&"fortitude", actor_class.saving_throws["fort"])
+	sheet.set_skill_rank(&"reflex", actor_class.saving_throws["ref"])
+	sheet.set_skill_rank(&"will", actor_class.saving_throws["will"])
+	
+	if actor_class.is_spellcaster:
+		spellbook = PFSpellbook.new(self)
+		spellbook.restore_daily_slots()
+		
+	print("    > %s is now a Level %d %s! (Max HP: %d)" % [entity_name, level, actor_class.entity_name, health.max_hp])
 
 func apply_deity(new_deity: PFDeity) -> void:
 	deity = new_deity
@@ -267,6 +326,14 @@ func get_ability_modifier(ability: StringName) -> int:
 		&"WIS": return attributes.wis_mod
 		&"CHA": return attributes.cha_mod
 		_: return 0
+
+# ---------------------------------------------------------
+# SPELLCASTING & CLASS HELPERS
+# ---------------------------------------------------------
+func get_spellcasting_mod() -> int:
+	# Virtual helper for familiars to query spellcasting mod until classes are implemented
+	# Returns the highest mental attribute modifier
+	return max(attributes.int_mod, max(attributes.wis_mod, attributes.cha_mod))
 
 func get_speed_land() -> int:
 	var current_speed = movement.speed_land
