@@ -7,6 +7,7 @@ extends RefCounted
 var skills: Dictionary = {}
 var weapon_proficiencies: Dictionary = {}
 var armor_proficiencies: Dictionary = {}
+var saving_throws: Dictionary = {}
 
 func _init():
 	# Initialize Core Skills
@@ -27,6 +28,11 @@ func _init():
 	armor_proficiencies[PFEquipmentConstants.ArmorCategory.LIGHT] = PFMathConstants.ProficiencyRank.UNTRAINED
 	armor_proficiencies[PFEquipmentConstants.ArmorCategory.MEDIUM] = PFMathConstants.ProficiencyRank.UNTRAINED
 	armor_proficiencies[PFEquipmentConstants.ArmorCategory.HEAVY] = PFMathConstants.ProficiencyRank.UNTRAINED
+	
+	# Default Saving Throws
+	saving_throws[&"fort"] = PFMathConstants.ProficiencyRank.UNTRAINED
+	saving_throws[&"ref"] = PFMathConstants.ProficiencyRank.UNTRAINED
+	saving_throws[&"will"] = PFMathConstants.ProficiencyRank.UNTRAINED
 
 # ---------------------------------------------------------
 # SETTERS
@@ -53,6 +59,18 @@ func set_skill_rank(skill: StringName, rank: PFMathConstants.ProficiencyRank) ->
 		add_lore_skill(skill, rank)
 	else: 
 		push_error("Trying to set rank for invalid skill: " + skill)
+
+func get_skill_rank(skill: StringName) -> PFMathConstants.ProficiencyRank:
+	return skills.get(skill, PFMathConstants.ProficiencyRank.UNTRAINED)
+
+func set_save_rank(save_type: StringName, rank: PFMathConstants.ProficiencyRank) -> void:
+	if saving_throws.has(save_type):
+		saving_throws[save_type] = rank
+	else:
+		push_error("Trying to set rank for invalid save: " + save_type)
+
+func get_save_rank(save_type: StringName) -> PFMathConstants.ProficiencyRank:
+	return saving_throws.get(save_type, PFMathConstants.ProficiencyRank.UNTRAINED)
 
 func set_weapon_rank(category: PFEquipmentConstants.WeaponCategory, rank: PFMathConstants.ProficiencyRank) -> void:
 	weapon_proficiencies[category] = rank

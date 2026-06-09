@@ -19,6 +19,8 @@ var _animal_companions_cache: Dictionary = {}
 var _specific_familiars_cache: Dictionary = {}
 var _classes_cache: Dictionary = {}
 var _spells_cache: Dictionary = {}
+var _feats_cache: Dictionary = {}
+var _class_features_cache: Dictionary = {}
 
 static func get_instance() -> PFDatabase:
 	var ml = Engine.get_main_loop()
@@ -57,6 +59,7 @@ func _initialize_schema_if_needed():
 	db.query("DROP TABLE IF EXISTS languages;")
 	db.query("DROP TABLE IF EXISTS regions;")
 	db.query("DROP TABLE IF EXISTS heritages;")
+	db.query("DROP TABLE IF EXISTS ethnicities;")
 	db.query("DROP TABLE IF EXISTS animal_companions;")
 	
 	# Core Data-Driven Mechanics Tables
@@ -119,7 +122,17 @@ func _initialize_schema_if_needed():
 		size_id TEXT,
 		speed_bonus INTEGER,
 		vision_override INTEGER,
-		granted_traits TEXT
+		granted_traits TEXT,
+		granted_items TEXT,
+		granted_abilities TEXT,
+		description TEXT
+	);")
+	
+	db.query("CREATE TABLE IF NOT EXISTS ethnicities (
+		id TEXT PRIMARY KEY,
+		name TEXT,
+		required_traits TEXT,
+		description TEXT
 	);")
 	
 	db.query("CREATE TABLE IF NOT EXISTS animal_companions (
@@ -153,39 +166,34 @@ func _initialize_schema_if_needed():
 		description TEXT
 	);")
 	
-	# Classes
-	db.query("CREATE TABLE IF NOT EXISTS classes (
+	
+	# Feats
+	db.query("CREATE TABLE IF NOT EXISTS feats (
 		id TEXT PRIMARY KEY,
 		name TEXT,
-		hp_per_level INTEGER,
-		key_abilities TEXT,
-		perception_rank INTEGER,
-		class_dc_rank INTEGER,
-		fort_rank INTEGER,
-		ref_rank INTEGER,
-		will_rank INTEGER,
-		trained_skills_count INTEGER,
-		is_spellcaster INTEGER,
-		caster_type INTEGER,
-		spell_tradition INTEGER,
-		spell_proficiency INTEGER,
-		spell_progression INTEGER,
+		feat_type INTEGER,
+		level INTEGER,
+		traits TEXT,
+		prerequisites TEXT,
+		granted_rules TEXT,
 		description TEXT
 	);")
 	
-	# Spells
-	db.query("CREATE TABLE IF NOT EXISTS spells (
+	# Class Features
+	db.query("CREATE TABLE IF NOT EXISTS class_features (
 		id TEXT PRIMARY KEY,
 		name TEXT,
-		traits TEXT,
-		base_spell_rank INTEGER,
-		cast_time TEXT,
-		range_ft INTEGER,
-		targets TEXT,
-		saving_throw TEXT,
-		duration TEXT,
-		is_cantrip INTEGER,
+		granted_rules TEXT,
 		description TEXT
+	);")
+	
+	# Class Progressions
+	db.query("CREATE TABLE IF NOT EXISTS class_progressions (
+		class_id TEXT,
+		level INTEGER,
+		granted_features TEXT,
+		granted_feat_slots TEXT,
+		PRIMARY KEY (class_id, level)
 	);")
 	
 	# Weapons
@@ -242,8 +250,11 @@ func _initialize_schema_if_needed():
 		name TEXT,
 		traits TEXT,
 		boosts TEXT,
+		flaws TEXT,
 		skills TEXT,
 		lores TEXT,
+		granted_items TEXT,
+		granted_abilities TEXT,
 		description TEXT
 	);")
 	
@@ -465,9 +476,18 @@ func _seed_data():
 		
 	# Seed Heritages
 	# vision_override: -1 (no change), 0 (Normal), 1 (Low-Light), 2 (Darkvision)
-	db.query("INSERT OR IGNORE INTO heritages (id, name, traits, rarity, ancestry_id, is_versatile, hp_bonus, size_id, speed_bonus, vision_override, granted_traits) VALUES 
-		('forge_dwarf', 'Forge Dwarf', '[]', 0, 'dwarf', 0, 0, '', 0, -1, '[\"fire_resistance\"]'),
-		('half_elf', 'Half-Elf', '[]', 0, '', 1, 0, '', 0, 1, '[\"elf\", \"half-elf\"]');")
+	db.query("INSERT OR IGNORE INTO heritages (id, name, traits, rarity, ancestry_id, is_versatile, hp_bonus, size_id, speed_bonus, vision_override, granted_traits, granted_items, granted_abilities, description) VALUES 
+		('forge_dwarf', 'Forge Dwarf', '[]', 0, 'dwarf', 0, 0, '', 0, -1, '[\"fire_resistance\"]', '[]', '[]', ''),
+		('undine', 'Undine', '[]', 0, '', 1, 0, '', 0, 1, '[\"undine\", \"amphibious\"]', '[]', '[]', 'You are descended from elemental beings of water.'),
+		('half_elf', 'Half-Elf', '[]', 0, '', 1, 0, '', 0, 1, '[\"elf\", \"half-elf\"]', '[]', '[]', 'You have both human and elven blood.');")
+		
+	db.query("INSERT OR IGNORE INTO ethnicities (id, name, required_traits, description) VALUES 
+		('nidalese', 'Nidalese', '[\"human\"]', 'Humans from the shadowy nation of Nidal.'),
+		('keleshite', 'Keleshite', '[\"human\"]', 'Humans from the vast Padishah Empire of Kelesh.'),
+		('mualijae', 'Mualijae', '[\"elf\"]', 'Elves from the Mwangi Expanse.');")
+		
+	db.query("INSERT OR IGNORE INTO backgrounds (id, name, boosts, flaws, traits, granted_items, granted_abilities, description) VALUES 
+		('acolyte', 'Acolyte', '[\"WIS\", \"FREE\"]', '[]', '[]', '[]', '[]', 'You spent your early days in a religious monastery.');")
 		
 	# Seed Animal Companions
 	# Unarmed attacks stored as JSON: [{"name": "Jaws", "damage_dice": 1, "damage_faces": 8, "damage_type": 3, "traits": ["unarmed"]}]
@@ -479,20 +499,31 @@ func _seed_data():
 		('faerie_dragon', 'Faerie Dragon', 3, '[\"amphibious\", \"flier\", \"manual_dexterity\", \"speech\", \"telepathy\", \"touch_telepathy\"]', '[\"breath_weapon\"]', '[\"dragon\"]', 'A tiny, colorful dragon that loves pranks.'),
 		('imp', 'Imp', 6, '[\"flier\", \"manual_dexterity\", \"speech\", \"touch_telepathy\"]', '[\"invisibility\", \"infernal_temptation\"]', '[\"devil\", \"fiend\"]', 'A small, deceptive fiend often acting as a familiar to malicious masters.');")
 		
-	db.query("INSERT OR IGNORE INTO classes (id, name, hp_per_level, key_abilities, perception_rank, class_dc_rank, fort_rank, ref_rank, will_rank, trained_skills_count, is_spellcaster, caster_type, spell_tradition, spell_proficiency, spell_progression, description) VALUES 
-		('wizard', 'Wizard', 6, '[\"INT\"]', 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 'Scholars of the arcane mysteries.');")
+
 		
-	db.query("INSERT OR IGNORE INTO spells (id, name, traits, base_spell_rank, cast_time, range_ft, targets, saving_throw, duration, is_cantrip, description) VALUES 
-		('fireball', 'Fireball', '[\"fire\", \"evocation\"]', 3, '2', 500, '20-foot burst', 'Reflex', '', 0, 'A roaring blast of fire.'),
-		('shield', 'Shield', '[\"abjuration\", \"force\"]', 1, '1', 0, 'Self', '', 'Until the start of your next turn', 1, 'A magical shield of force.');")
+		
+	db.query("INSERT OR IGNORE INTO feats (id, name, feat_type, level, traits, prerequisites, granted_rules, description) VALUES 
+		('natural_ambition', 'Natural Ambition', 0, 1, '[\"human\"]', '{\"ancestry\": \"human\"}', '{}', 'You gain an extra 1st-level class feat.'),
+		('nidalese_shadowcaster', 'Nidalese Shadowcaster', 0, 1, '[\"human\"]', '{\"ethnicity\": \"nidalese\"}', '{}', 'You harness the shadows of Nidal.'),
+		('acrobat_dedication', 'Acrobat Dedication', 4, 2, '[\"dedication\", \"archetype\", \"acrobat\"]', '{\"min_stats\": {\"dex\": 2}, \"min_proficiency\": {\"acrobatics\": 1}}', '{\"set_proficiency\": {\"acrobatics\": 2}}', 'You become an acrobat.'),
+		('dodge_away', 'Dodge Away', 4, 4, '[\"archetype\", \"acrobat\"]', '{\"requires_feat\": \"acrobat_dedication\"}', '{}', 'You dodge incoming attacks.'),
+		('acrobat_grace', 'Acrobat Grace', 4, 4, '[\"archetype\", \"acrobat\"]', '{\"requires_feat\": \"acrobat_dedication\"}', '{}', 'You move with extreme grace.'),
+		('assassin_dedication', 'Assassin Dedication', 4, 2, '[\"dedication\", \"archetype\", \"assassin\"]', '{}', '{}', 'You become an assassin.'),
+		('titan_wrestler', 'Titan Wrestler', 2, 1, '[\"general\", \"skill\"]', '{\"min_proficiency\": {\"athletics\": 1}}', '{}', 'You can grapple larger foes.');")
+		
+	db.query("INSERT OR IGNORE INTO class_features (id, name, granted_rules, description) VALUES 
+		('wizard_spellcasting', 'Arcane Spellcasting', '{}', 'You cast wizard spells.'),
+		('arcane_thesis', 'Arcane Thesis', '{}', 'Your custom arcane research.');")
+		
+	db.query("INSERT OR IGNORE INTO class_progressions (class_id, level, granted_features, granted_feat_slots) VALUES 
+		('wizard', 1, '[\"wizard_spellcasting\", \"arcane_thesis\"]', '[\"ancestry\"]'),
+		('wizard', 2, '[]', '[\"class\", \"skill\"]');")
 	
 	db.query("INSERT OR IGNORE INTO weapons (id, name, traits, level, price_cp, material, hardness, max_hp, broken_threshold, grade, bulk, weapon_type, category, group_type, damage_dice, damage_faces, damage_type) VALUES 
 		('longsword', 'Longsword', 'versatile_p', 1, 100, 3, 5, 20, 10, 1, 1, 0, 1, 4, 1, 8, 3);")
 		
 	db.query("INSERT OR IGNORE INTO shields (id, name, traits, level, price_cp, bulk, ac_bonus, speed_penalty, hardness, max_hp, broken_threshold) VALUES 
-		('buckler', 'Buckler', 'buckler', 1, 10, 1, 1, 0, 3, 12, 6);")
-		
-	db.query("INSERT OR IGNORE INTO shields (id, name, traits, level, price_cp, bulk, ac_bonus, speed_penalty, hardness, max_hp, broken_threshold) VALUES 
+		('buckler', 'Buckler', 'buckler', 1, 10, 1, 1, 0, 3, 12, 6),
 		('steel_shield', 'Steel Shield', '', 1, 200, 1, 2, 0, 5, 20, 10);")
 		
 	# Seed Character Creation Data
@@ -507,6 +538,9 @@ func _seed_data():
 	db.query("INSERT OR IGNORE INTO classes (id, name, traits, hp_per_level, key_abilities, perception_rank, class_dc_rank, save_fort, save_ref, save_will, trained_skills_count, weapon_unarmed, weapon_simple, weapon_martial, weapon_advanced, armor_unarmored, armor_light, armor_medium, armor_heavy, forced_edicts, forced_anathema, is_spellcaster, caster_type, spell_tradition, spell_proficiency, spell_progression) VALUES 
 		('fighter', 'Fighter', '', 10, 'STR,DEX', 4, 2, 4, 4, 2, 3, 4, 4, 4, 2, 2, 2, 2, 2, '[]', '[]', 0, 0, 0, 0, 0);")
 		
+	db.query("INSERT OR IGNORE INTO classes (id, name, traits, hp_per_level, key_abilities, perception_rank, class_dc_rank, save_fort, save_ref, save_will, trained_skills_count, weapon_unarmed, weapon_simple, weapon_martial, weapon_advanced, armor_unarmored, armor_light, armor_medium, armor_heavy, forced_edicts, forced_anathema, is_spellcaster, caster_type, spell_tradition, spell_proficiency, spell_progression) VALUES 
+		('wizard', 'Wizard', '', 6, '[\"INT\"]', 2, 2, 2, 2, 4, 2, 2, 2, 0, 0, 2, 0, 0, 0, '[]', '[]', 1, 1, 1, 2, 1);")
+		
 	# Spells
 	var tr_arc_occ = JSON.stringify([PFMagicConstants.MagicTradition.ARCANE, PFMagicConstants.MagicTradition.OCCULT])
 	var tr_arc_pri = JSON.stringify([PFMagicConstants.MagicTradition.ARCANE, PFMagicConstants.MagicTradition.PRIMAL])
@@ -519,7 +553,7 @@ func _seed_data():
 		
 	db.query("INSERT OR IGNORE INTO spells (id, name, traits, base_spell_rank, spell_category, traditions, saving_throw, is_attack, damage_type, scaling_rules, scaling_dice, description) VALUES 
 		('creation', 'Creation', 'manipulate', 4, 0, '" + tr_arc_pri + "', '', 0, '', 0, 0, 'You create a temporary object.');")
-		
+	
 	db.query("INSERT OR IGNORE INTO spell_variants (spell_id, action_cost, spell_range, target, duration, damage_dice, damage_faces, applied_conditions, special_effects) VALUES 
 		('creation', 4, 0, '', '1 hour', 0, 0, '[]', '');")
 		
@@ -649,6 +683,46 @@ func get_heritage(id: String) -> PFHeritage:
 	_heritages_cache[id] = new_heritage
 	return new_heritage
 
+func get_ethnicity_data(ethnicity_id: StringName) -> Dictionary:
+	if db == null: return {}
+	
+	db.query("SELECT * FROM ethnicities WHERE id = '" + str(ethnicity_id) + "';")
+	var result = db.query_result
+	if result.size() > 0:
+		var row = result[0]
+		return {
+			"id": StringName(row["id"]),
+			"name": row["name"],
+			"required_traits": JSON.parse_string(row["required_traits"]) if row["required_traits"] != "" else [],
+			"description": row["description"]
+		}
+	return {}
+
+func get_available_ethnicities_for_traits(actor_traits: Array[StringName]) -> Array[Dictionary]:
+	if db == null: return []
+	
+	db.query("SELECT * FROM ethnicities;")
+	var all_ethnicities = db.query_result
+	var valid_ethnicities: Array[Dictionary] = []
+	
+	for row in all_ethnicities:
+		var reqs = JSON.parse_string(row["required_traits"]) if row["required_traits"] != "" else []
+		var meets_reqs = true
+		for req in reqs:
+			if not actor_traits.has(StringName(req)):
+				meets_reqs = false
+				break
+		
+		if meets_reqs:
+			valid_ethnicities.append({
+				"id": StringName(row["id"]),
+				"name": row["name"],
+				"required_traits": reqs,
+				"description": row["description"]
+			})
+			
+	return valid_ethnicities
+
 func get_animal_companion_data(id: StringName) -> Dictionary:
 	if _animal_companions_cache.has(id): return _animal_companions_cache[id]
 	db.query("SELECT * FROM animal_companions WHERE id = '" + String(id) + "'")
@@ -684,6 +758,32 @@ func get_spell_data(id: StringName) -> Dictionary:
 		return {}
 	_spells_cache[id] = db.query_result[0]
 	return _spells_cache[id]
+
+func get_feat_data(id: StringName) -> Dictionary:
+	if _feats_cache.has(id): return _feats_cache[id]
+	db.query("SELECT * FROM feats WHERE id = '" + String(id) + "'")
+	if db.query_result.size() == 0:
+		push_error("PFDatabase: Feat not found -> " + String(id))
+		return {}
+	_feats_cache[id] = db.query_result[0]
+	return _feats_cache[id]
+
+func get_class_feature_data(id: StringName) -> Dictionary:
+	if _class_features_cache.has(id): return _class_features_cache[id]
+	db.query("SELECT * FROM class_features WHERE id = '" + String(id) + "'")
+	if db.query_result.size() == 0:
+		push_error("PFDatabase: Class Feature not found -> " + String(id))
+		return {}
+	_class_features_cache[id] = db.query_result[0]
+	return _class_features_cache[id]
+
+func get_class_progression(class_id: StringName, level: int) -> Dictionary:
+	var key = String(class_id) + "_" + str(level)
+	# Note: progression cache could be added here later if needed
+	db.query("SELECT * FROM class_progressions WHERE class_id = '" + String(class_id) + "' AND level = " + str(level))
+	if db.query_result.size() == 0:
+		return {}
+	return db.query_result[0]
 
 func get_weapon(id: String) -> PFWeapon:
 	db.query("SELECT * FROM weapons WHERE id = '" + id + "'")

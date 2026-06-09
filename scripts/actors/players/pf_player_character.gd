@@ -17,6 +17,7 @@ var gender: PFBiographyConstants.Gender = PFBiographyConstants.Gender.UNKNOWN
 var size_id: StringName = &"medium"
 var birthplace: StringName = &"unknown"
 var nationality: StringName = &"unknown"
+var ethnicity: StringName = &"unknown"
 var languages: Array[StringName] = []
 var ancestry: PFAncestry
 var heritage: PFHeritage
@@ -30,17 +31,20 @@ var available_bonus_languages: Array[StringName] = []
 var edicts: Array[StringName] = []
 var anathema: Array[StringName] = []
 
+# --- FEATS & ABILITIES ---
+var feats: Array[PFFeat] = []
+
 func _init(p_name: String, p_traits: Array[StringName], p_level: int,
 		p_hp: int, p_fort: int, p_ref: int, p_will: int,
-		p_str: int, p_dex: int, p_con: int, p_int: int, p_wis: int, p_cha: int,
 		p_speed_land: int = 25, p_speed_fly: int = 0, p_speed_swim: int = 0,
 		p_speed_climb: int = 0, p_speed_burrow: int = 0,
 		p_description: String = "", 
 		p_gender: PFBiographyConstants.Gender = PFBiographyConstants.Gender.UNKNOWN, 
 		p_birthplace: StringName = &"unknown", 
 		p_nationality: StringName = &"unknown",
+		p_ethnicity: StringName = &"unknown",
 		p_has_spirit: bool = true):
-			
+		
 	# Call PFActor initialization
 	super._init(p_name, p_traits, p_level, p_hp)
 	
@@ -49,9 +53,12 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int,
 	gender = p_gender
 	birthplace = p_birthplace
 	nationality = p_nationality
+	ethnicity = p_ethnicity
+	health.max_hp = p_hp
+	health.current_hp = p_hp
 	
 	attributes = PFAttributesComponent.new()
-	attributes.initialize(p_fort, p_ref, p_will, p_str, p_dex, p_con, p_int, p_wis, p_cha)
+	attributes.initialize(p_fort, p_ref, p_will)
 	add_child(attributes)
 	
 	movement = PFMovementComponent.new()
@@ -83,12 +90,44 @@ func set_biography(new_gender: PFBiographyConstants.Gender, new_birthplace: Stri
 		nationality
 	])
 
+func set_ethnicity(new_ethnicity: StringName) -> bool:
+	var db = PFDatabase.get_instance()
+	if db:
+		var eth_data = db.get_ethnicity_data(new_ethnicity)
+		if not eth_data.is_empty():
+			var required = eth_data.get("required_traits", [])
+			# Check if character has ALL required traits
+			for req_trait in required:
+				if not traits.has(StringName(req_trait)):
+					push_warning("Cannot set ethnicity %s. Missing required trait: %s" % [new_ethnicity, req_trait])
+					return false
+	
+	ethnicity = new_ethnicity
+	print("    > %s's ethnicity is now %s." % [entity_name, ethnicity])
+	return true
+
 func apply_ancestry(new_ancestry: PFAncestry) -> void:
 	ancestry = new_ancestry
 	
 	health.max_hp += ancestry.hp 
 	health.current_hp = health.max_hp
 	size_id = ancestry.size_id
+	
+	# Apply Ability Boosts / Flaws
+	if attributes.use_alternate_ancestry_boosts:
+		for b in ancestry.alternate_ancestry_boosts:
+			if b != &"FREE" and b != &"free":
+				attributes.apply_ancestry_boost(b)
+			# FREE boosts will be handled by a pending UI queue in the future
+	else:
+		for b in ancestry.ability_boosts:
+			if b != &"FREE" and b != &"free":
+				attributes.apply_ancestry_boost(b)
+		for f in ancestry.ability_flaws:
+			if f != &"FREE" and f != &"free":
+				# In Pathfinder, ancestry flaws directly subtract 1 from the stat block conceptually.
+				# Our apply_voluntary_flaw can be reused or we can make apply_ancestry_flaw
+				attributes.apply_voluntary_flaw(f) 
 	
 # Apply all inherited movement speeds
 	movement.speed_land = ancestry.speed
@@ -197,12 +236,12 @@ func apply_class(class_id: StringName) -> void:
 		c_data["perception_rank"] as PFMathConstants.ProficiencyRank,
 		c_data["class_dc_rank"] as PFMathConstants.ProficiencyRank,
 		{
-			"fort": c_data["fort_rank"] as PFMathConstants.ProficiencyRank,
-			"ref": c_data["ref_rank"] as PFMathConstants.ProficiencyRank,
-			"will": c_data["will_rank"] as PFMathConstants.ProficiencyRank
+			"fort": c_data["save_fort"] as PFMathConstants.ProficiencyRank,
+			"ref": c_data["save_ref"] as PFMathConstants.ProficiencyRank,
+			"will": c_data["save_will"] as PFMathConstants.ProficiencyRank
 		},
 		c_data["trained_skills_count"],
-		{}, {}, str(c_data["description"]), ([] as Array[StringName]), ([] as Array[StringName]),
+		{}, {}, str(c_data.get("description", "")), ([] as Array[StringName]), ([] as Array[StringName]),
 		c_data["is_spellcaster"] == 1,
 		c_data["caster_type"] as PFMagicConstants.CasterType,
 		c_data["spell_tradition"] as PFMagicConstants.MagicTradition,
@@ -221,9 +260,9 @@ func apply_class(class_id: StringName) -> void:
 	
 	# Apply Proficiencies
 	sheet.set_skill_rank(&"perception", actor_class.perception_rank)
-	sheet.set_skill_rank(&"fortitude", actor_class.saving_throws["fort"])
-	sheet.set_skill_rank(&"reflex", actor_class.saving_throws["ref"])
-	sheet.set_skill_rank(&"will", actor_class.saving_throws["will"])
+	sheet.set_save_rank(&"fort", actor_class.saving_throws["fort"])
+	sheet.set_save_rank(&"ref", actor_class.saving_throws["ref"])
+	sheet.set_save_rank(&"will", actor_class.saving_throws["will"])
 	
 	if actor_class.is_spellcaster:
 		spellbook = PFSpellbook.new(self)
@@ -234,6 +273,12 @@ func apply_class(class_id: StringName) -> void:
 func apply_deity(new_deity: PFDeity) -> void:
 	deity = new_deity
 	print("%s selected Deity: %s" % [entity_name, new_deity.entity_name])
+
+func has_feat(feat_id: StringName) -> bool:
+	for f in feats:
+		if f.id == feat_id:
+			return true
+	return false
 
 # ---------------------------------------------------------
 # THE UNIFIED MATH DELEGATES

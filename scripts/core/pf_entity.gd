@@ -3,12 +3,14 @@
 class_name PFEntity
 extends RefCounted 
 
+var id: StringName
 var entity_name: String
 var traits: Array[StringName]
 var rarity: PFBiographyConstants.Rarity
 
 # Updated Constructor: Added p_rarity with a default of COMMON
-func _init(p_name: String = "", p_traits: Array[StringName] = [], p_rarity: PFBiographyConstants.Rarity = PFBiographyConstants.Rarity.COMMON):
+func _init(p_name: String = "", p_traits: Array[StringName] = [], p_rarity: PFBiographyConstants.Rarity = PFBiographyConstants.Rarity.COMMON, p_id: StringName = &""):
+	id = p_id
 	entity_name = p_name
 	traits = p_traits
 	rarity = p_rarity

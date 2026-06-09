@@ -32,7 +32,34 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int,
 	description = p_description
 	
 	attributes = PFAttributesComponent.new()
-	attributes.initialize(p_fort, p_ref, p_will, p_str, p_dex, p_con, p_int, p_wis, p_cha)
+	attributes.is_npc = true
+	attributes.initialize(p_fort, p_ref, p_will)
+	# Apply raw monster stats directly as linear free boosts
+	if p_str != 0:
+		for i in range(abs(p_str)):
+			if p_str > 0: attributes.apply_free_boost(&"str")
+			else: attributes.apply_voluntary_flaw(&"str")
+	if p_dex != 0:
+		for i in range(abs(p_dex)):
+			if p_dex > 0: attributes.apply_free_boost(&"dex")
+			else: attributes.apply_voluntary_flaw(&"dex")
+	if p_con != 0:
+		for i in range(abs(p_con)):
+			if p_con > 0: attributes.apply_free_boost(&"con")
+			else: attributes.apply_voluntary_flaw(&"con")
+	if p_int != 0:
+		for i in range(abs(p_int)):
+			if p_int > 0: attributes.apply_free_boost(&"int")
+			else: attributes.apply_voluntary_flaw(&"int")
+	if p_wis != 0:
+		for i in range(abs(p_wis)):
+			if p_wis > 0: attributes.apply_free_boost(&"wis")
+			else: attributes.apply_voluntary_flaw(&"wis")
+	if p_cha != 0:
+		for i in range(abs(p_cha)):
+			if p_cha > 0: attributes.apply_free_boost(&"cha")
+			else: attributes.apply_voluntary_flaw(&"cha")
+	
 	add_child(attributes)
 	
 	movement = PFMovementComponent.new()

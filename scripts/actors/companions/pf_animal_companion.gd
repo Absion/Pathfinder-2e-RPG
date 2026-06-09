@@ -99,12 +99,12 @@ func calculate_stats() -> void:
 		attack_dice_multiplier = 3
 	
 	# Apply Attributes
-	attributes.strength = str_mod
-	attributes.dexterity = dex_mod
-	attributes.constitution = con_mod
-	attributes.intelligence = int_mod
-	attributes.wisdom = wis_mod
-	attributes.charisma = cha_mod
+	attributes.str_mod = str_mod
+	attributes.dex_mod = dex_mod
+	attributes.con_mod = con_mod
+	attributes.int_mod = int_mod
+	attributes.wis_mod = wis_mod
+	attributes.cha_mod = cha_mod
 	
 	# Calculate HP: Ancestry HP + ((6 + Con Mod) * Level)
 	var ancestry_hp = base_data["ancestry_hp"]
