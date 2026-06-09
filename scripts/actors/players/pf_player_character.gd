@@ -34,6 +34,13 @@ var anathema: Array[StringName] = []
 # --- FEATS & ABILITIES ---
 var feats: Array[PFFeat] = []
 
+# --- PROGRESSION ---
+var experience_points: int = 0
+var pending_level_up_choices: Array[Dictionary] = []
+
+signal experience_gained(current_xp: int, amount: int)
+signal leveled_up(new_level: int, pending_choices: Dictionary)
+
 func _init(p_name: String, p_traits: Array[StringName], p_level: int,
 		p_hp: int, p_fort: int, p_ref: int, p_will: int,
 		p_speed_land: int = 25, p_speed_fly: int = 0, p_speed_swim: int = 0,
@@ -400,3 +407,20 @@ func get_wielded_shield() -> PFShield:
 	if inventory.held_main_hand is PFShield:
 		return inventory.held_main_hand
 	return null
+
+# ---------------------------------------------------------
+# PROGRESSION
+# ---------------------------------------------------------
+func gain_experience(amount: int) -> void:
+	if amount <= 0: return
+	
+	experience_points += amount
+	experience_gained.emit(experience_points, amount)
+	print("    > %s gained %d XP! (Total: %d/1000)" % [entity_name, amount, experience_points])
+	
+	while experience_points >= 1000:
+		experience_points -= 1000
+		var choices = PFLevelUpManager.level_up(self)
+		pending_level_up_choices.append(choices)
+		leveled_up.emit(level, choices)
+

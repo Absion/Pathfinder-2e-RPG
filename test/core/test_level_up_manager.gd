@@ -34,3 +34,28 @@ func test_level_up_manager():
 	
 	# Verify Choices from class progression
 	assert_array(pending_choices["feat_slots"]).contains(["class", "skill"])
+
+func test_experience_tracker():
+	var hero = auto_free(PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2))
+	hero.apply_class(&"wizard")
+	
+	assert_int(hero.level).is_equal(1)
+	assert_int(hero.experience_points).is_equal(0)
+	
+	# Gain 500 XP (no level up)
+	hero.gain_experience(500)
+	assert_int(hero.level).is_equal(1)
+	assert_int(hero.experience_points).is_equal(500)
+	
+	# Gain 700 XP (level up, 200 carry over)
+	hero.gain_experience(700)
+	assert_int(hero.level).is_equal(2)
+	assert_int(hero.experience_points).is_equal(200)
+	assert_int(hero.pending_level_up_choices.size()).is_equal(1)
+	
+	# Gain 2000 XP (two level ups, 200 carry over)
+	hero.gain_experience(2000)
+	assert_int(hero.level).is_equal(4)
+	assert_int(hero.experience_points).is_equal(200)
+	assert_int(hero.pending_level_up_choices.size()).is_equal(3)
+

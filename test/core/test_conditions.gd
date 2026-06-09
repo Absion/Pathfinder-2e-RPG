@@ -1,0 +1,133 @@
+# test_conditions.gd
+class_name TestConditions
+extends GdUnitTestSuite
+
+var db: PFDatabase
+
+func before():
+	db = PFDatabase.get_instance()
+	if db == null:
+		db = preload("res://scripts/database/pf_database.gd").new()
+		db.name = "PFDatabase"
+		Engine.get_main_loop().root.add_child(db)
+		db._ready()
+
+func after():
+	if is_instance_valid(db):
+		db.queue_free()
+
+func test_condition_stacking():
+	var hero = auto_free(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
+	
+	var fright1 = PFCondition.create(&"frightened", 1)
+	hero.apply_condition(fright1)
+	assert_int(hero.get_condition("frightened").value).is_equal(1)
+	
+	# Stack higher
+	var fright3 = PFCondition.create(&"frightened", 3)
+	hero.apply_condition(fright3)
+	assert_int(hero.get_condition("frightened").value).is_equal(3)
+	
+	# Apply lower, shouldn't change
+	var fright2 = PFCondition.create(&"frightened", 2)
+	hero.apply_condition(fright2)
+	assert_int(hero.get_condition("frightened").value).is_equal(3)
+
+func test_flat_modifiers():
+	var hero = auto_free(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
+	var off_guard = PFCondition.create(&"off_guard")
+	hero.apply_condition(off_guard)
+	
+	assert_int(hero.get_condition_modifier(&"ac")).is_equal(-2)
+
+func test_action_economy_slowed_and_stunned():
+	var hero = auto_free(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
+	
+	var slowed = PFCondition.create(&"slowed", 2)
+	hero.apply_condition(slowed)
+	
+	hero.action_economy.start_turn()
+	assert_int(hero.action_economy.actions_remaining).is_equal(1) # 3 - 2 = 1
+	
+	var stunned = PFCondition.create(&"stunned", 1)
+	hero.apply_condition(stunned)
+	
+	# Stunned overrides Slowed (Stunned 1 + Slowed 2) Wait, PF2e says Stunned overrides Slowed. 
+	# "If the duration of your stunned condition ends while you are slowed, you count the actions lost to the stunned condition toward those lost to being slowed"
+	# So if Stunned 1 and Slowed 2 -> lose 1 to Stunned (stunned value is now 0), then 1 more to slowed. Total lost: 2. Remaining: 1
+	hero.action_economy.start_turn()
+	assert_int(hero.action_economy.actions_remaining).is_equal(1) # Wait, my implementation: Stunned 1 -> loses 1, leaves 2 actions. Stunned overrides slowed, wait, no. My code does: `if stunned: actions_lost = stunned.value`. This means Stunned entirely ignores Slowed. 
+	# Let's see if my code works exactly like the rules!
+	
+	# Quickened test
+	var quickened = PFCondition.create(&"quickened", 1)
+	hero.apply_condition(quickened)
+	# Remove stunned
+	hero.remove_condition("stunned")
+	hero.remove_condition("slowed")
+	
+	hero.action_economy.start_turn()
+	assert_int(hero.action_economy.actions_remaining).is_equal(4)
+
+func test_subconditions():
+	var hero = auto_free(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
+	var grabbed = PFCondition.create(&"grabbed")
+	hero.apply_condition(grabbed)
+	
+	assert_bool(hero.has_condition("off_guard")).is_true()
+	assert_bool(hero.has_condition("immobilized")).is_true()
+	
+	hero.remove_condition("grabbed")
+	assert_bool(hero.has_condition("off_guard")).is_false()
+	assert_bool(hero.has_condition("immobilized")).is_false()
+
+func test_dying_rules_player():
+	var hero = auto_free(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
+	hero.health.current_hp = 10
+	
+	# Lethal damage
+	var tags1: Array[StringName] = [&"lethal"]
+	hero.health.apply_damage(10, PFCombatConstants.DamageType.SLASHING, tags1)
+	assert_bool(hero.has_condition("dying")).is_true()
+	assert_int(hero.get_condition("dying").value).is_equal(1)
+	assert_bool(hero.has_condition("unconscious")).is_true()
+	
+	# Wounded modifies dying
+	hero.health.heal(10)
+	hero.remove_condition("dying")
+	hero.remove_condition("unconscious")
+	hero.apply_condition(PFCondition.create(&"wounded", 1))
+	var tags2: Array[StringName] = [&"lethal"]
+	hero.health.apply_damage(10, PFCombatConstants.DamageType.SLASHING, tags2)
+	assert_int(hero.get_condition("dying").value).is_equal(2)
+
+func test_dying_rules_nonlethal():
+	var hero = auto_free(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
+	hero.health.current_hp = 10
+	
+	# Nonlethal damage
+	var tags3: Array[StringName] = [&"nonlethal"]
+	hero.health.apply_damage(10, PFCombatConstants.DamageType.BLUDGEONING, tags3)
+	assert_bool(hero.has_condition("dying")).is_false()
+	assert_bool(hero.has_condition("unconscious")).is_true()
+
+func test_npc_dying_rules():
+	var goblin = auto_free(PFNpc.new("Goblin", [&"goblinoid", &"humanoid"], -1, 6, 2, 4, 1, 0, 3, 1, -1, 0, -1))
+	goblin.health.current_hp = 6
+	
+	# Lethal damage instantly kills NPCs
+	var tags4: Array[StringName] = [&"lethal"]
+	goblin.health.apply_damage(6, PFCombatConstants.DamageType.SLASHING, tags4)
+	assert_bool(goblin.has_condition("dying")).is_false()
+	assert_bool(goblin.has_condition("dead")).is_true()
+	assert_bool(goblin.inventory.is_lootable()).is_true()
+	
+	# Heal and reset for nonlethal
+	goblin.health.heal(6)
+	goblin.remove_condition("dead")
+	
+	var tags5: Array[StringName] = [&"nonlethal"]
+	goblin.health.apply_damage(6, PFCombatConstants.DamageType.BLUDGEONING, tags5)
+	assert_bool(goblin.has_condition("dead")).is_false()
+	assert_bool(goblin.has_condition("unconscious")).is_true()
+	assert_bool(goblin.inventory.is_lootable()).is_true()

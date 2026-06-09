@@ -19,7 +19,24 @@ var current_hp: int = 10 :
 		if current_hp != old_hp:
 			hp_changed.emit(current_hp, max_hp)
 			if current_hp == 0:
-				died.emit()
+				var parent = get_parent()
+				if parent is PFActor:
+					if _last_damage_was_nonlethal:
+						parent.apply_condition(PFCondition.create(&"unconscious", 1))
+						# Nonlethal doesn't cause death or dying
+					elif parent is PFPlayerCharacter:
+						var wounded_val = 0
+						if parent.has_condition("wounded"):
+							wounded_val = parent.get_condition("wounded").value
+						var dying_val = 1 + wounded_val
+						parent.apply_condition(PFCondition.create(&"dying", dying_val))
+					else:
+						parent.apply_condition(PFCondition.create(&"dead", 1))
+						died.emit()
+				else:
+					died.emit()
+
+var _last_damage_was_nonlethal: bool = false
 
 var temp_hp: int = 0 :
 	set(val):
@@ -41,6 +58,7 @@ func apply_damage(amount: int, type: PFCombatConstants.DamageType = PFCombatCons
 		return 0 # Completely immune
 		
 	var final_damage = amount
+	_last_damage_was_nonlethal = tags.has(&"nonlethal")
 	
 	# Handle Weaknesses
 	if weaknesses.has(type):

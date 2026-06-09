@@ -40,6 +40,17 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int, p_hp: int)
 # ---------------------------------------------------------
 
 func apply_condition(new_condition: PFCondition) -> void:
+	# Check if condition already exists
+	for c in conditions:
+		if c.condition_id == new_condition.condition_id:
+			# Condition exists. Max stacking rule.
+			if new_condition.value > c.value:
+				c.value = new_condition.value
+				print("%s %s worsened to %d!" % [entity_name, c.condition_name, c.value])
+			else:
+				print("%s is already %s %d or higher." % [entity_name, c.condition_name, c.value])
+			return
+			
 	if not new_condition.on_apply(self):
 		return
 
@@ -47,6 +58,28 @@ func apply_condition(new_condition: PFCondition) -> void:
 	# get_condition_modifier will calculate the strongest ones.
 	conditions.append(new_condition)
 	print("%s is now %s %d!" % [entity_name, new_condition.condition_name, new_condition.value])
+
+func remove_condition(condition_id: String) -> void:
+	for i in range(conditions.size() - 1, -1, -1):
+		if str(conditions[i].condition_id) == condition_id:
+			var removed_condition = conditions[i]
+			conditions.remove_at(i)
+			removed_condition.on_remove(self)
+			print("%s is no longer %s!" % [entity_name, removed_condition.condition_name])
+			return
+			
+func has_condition(condition_id: String) -> bool:
+	for c in conditions:
+		if str(c.condition_id) == condition_id:
+			return true
+	return false
+
+func get_condition(condition_id: String) -> PFCondition:
+	for c in conditions:
+		if str(c.condition_id) == condition_id:
+			return c
+	return null
+
 
 func get_condition_modifier(context: StringName) -> int:
 	var highest_status_bonus = 0

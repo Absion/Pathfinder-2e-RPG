@@ -28,6 +28,15 @@ var copper: int = 0
 func _init(p_owner: PFActor):
 	owner = p_owner
 
+func is_lootable() -> bool:
+	if owner == null:
+		return true
+	
+	if owner.has_condition("unconscious") or owner.has_condition("dead"):
+		return true
+		
+	return false
+
 # ---------------------------------------------------------
 # ITEM MANAGEMENT
 # ---------------------------------------------------------

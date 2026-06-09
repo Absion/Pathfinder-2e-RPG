@@ -10,6 +10,7 @@ var db
 var _sizes_cache: Dictionary = {}
 var _traits_cache: Dictionary = {}
 var _conditions_cache: Dictionary = {}
+var _actions_cache: Dictionary = {}
 var _beliefs_cache: Dictionary = {}
 var _skills_cache: Dictionary = {}
 var _languages_cache: Dictionary = {}
@@ -77,6 +78,18 @@ func _initialize_schema_if_needed():
 		hook_value INTEGER
 	);")
 	
+	
+	db.query("CREATE TABLE IF NOT EXISTS actions (
+		id TEXT PRIMARY KEY,
+		name TEXT,
+		cost TEXT,
+		traits TEXT,
+		requirements TEXT,
+		trigger TEXT,
+		description TEXT,
+		script_path TEXT
+	);")
+
 	db.query("CREATE TABLE IF NOT EXISTS conditions (
 		id TEXT PRIMARY KEY,
 		name TEXT,
@@ -368,6 +381,33 @@ func _seed_data():
 		('finesse', 'Finesse', 'allows_dex_to_hit', 0),
 		('versatile_p', 'Versatile P', 'adds_damage_type', 0);")
 		
+
+	# Seed Basic Actions
+	db.query("INSERT OR IGNORE INTO actions (id, name, cost, traits, requirements, trigger, description, script_path) VALUES 
+		('aid', 'Aid', 'reaction', '[]', '', 'An ally is about to use an action.', 'You try to help your ally with a task.', ''),
+		('avert_gaze', 'Avert Gaze', '1', '[]', '', '', 'You avert your gaze from a danger.', ''),
+		('burrow', 'Burrow', '1', '[\\\"move\\\"]', 'You have a burrow Speed.', '', 'You dig your way through dirt.', ''),
+		('cast_a_spell', 'Cast a Spell', 'varies', '[]', '', '', 'You cast a spell you have prepared or in your repertoire.', ''),
+		('crawl', 'Crawl', '1', '[\\\"move\\\"]', 'You are prone and your Speed is at least 10 feet.', '', 'You move 5 feet by crawling.', ''),
+		('delay', 'Delay', 'free', '[]', 'Your turn begins and you haven''t acted yet.', '', 'You wait to take your turn.', ''),
+		('drop_prone', 'Drop Prone', '1', '[\\\"move\\\"]', '', '', 'You fall prone.', 'res://scripts/actions/pf_action_toggle_condition.gd'),
+		('escape', 'Escape', '1', '[\\\"attack\\\"]', 'You are grabbed, immobilized, or restrained.', '', 'You attempt to escape.', ''),
+		('fly', 'Fly', '1', '[\\\"move\\\"]', 'You have a fly Speed.', '', 'You move through the air.', 'res://scripts/actions/pf_action_fly.gd'),
+		('grab_an_edge', 'Grab an Edge', 'reaction', '[\\\"manipulate\\\"]', 'You fall or slip.', '', 'You attempt to catch an edge to stop falling.', ''),
+		('interact', 'Interact', '1', '[\\\"manipulate\\\"]', '', '', 'You use your hand or hands to manipulate an object or the terrain.', ''),
+		('leap', 'Leap', '1', '[\\\"move\\\"]', '', '', 'You take a careful, short jump.', ''),
+		('point_out', 'Point Out', '1', '[\\\"auditory\\\",\\\"manipulate\\\",\\\"visual\\\"]', '', '', 'You indicate an unseen creature to your allies.', ''),
+		('ready', 'Ready', '2', '[\\\"concentrate\\\"]', '', '', 'You prepare an action to use as a reaction.', ''),
+		('release', 'Release', 'free', '[\\\"manipulate\\\"]', '', '', 'You release something you are holding.', ''),
+		('seek', 'Seek', '1', '[\\\"concentrate\\\",\\\"secret\\\"]', '', '', 'You scan an area for unseen creatures or objects.', ''),
+		('sense_motive', 'Sense Motive', '1', '[\\\"concentrate\\\",\\\"secret\\\"]', '', '', 'You try to tell whether a creature''s behavior is abnormal.', ''),
+		('stand', 'Stand', '1', '[\\\"move\\\"]', '', '', 'You stand up from prone.', 'res://scripts/actions/pf_action_toggle_condition.gd'),
+		('step', 'Step', '1', '[\\\"move\\\"]', '', '', 'You carefully move 5 feet.', 'res://scripts/actions/pf_action_step.gd'),
+		('stride', 'Stride', '1', '[\\\"move\\\"]', '', '', 'You move up to your Speed.', 'res://scripts/actions/pf_action_stride.gd'),
+		('strike', 'Strike', '1', '[\\\"attack\\\"]', '', '', 'You attack with a weapon or unarmed attack.', 'res://scripts/actions/pf_action_strike.gd'),
+		('take_cover', 'Take Cover', '1', '[]', '', '', 'You press yourself against a wall or duck behind an obstacle.', 'res://scripts/actions/pf_action_toggle_condition.gd')
+	;")
+
 	# Seed Conditions
 	db.query("INSERT OR IGNORE INTO conditions (id, name, modifier_type, target_stat, multiplier, script_path) VALUES 
 		('clumsy', 'Clumsy', 'status', 'dex_based', -1, ''),
@@ -445,6 +485,49 @@ func _seed_data():
 		('tanning_lore', 'Tanning Lore', 'INT', 1),
 		('theater_lore', 'Theater Lore', 'INT', 1),
 		('underworld_lore', 'Underworld Lore', 'INT', 1);")
+		
+
+	# Seed Conditions
+	db.query("INSERT OR IGNORE INTO conditions (id, name, modifier_type, target_stat, multiplier, script_path) VALUES 
+		('blinded', 'Blinded', '', '', 0, ''),
+		('broken', 'Broken', 'status', 'ac', -2, ''),
+		('clumsy', 'Clumsy', 'status', 'dex_based', -1, ''),
+		('concealed', 'Concealed', '', '', 0, ''),
+		('confused', 'Confused', '', '', 0, ''),
+		('controlled', 'Controlled', '', '', 0, ''),
+		('cover', 'Cover', 'circumstance', 'ac', 2, ''),
+		('dazzled', 'Dazzled', '', '', 0, ''),
+		('dead', 'Dead', '', '', 0, ''),
+		('deafened', 'Deafened', 'status', 'perception_hearing', -2, ''),
+		('doomed', 'Doomed', '', '', 0, 'res://scripts/conditions/pf_condition_doomed.gd'),
+		('drained', 'Drained', 'status', 'con_based', -1, ''),
+		('dying', 'Dying', '', '', 0, 'res://scripts/conditions/pf_condition_dying.gd'),
+		('encumbered', 'Encumbered', 'status', 'speed', -10, ''),
+		('enfeebled', 'Enfeebled', 'status', 'str_based', -1, ''),
+		('fascinated', 'Fascinated', 'status', 'perception_and_skill', -2, ''),
+		('fatigued', 'Fatigued', 'status', 'ac_and_saves', -1, ''),
+		('fleeing', 'Fleeing', '', '', 0, ''),
+		('frightened', 'Frightened', 'status', 'all_checks_and_dcs', -1, 'res://scripts/conditions/pf_condition_frightened.gd'),
+		('grabbed', 'Grabbed', '', '', 0, 'res://scripts/conditions/pf_condition_grabbed.gd'),
+		('hidden', 'Hidden', '', '', 0, ''),
+		('immobilized', 'Immobilized', '', '', 0, ''),
+		('invisible', 'Invisible', '', '', 0, ''),
+		('observed', 'Observed', '', '', 0, ''),
+		('off_guard', 'Off-Guard', 'circumstance', 'ac', -2, ''),
+		('paralyzed', 'Paralyzed', '', '', 0, ''),
+		('persistent_damage', 'Persistent Damage', '', '', 0, 'res://scripts/conditions/pf_condition_persistent.gd'),
+		('petrified', 'Petrified', '', '', 0, ''),
+		('prone', 'Prone', 'circumstance', 'attack', -2, 'res://scripts/conditions/pf_condition_prone.gd'),
+		('quickened', 'Quickened', '', '', 0, 'res://scripts/conditions/pf_condition_quickened.gd'),
+		('restrained', 'Restrained', '', '', 0, 'res://scripts/conditions/pf_condition_grabbed.gd'),
+		('sickened', 'Sickened', 'status', 'all_checks_and_dcs', -1, ''),
+		('slowed', 'Slowed', '', '', 0, 'res://scripts/conditions/pf_condition_slowed.gd'),
+		('stunned', 'Stunned', '', '', 0, 'res://scripts/conditions/pf_condition_stunned.gd'),
+		('stupefied', 'Stupefied', 'status', 'mental_based', -1, ''),
+		('unconscious', 'Unconscious', 'status', 'ac_and_saves', -4, 'res://scripts/conditions/pf_condition_unconscious.gd'),
+		('undetected', 'Undetected', '', '', 0, ''),
+		('unnoticed', 'Unnoticed', '', '', 0, ''),
+		('wounded', 'Wounded', '', '', 0, 'res://scripts/conditions/pf_condition_wounded.gd');")
 		
 	# Seed Languages
 	# Rarity: 0=Common, 1=Uncommon, 2=Rare
@@ -1029,3 +1112,14 @@ func get_pf_deity(id: String) -> PFDeity:
 	if parsed_spells: new_deity.cleric_spells = parsed_spells
 	
 	return new_deity
+
+
+func get_action_data(action_id: StringName) -> Dictionary:
+	if _actions_cache.has(action_id):
+		return _actions_cache[action_id]
+	db.query("SELECT * FROM actions WHERE id = '" + str(action_id) + "';")
+	var result = db.query_result
+	if result.is_empty():
+		return {}
+	_actions_cache[action_id] = result[0]
+	return result[0]

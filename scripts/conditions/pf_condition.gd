@@ -3,6 +3,7 @@
 class_name PFCondition
 extends RefCounted
 
+var condition_id: StringName
 var condition_name: String
 var value: int
 var is_active: bool = true
@@ -14,6 +15,7 @@ var multiplier: int
 var strategy_script_path: String
 
 func _init(p_id: StringName, p_initial_value: int = 1):
+	condition_id = p_id
 	var db_inst = PFDatabase.get_instance()
 	var data = db_inst.get_condition_data(p_id) if db_inst else null
 	if data:
@@ -31,18 +33,23 @@ func _init(p_id: StringName, p_initial_value: int = 1):
 		
 	value = p_initial_value
 
+# NEW: Factory method for instantiating the correct condition subclass
+static func create(p_id: StringName, p_initial_value: int = 1) -> PFCondition:
+	var db_inst = PFDatabase.get_instance()
+	var data = db_inst.get_condition_data(p_id) if db_inst else null
+	if data and data.get("script_path", "") != "":
+		var script = load(data["script_path"])
+		if script:
+			return script.new(p_id, p_initial_value)
+	return PFCondition.new(p_id, p_initial_value)
+
 # NEW: Called right before it is added to the actor. Return false to reject the condition.
 func on_apply(owner: PFActor) -> bool:
-	if strategy_script_path != "":
-		# Strategy Pattern: Load complex behavior script if provided
-		var script = load(strategy_script_path)
-		if script:
-			var instance = script.new()
-			# Ideally we append it to the owner, but for now we just let it attach
-			# This implies the script might be a Node or just an object that wires signals
-			if instance is Node:
-				owner.add_child(instance)
 	return true
+
+# NEW: Called when the condition is removed from the actor. Use this to remove linked sub-conditions.
+func on_remove(owner: PFActor) -> void:
+	pass
 
 func on_turn_start(owner: PFActor) -> void:
 	pass

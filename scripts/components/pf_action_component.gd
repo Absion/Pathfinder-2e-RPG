@@ -9,7 +9,7 @@ signal attack_stacks_changed(stacks: int)
 
 @export var actions_remaining: int = 0 :
 	set(val):
-		actions_remaining = clampi(val, 0, 3)
+		actions_remaining = clampi(val, 0, 4)
 		actions_changed.emit(actions_remaining)
 
 @export var reactions_remaining: int = 1 :
@@ -23,7 +23,35 @@ signal attack_stacks_changed(stacks: int)
 		attack_stacks_changed.emit(attack_stacks)
 
 func start_turn():
-	actions_remaining = 3
+	var new_actions = 3
+	var parent = get_parent()
+	
+	if parent and parent is PFActor:
+		# Quickened adds an action
+		if parent.has_condition("quickened"):
+			new_actions += 1
+			
+		# Stunned overrides Slowed
+		var stunned = parent.get_condition("stunned")
+		var slowed = parent.get_condition("slowed")
+		
+		var actions_lost = 0
+		
+		var stunned_val = 0
+		if stunned:
+			stunned_val = stunned.value
+			stunned.value -= new_actions
+			if stunned.value <= 0:
+				parent.remove_condition("stunned")
+				
+		var slowed_val = slowed.value if slowed else 0
+		
+		# Stunned overrides Slowed, but you lose whichever is higher
+		actions_lost = maxi(stunned_val, slowed_val)
+			
+		new_actions -= actions_lost
+			
+	actions_remaining = max(new_actions, 0)
 	reactions_remaining = 1
 	attack_stacks = 0
 
