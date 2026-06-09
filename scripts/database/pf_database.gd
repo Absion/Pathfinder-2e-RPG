@@ -331,6 +331,29 @@ func _initialize_schema_if_needed():
 		special_effects TEXT
 	);")
 	
+	# Domains
+	db.query("CREATE TABLE IF NOT EXISTS domains (
+		id TEXT PRIMARY KEY,
+		name TEXT,
+		description TEXT,
+		domain_spell_id TEXT,
+		advanced_domain_spell_id TEXT,
+		apocryphal_spell_id TEXT,
+		advanced_apocryphal_spell_id TEXT
+	);")
+	
+	# Edicts
+	db.query("CREATE TABLE IF NOT EXISTS edicts (
+		id TEXT PRIMARY KEY,
+		description TEXT
+	);")
+	
+	# Anathemas
+	db.query("CREATE TABLE IF NOT EXISTS anathemas (
+		id TEXT PRIMARY KEY,
+		description TEXT
+	);")
+	
 	# Deities
 	db.query("CREATE TABLE IF NOT EXISTS deities (
 		id TEXT PRIMARY KEY,
@@ -547,6 +570,87 @@ func _seed_data():
 		('infernal', 'Infernal', 1),
 		('druidic', 'Druidic', 2);")
 		
+	# Seed Domains
+	db.query("INSERT OR IGNORE INTO domains (id, name, description, domain_spell_id, advanced_domain_spell_id, apocryphal_spell_id, advanced_apocryphal_spell_id) VALUES 
+		('abomination', 'Abomination', 'You seek to instill abhorrence and horror in those around you.', 'lift_natures_caul', 'fearful_feast', '', ''),
+		('air', 'Air', 'You can control winds and the weather.', 'pushing_gust', 'disperse_into_air', 'wind_whispers', ''),
+		('ambition', 'Ambition', 'You strive to keep up with and outpace the competition.', 'ignite_ambition', 'competitive_edge', 'hollow_heart', ''),
+		('change', 'Change', 'You can restructure the physical and metaphysical.', 'adapt_self', 'adaptive_ablation', '', ''),
+		('cities', 'Cities', 'You have powers over urban environments and denizens.', 'face_in_the_crowd', 'pulse_of_civilization', '', ''),
+		('cold', 'Cold', 'You control ice, snow, and freezing temperatures', 'winter_bolt', 'diamond_dust', '', ''),
+		('confidence', 'Confidence', 'You overcome your fear and project pride.', 'veil_of_confidence', 'delusional_pride', 'shaken_confidence', ''),
+		('creation', 'Creation', 'You have divine abilities related to crafting and art.', 'creative_splash', 'artistic_flourish', '', ''),
+		('darkness', 'Darkness', 'You operate in the darkness and take away the light.', 'cloak_of_shadow', 'darkened_sight', 'isolation', ''),
+		('death', 'Death', 'You have the power to end lives and destroy undead.', 'deaths_call', 'eradicate_undeath', 'euphoric_renewal', ''),
+		('decay', 'Decay', 'You have the power to spoil and deteriorate matter.', 'withering_grasp', 'fallow_field', '', ''),
+		('destruction', 'Destruction', 'You are a conduit for divine devastation.', 'cry_of_destruction', 'destructive_aura', '', ''),
+		('disorientation', 'Disorientation', 'You can bewilder and perplex your foes.', 'clouded_focus', 'ephemeral_hazards', '', ''),
+		('dragon', 'Dragon', 'You draw on the power of dragons, linnorms, and other powerful reptilian creatures.', 'draconic_barrage', 'roar_of_the_dragon', '', ''),
+		('dreams', 'Dreams', 'You have the power to enter and manipulate dreams.', 'sweet_dream', 'dreamers_call', '', ''),
+		('dust', 'Dust', 'You have the power to dry and crumble what opposes you.', 'parch', 'dust_storm', '', ''),
+		('duty', 'Duty', 'You defend oaths and carry out your divine missions with great dedication.', 'swear_oath', 'dutiful_challenge', '', ''),
+		('earth', 'Earth', 'You control soil and stone.', 'hurtling_stone', 'localized_quake', '', ''),
+		('family', 'Family', 'You aid and protect your family and community more effectively.', 'soothing_words', 'unity', '', ''),
+		('fate', 'Fate', 'You see and understand hidden inevitabilities.', 'read_fate', 'tempt_fate', 'string_of_fate', ''),
+		('fire', 'Fire', 'You control flame.', 'fire_ray', 'flame_barrier', 'cinder_gaze', ''),
+		('freedom', 'Freedom', 'You liberate yourself and others from shackles and constraints.', 'unimpeded_stride', 'word_of_freedom', '', ''),
+		('glyph', 'Glyph', 'You wield power over written words and symbols.', 'redact', 'ghostly_transcription', '', ''),
+		('healing', 'Healing', 'Your healing magic is particularly potent.', 'healers_blessing', 'rebuke_death', '', ''),
+		('indulgence', 'Indulgence', 'You feast mightily and can shake off the effects of overindulging.', 'overstuff', 'take_its_course', 'frenzied_revelry', ''),
+		('introspection', 'Introspection', 'You guide others in examining their lives, emotions, and motivations to ultimately become a truer version of themselves—a difficult and often painful process.', 'guided_introspection', 'confront_selves', '', ''),
+		('knowledge', 'Knowledge', 'You receive divine insights.', 'scholarly_recollection', 'know_the_enemy', 'wordsmith', ''),
+		('lightning', 'Lightning', 'You control electricity, thunder, and storms.', 'charged_javelin', 'bottle_the_storm', '', ''),
+		('luck', 'Luck', 'You’re unnaturally lucky and keep out of harm’s way.', 'bit_of_luck', 'lucky_break', '', ''),
+		('magic', 'Magic', 'You perform the unexpected and inexplicable.', 'magics_vessel', 'mystic_beacon', '', ''),
+		('metal', 'Metal', 'You manipulate flexible mutable metal.', 'serrate', 'repel_metal', '', ''),
+		('might', 'Might', 'Your physical power is bolstered by divine strength.', 'athletic_rush', 'enduring_might', 'victory_cry', ''),
+		('moon', 'Moon', 'You command powers associated with the moon.', 'moonbeam', 'touch_of_the_moon', '', ''),
+		('naga', 'Naga', 'Like many nagas, you believe you understand your place in the Universe, try to help those who don’t, and dissuade those who would serve to fool others into straying from their purpose.', 'chastising_retort', 'show_the_path', '', ''),
+		('nature', 'Nature', 'You hold power over animals and plants.', 'vibrant_thorns', 'natures_bounty', '', ''),
+		('nightmares', 'Nightmares', 'You fill minds with horror and dread.', 'waking_nightmare', 'shared_nightmare', '', ''),
+		('nothingness', 'Nothingness', 'You draw power from emptiness.', 'empty_inside', 'door_to_beyond', '', ''),
+		('pain', 'Pain', 'You punish those who displease you with the sharp sting of pain.', 'savor_the_sting', 'retributive_pain', '', ''),
+		('passion', 'Passion', 'You evoke passion, whether as love or lust.', 'charming_touch', 'captivating_adoration', '', ''),
+		('perfection', 'Perfection', 'You strive to perfect your mind, body, and spirit.', 'perfected_mind', 'perfected_body', '', ''),
+		('plague', 'Plague', 'You wield disease and pestilence like a weapon.', 'divine_plagues', 'foul_miasma', '', ''),
+		('protection', 'Protection', 'You ward yourself and others.', 'protectors_sacrifice', 'protectors_sphere', '', ''),
+		('repose', 'Repose', 'You ease mental burdens.', 'share_burden', 'font_of_serenity', '', ''),
+		('secrecy', 'Secrecy', 'You protect secrets and keep them hidden.', 'whispering_quiet', 'safeguard_secret', 'weaponize_secret', ''),
+		('sorrow', 'Sorrow', 'You have a powerful and painful connection to melancholy and sadness.', 'lament', 'overflowing_sorrow', '', ''),
+		('soul', 'Soul', 'You wield power over the spiritual.', 'eject_soul', 'ectoplasmic_interstice', '', ''),
+		('star', 'Star', 'You command the power of the stars.', 'zenith_star', 'asterism', '', ''),
+		('sun', 'Sun', 'You harness the power of the sun and other light sources, and punish undead.', 'dazzling_flash', 'vital_luminance', '', ''),
+		('swarm', 'Swarm', 'You exert control over masses of creatures.', 'swarmsense', 'swarm_form', '', ''),
+		('time', 'Time', 'You reign over the flow of time.', 'delay_consequence', 'stasis', '', ''),
+		('toil', 'Toil', 'You work constantly and refuse to let anything stand in your way', 'practice_makes_perfect', 'tireless_worker', '', ''),
+		('travel', 'Travel', 'You have power over movement and journeys.', 'agile_feet', 'travelers_transit', 'inevitable_destination', ''),
+		('trickery', 'Trickery', 'You deceive others and cause mischief.', 'sudden_shift', 'tricksters_twin', '', ''),
+		('truth', 'Truth', 'You pierce lies and discover the truth.', 'word_of_truth', 'glimpse_the_truth', '', ''),
+		('tyranny', 'Tyranny', 'You wield power to rule and enslave others.', 'touch_of_obedience', 'commanding_lash', '', ''),
+		('undeath', 'Undeath', 'Your magic carries close ties to the undead.', 'touch_of_undeath', 'malignant_sustenance', '', ''),
+		('vigil', 'Vigil', 'You watch over those long passed and guard their secrets.', 'object_memory', 'remember_the_lost', '', ''),
+		('water', 'Water', 'You control water and bodies of water.', 'tidal_surge', 'downpour', 'purifying_veil', ''),
+		('wealth', 'Wealth', 'You hold power over wealth, trade, and treasure.', 'appearance_of_wealth', 'precious_metals', '', ''),
+		('wood', 'Wood', 'You command the indomitable power of wood.', 'arms_of_nature', 'wood_walk', '', ''),
+		('zeal', 'Zeal', 'Your inner fire increases your combat prowess.', 'weapon_surge', 'zeal_for_battle', '', '');")
+
+
+
+	db.query("INSERT OR IGNORE INTO edicts (id, description) VALUES 
+		('edict_healing', 'destroy the undead, protect your allies, heal the sick and wounded'),
+		('edict_redemption', 'seek and allow redemption');")
+
+	# Seed Anathemas
+	db.query("INSERT OR IGNORE INTO anathemas (id, description) VALUES 
+		('anathema_undead', 'create undead'),
+		('anathema_lies', 'lie'),
+		('anathema_mercy', 'deny a repentant creature an opportunity for redemption'),
+		('anathema_fail_strike', 'fail to strike down evil');")
+
+	# Seed Deities
+	db.query("INSERT OR IGNORE INTO deities (id, name, category, edicts, anathema, areas_of_concern, religious_symbol, sacred_animal, sacred_colors, pantheons, divine_attributes, divine_font, divine_sanctification, divine_skill, favored_weapon, domains, alternate_domains, cleric_spells, boon_minor, boon_moderate, boon_major, curse_minor, curse_moderate, curse_major) VALUES 
+		('sarenrae', 'Sarenrae', 'core', '[\"edict_healing\",\"edict_redemption\"]', '[\"anathema_undead\",\"anathema_lies\",\"anathema_mercy\",\"anathema_fail_strike\"]', '[\"healing\",\"honesty\",\"redemption\",\"the sun\"]', 'Ankh', 'Dove', '[\"blue\",\"gold\"]', '[\"The Godclaw\"]', '[\"WIS\",\"CHA\"]', '[\"heal\"]', '1', 'medicine', 'scimitar', '[\"fire\",\"healing\",\"sun\",\"truth\"]', '[]', '{\"1\":\"burning_hands\", \"3\":\"fireball\", \"4\":\"wall_of_fire\"}', '', '', '', '', '', '');")
+
 	# Seed Regions
 	db.query("INSERT OR IGNORE INTO regions (id, name) VALUES 
 		('unknown', 'Unknown'),
@@ -1067,9 +1171,9 @@ func get_pf_deity(id: String) -> PFDeity:
 	new_deity.category = row["category"]
 	new_deity.religious_symbol = row["religious_symbol"]
 	new_deity.sacred_animal = row["sacred_animal"]
-	new_deity.divine_sanctification = row["divine_sanctification"]
+	new_deity.divine_sanctification = int(row["divine_sanctification"]) as PFBiographyConstants.DivineSanctification
 	new_deity.divine_skill = StringName(row["divine_skill"])
-	new_deity.favored_weapon = row["favored_weapon"]
+	new_deity.favored_weapon = StringName(row["favored_weapon"])
 	new_deity.boon_minor = row["boon_minor"]
 	new_deity.boon_moderate = row["boon_moderate"]
 	new_deity.boon_major = row["boon_major"]

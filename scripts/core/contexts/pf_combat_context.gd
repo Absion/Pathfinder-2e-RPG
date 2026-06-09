@@ -4,7 +4,7 @@ class_name PFCombatContext
 extends PFContext
 
 var grid_manager: PFCombatGrid
-var turn_manager: Node # Placeholder for PFTurnManager
+var turn_manager: PFTurnManager
 var camera_rig: PFCameraRig
 var ui_layer: CanvasLayer
 var action_menu: PFActionMenu
@@ -19,6 +19,11 @@ func build_services() -> void:
 	camera_rig = PFCameraRig.new()
 	camera_rig.name = "CameraRig"
 	add_child(camera_rig)
+	
+	# Create Turn Manager
+	turn_manager = PFTurnManager.new()
+	turn_manager.name = "TurnManager"
+	add_child(turn_manager)
 	
 	# Create a CanvasLayer strictly for combat UI
 	ui_layer = CanvasLayer.new()
