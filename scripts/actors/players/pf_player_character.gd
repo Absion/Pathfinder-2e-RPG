@@ -38,8 +38,12 @@ var feats: Array[PFFeat] = []
 var experience_points: int = 0
 var pending_level_up_choices: Array[Dictionary] = []
 
+# --- META CURRENCY ---
+var hero_points: int = 1
+
 signal experience_gained(current_xp: int, amount: int)
 signal leveled_up(new_level: int, pending_choices: Dictionary)
+signal hero_points_changed(current: int)
 
 func _init(p_name: String, p_traits: Array[StringName], p_level: int,
 		p_hp: int, p_fort: int, p_ref: int, p_will: int,
@@ -423,4 +427,53 @@ func gain_experience(amount: int) -> void:
 		var choices = PFLevelUpManager.level_up(self)
 		pending_level_up_choices.append(choices)
 		leveled_up.emit(level, choices)
+
+# ---------------------------------------------------------
+# HERO POINTS
+# ---------------------------------------------------------
+func gain_hero_point() -> void:
+	hero_points = mini(3, hero_points + 1)
+	hero_points_changed.emit(hero_points)
+	print("    > %s gained a Hero Point! (Total: %d)" % [entity_name, hero_points])
+
+func spend_hero_point() -> bool:
+	if hero_points > 0:
+		hero_points -= 1
+		hero_points_changed.emit(hero_points)
+		print("    > %s spent a Hero Point! (Remaining: %d)" % [entity_name, hero_points])
+		return true
+	print("    > %s has no Hero Points to spend!" % entity_name)
+	return false
+
+func heroic_reroll() -> int:
+	if spend_hero_point():
+		var Math = preload("res://scripts/core/pf_game_math.gd")
+		var new_roll = randi_range(1, 20)
+		var final_roll = Math.apply_keeley_hero_point_reroll(new_roll)
+		print("    > %s invokes a Heroic Reroll! Raw d20 roll: %d | Final d20 result (Keeley Rule): %d" % [entity_name, new_roll, final_roll])
+		return final_roll
+	return -1 # Represents failure to reroll
+
+func heroic_recovery() -> bool:
+	if hero_points > 0:
+		print("    > %s spends ALL their Hero Points (%d) for a Heroic Recovery!" % [entity_name, hero_points])
+		hero_points = 0
+		hero_points_changed.emit(hero_points)
+		
+		# Remove dying condition, stabilize at 0 HP (if they aren't already conscious)
+		if has_condition("dying"):
+			remove_condition("dying")
+			print("    > %s loses the Dying condition and stabilizes at 0 HP!" % entity_name)
+			
+			# Ensure they are at least at 0 HP and unconscious, not dead
+			if health.current_hp < 0:
+				health.current_hp = 0
+			
+			if not has_condition("unconscious"):
+				var Condition = preload("res://scripts/conditions/pf_condition.gd")
+				apply_condition(Condition.create("unconscious", 1))
+				
+		return true
+	print("    > %s has no Hero Points for a Heroic Recovery!" % entity_name)
+	return false
 

@@ -5,6 +5,8 @@
 class_name PFActor
 extends Node3D
 
+const PFTimeManager = preload("res://scripts/core/pf_time_manager.gd")
+
 # --- BASE ENTITY DATA ---
 var entity_name: String
 var level: int = 1
@@ -33,6 +35,27 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int, p_hp: int)
 	
 	action_economy = PFActionComponent.new()
 	add_child(action_economy)
+
+func _ready() -> void:
+	var tm = PFTimeManager.get_instance()
+	if tm:
+		tm.rested_for_night.connect(_on_rested_for_night)
+
+func _on_rested_for_night() -> void:
+	# Base Healing: CON mod * Level (minimum 1)
+	var con_mod = get_ability_modifier(&"CON")
+	var amount_to_heal = maxi(1, con_mod * level)
+	heal(amount_to_heal)
+	print("    > %s recovers %d HP after a full night's rest." % [entity_name, amount_to_heal])
+	
+	# Condition reductions on rest
+	if has_condition("doomed"): reduce_condition("doomed", 1)
+	if has_condition("drained"): reduce_condition("drained", 1)
+	if has_condition("fatigued"): remove_condition("fatigued")
+	
+	if "spellbook" in self and self.get("spellbook") != null:
+		self.get("spellbook").restore_daily_slots()
+		print("    > %s recovers all daily spell slots." % entity_name)
 
 # ---------------------------------------------------------
 # ---------------------------------------------------------
@@ -66,6 +89,16 @@ func remove_condition(condition_id: String) -> void:
 			conditions.remove_at(i)
 			removed_condition.on_remove(self)
 			print("%s is no longer %s!" % [entity_name, removed_condition.condition_name])
+			return
+
+func reduce_condition(condition_id: String, amount: int = 1) -> void:
+	for i in range(conditions.size() - 1, -1, -1):
+		if str(conditions[i].condition_id) == condition_id:
+			conditions[i].value -= amount
+			if conditions[i].value <= 0:
+				remove_condition(condition_id)
+			else:
+				print("%s's %s reduced to %d." % [entity_name, conditions[i].condition_name, conditions[i].value])
 			return
 			
 func has_condition(condition_id: String) -> bool:
