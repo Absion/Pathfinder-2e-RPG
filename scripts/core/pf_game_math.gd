@@ -79,3 +79,40 @@ static func apply_keeley_hero_point_reroll(d20_roll: int) -> int:
 	if d20_roll >= 1 and d20_roll <= 9:
 		return d20_roll + 10
 	return d20_roll
+
+## Calculates falling damage based on Pathfinder 2e rules.
+## Damage is bludgeoning, equal to half the distance fallen (max 1500 ft / 750 damage).
+## Soft surfaces reduce the effective fall distance by 20 feet (or 30 if diving intentionally),
+## up to a maximum reduction equal to the depth of the soft surface.
+static func calculate_falling_damage(distance: int, is_intentional_dive: bool = false, soft_surface_depth: int = 0) -> int:
+	var effective_distance = clampi(distance, 0, 1500)
+	
+	var reduction = 0
+	if soft_surface_depth > 0:
+		reduction = 30 if is_intentional_dive else 20
+		reduction = mini(reduction, soft_surface_depth)
+		
+	effective_distance = maxi(0, effective_distance - reduction)
+	
+	# Only take damage if falling more than 5 feet (effectively)
+	if effective_distance <= 5:
+		return 0
+		
+	return effective_distance / 2
+
+## Determines a generic environmental damage roll using standard GM guidelines.
+## Minor: 1d6 to 2d6
+## Moderate: 4d6 to 6d6
+## Major: 8d6 to 12d6
+## Massive: 18d6 to 24d6
+static func get_environmental_damage_roll(category: StringName) -> int:
+	match category:
+		&"minor":
+			return PFDice.roll(randi_range(1, 2), 6).total
+		&"moderate":
+			return PFDice.roll(randi_range(4, 6), 6).total
+		&"major":
+			return PFDice.roll(randi_range(8, 12), 6).total
+		&"massive":
+			return PFDice.roll(randi_range(18, 24), 6).total
+	return 0
