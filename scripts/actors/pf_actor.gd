@@ -205,6 +205,11 @@ func get_speed_land() -> int:
 	# Virtual function for polymorphism
 	return 0
 
+func has_critical_specialization(_weapon_group: PFEquipmentConstants.WeaponGroup) -> bool:
+	# Virtual function for polymorphism. Returns false by default.
+	# Subclasses like PFPlayerCharacter will override this based on class features.
+	return false
+
 # ---------------------------------------------------------
 # ACTION ECONOMY & TURN HOOKS
 # ---------------------------------------------------------

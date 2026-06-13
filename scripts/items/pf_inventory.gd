@@ -54,11 +54,11 @@ func equip_item(item: PFItem) -> void:
 	# Size enforcement for Armor
 	if item is PFArmor:
 		var db_inst = PFDatabase.get_instance()
-		var owner_size_data = db_inst.get_size_data(owner.size_id) if (db_inst and "size_id" in owner) else null
-		var a_size = owner_size_data.get("effective_size", 1) if owner_size_data else 1
+		var owner_size_data = db_inst.get_size_data(owner.size_id) if (db_inst and "size_id" in owner) else {}
+		var a_size = (owner_size_data.get("effective_size", 1) as int) if not owner_size_data.is_empty() else 1
 		
-		var item_size_data = db_inst.get_size_data(item.size_id) if db_inst else null
-		var i_size = item_size_data.get("effective_size", 1) if item_size_data else 1
+		var item_size_data = db_inst.get_size_data(item.size_id) if db_inst else {}
+		var i_size = (item_size_data.get("effective_size", 1) as int) if not item_size_data.is_empty() else 1
 		
 		if a_size != i_size:
 			print("    > [ERROR] %s cannot wear %s. Armor must be the exact size!" % [owner.entity_name, item.entity_name])
@@ -135,11 +135,11 @@ func wield_item(item: PFItem, main_hand: bool = true) -> void:
 	# Size enforcement for Weapons
 	if item is PFWeapon:
 		var db_inst = PFDatabase.get_instance()
-		var owner_size_data = db_inst.get_size_data(owner.size_id) if (db_inst and "size_id" in owner) else null
-		var a_size = owner_size_data.get("effective_size", 1) if owner_size_data else 1
+		var owner_size_data = db_inst.get_size_data(owner.size_id) if (db_inst and "size_id" in owner) else {}
+		var a_size = (owner_size_data.get("effective_size", 1) as int) if not owner_size_data.is_empty() else 1
 		
-		var item_size_data = db_inst.get_size_data(item.size_id) if db_inst else null
-		var i_size = item_size_data.get("effective_size", 1) if item_size_data else 1
+		var item_size_data = db_inst.get_size_data(item.size_id) if db_inst else {}
+		var i_size = (item_size_data.get("effective_size", 1) as int) if not item_size_data.is_empty() else 1
 		var diff = i_size - a_size
 		
 		if abs(diff) > 1:
@@ -182,6 +182,37 @@ func _is_hand_free_for_buckler(item: PFItem) -> bool:
 	
 	# Otherwise, it's a light, non-weapon object
 	return true
+
+# ---------------------------------------------------------
+# IMPROVISED WEAPONS
+# ---------------------------------------------------------
+func create_improvised_weapon(damage_type: PFCombatConstants.DamageType, hands: int = 1) -> PFWeapon:
+	var imp_weapon = PFWeapon.new("Improvised Weapon", [&"improvised"], 1, 0.0)
+	
+	imp_weapon.weapon_type = PFEquipmentConstants.WeaponType.MELEE
+	imp_weapon.category = PFEquipmentConstants.WeaponCategory.SIMPLE
+	imp_weapon.group = PFEquipmentConstants.WeaponGroup.NONE
+	imp_weapon.dice_amount = 1
+	imp_weapon.die_faces = 4
+	imp_weapon.base_damage_type = damage_type
+	imp_weapon.active_damage_type = damage_type
+	imp_weapon.material = PFEquipmentConstants.ItemMaterial.WOOD
+	imp_weapon.base_hardness = 5
+	imp_weapon.hardness = 5
+	imp_weapon.base_max_hp = 20
+	imp_weapon.max_hp = 20
+	imp_weapon.current_hp = 20
+	imp_weapon.deadly_die = 0
+	imp_weapon.fatal_die = 0
+	imp_weapon.grade = PFEquipmentConstants.MaterialGrade.STANDARD
+	imp_weapon.hands_required = hands
+	imp_weapon.is_improvised = true
+	
+	add_item(imp_weapon)
+	wield_item(imp_weapon, true)
+	print("    > %s quickly created and wielded an improvised weapon!" % owner.entity_name)
+	return imp_weapon
+
 # ---------------------------------------------------------
 # CURRENCY & ECONOMY
 # ---------------------------------------------------------
@@ -201,13 +232,9 @@ func get_total_coin_value_in_copper() -> int:
 func get_total_wealth_in_copper() -> int:
 	var total_cp = get_total_coin_value_in_copper()
 	
-	# Helper to sum item prices
-	var sum_items = func(list: Array[PFItem]):
-		for item in list: total_cp += item.price_cp
-	
-	sum_items.call(items)
-	sum_items.call(worn_items)
-	sum_items.call(containers)
+	for item in items: total_cp += item.price_cp
+	for item in worn_items: total_cp += item.price_cp
+	for item in containers: total_cp += item.price_cp
 	
 	if held_main_hand: total_cp += held_main_hand.price_cp
 	if held_off_hand: total_cp += held_off_hand.price_cp
@@ -239,11 +266,11 @@ static func format_copper_to_string(total_cp: int) -> String:
 
 func get_perceived_bulk(item: PFItem) -> int:
 	var db_inst = PFDatabase.get_instance()
-	var owner_size_data = db_inst.get_size_data(owner.size_id) if (db_inst and "size_id" in owner) else null
-	var a_size = owner_size_data.get("effective_size", 1) if owner_size_data else 1
+	var owner_size_data = db_inst.get_size_data(owner.size_id) if (db_inst and "size_id" in owner) else {}
+	var a_size = (owner_size_data.get("effective_size", 1) as int) if not owner_size_data.is_empty() else 1
 	
-	var item_size_data = db_inst.get_size_data(item.size_id) if db_inst else null
-	var i_size = item_size_data.get("effective_size", 1) if item_size_data else 1
+	var item_size_data = db_inst.get_size_data(item.size_id) if db_inst else {}
+	var i_size = (item_size_data.get("effective_size", 1) as int) if not item_size_data.is_empty() else 1
 	
 	if a_size == i_size:
 		return item.bulk_value

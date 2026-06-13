@@ -98,6 +98,7 @@ static func calculate_falling_damage(distance: int, is_intentional_dive: bool = 
 	if effective_distance <= 5:
 		return 0
 		
+	@warning_ignore("integer_division")
 	return effective_distance / 2
 
 ## Determines a generic environmental damage roll using standard GM guidelines.

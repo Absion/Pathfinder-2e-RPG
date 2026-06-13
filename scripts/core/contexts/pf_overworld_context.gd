@@ -5,7 +5,7 @@ extends PFContext
 
 var active_exploration_activities: Dictionary = {}
 
-func enter_context(args: Dictionary = {}) -> void:
+func enter_context(_args: Dictionary = {}) -> void:
 	print("Entering Overworld Context...")
 	build_services()
 	bind_services()

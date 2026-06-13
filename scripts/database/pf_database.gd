@@ -58,6 +58,7 @@ func _initialize_schema_if_needed():
 	db.query("DROP TABLE IF EXISTS beliefs;")
 	db.query("DROP TABLE IF EXISTS skills;")
 	db.query("DROP TABLE IF EXISTS languages;")
+	db.query("DROP TABLE IF EXISTS attachments;")
 	db.query("DROP TABLE IF EXISTS regions;")
 	db.query("DROP TABLE IF EXISTS heritages;")
 	db.query("DROP TABLE IF EXISTS ethnicities;")
@@ -239,7 +240,25 @@ func _initialize_schema_if_needed():
 		group_type INTEGER,
 		damage_dice INTEGER,
 		damage_faces INTEGER,
-		damage_type INTEGER
+		damage_type INTEGER,
+		range_increment INTEGER DEFAULT 0,
+		volley_range INTEGER DEFAULT 0,
+		reload_value INTEGER DEFAULT 0,
+		hands_required INTEGER DEFAULT 1,
+		ammunition_type INTEGER DEFAULT 0,
+		linked_weapon_id TEXT DEFAULT ''
+	);")
+	
+	# Attachments
+	db.query("CREATE TABLE IF NOT EXISTS attachments (
+		id TEXT PRIMARY KEY,
+		name TEXT,
+		traits TEXT,
+		level INTEGER,
+		price_cp INTEGER,
+		granted_weapon_id TEXT DEFAULT '',
+		granted_traits TEXT DEFAULT '',
+		valid_hosts TEXT DEFAULT ''
 	);")
 	
 	# Shields
@@ -732,8 +751,13 @@ func _seed_data():
 		('wizard', 1, '[\"wizard_spellcasting\", \"arcane_thesis\"]', '[\"ancestry\"]'),
 		('wizard', 2, '[]', '[\"class\", \"skill\"]');")
 	
-	db.query("INSERT OR IGNORE INTO weapons (id, name, traits, level, price_cp, material, hardness, max_hp, broken_threshold, grade, bulk, weapon_type, category, group_type, damage_dice, damage_faces, damage_type) VALUES 
-		('longsword', 'Longsword', 'versatile_p', 1, 100, 3, 5, 20, 10, 1, 1, 0, 1, 4, 1, 8, 3);")
+	db.query("INSERT OR IGNORE INTO weapons (id, name, traits, level, price_cp, material, hardness, max_hp, broken_threshold, grade, bulk, weapon_type, category, group_type, damage_dice, damage_faces, damage_type, range_increment, volley_range, reload_value, hands_required, ammunition_type) VALUES 
+		('longsword', 'Longsword', 'versatile_p', 1, 100, 3, 5, 20, 10, 1, 1, 0, 1, 4, 1, 8, 3, 0, 0, 0, 1, 0),
+		('bayonet_weapon', 'Bayonet Attack', 'agile,finesse', 1, 0, 3, 5, 20, 10, 1, 0, 0, 1, 6, 1, 4, 3, 0, 0, 0, 1, 0);")
+		
+	db.query("INSERT OR IGNORE INTO attachments (id, name, traits, level, price_cp, granted_weapon_id, granted_traits, valid_hosts) VALUES 
+		('bayonet', 'Bayonet', 'attachment', 1, 230, 'bayonet_weapon', '', 'crossbow,firearm'),
+		('scope', 'Scope', 'attachment', 1, 500, '', 'deadly_d6', 'crossbow,firearm');")
 		
 	db.query("INSERT OR IGNORE INTO shields (id, name, traits, level, price_cp, bulk, ac_bonus, speed_penalty, hardness, max_hp, broken_threshold) VALUES 
 		('buckler', 'Buckler', 'buckler', 1, 10, 1, 1, 0, 3, 12, 6),
@@ -1041,6 +1065,18 @@ func get_weapon(id: String) -> PFWeapon:
 	new_weapon.base_damage_type = row["damage_type"]
 	new_weapon.active_damage_type = row["damage_type"]
 	
+	new_weapon.range_increment = row.get("range_increment", 0) if row.has("range_increment") else 0
+	new_weapon.volley_range = row.get("volley_range", 0) if row.has("volley_range") else 0
+	new_weapon.reload_value = row.get("reload_value", 0) if row.has("reload_value") else 0
+	new_weapon.hands_required = row.get("hands_required", 1) if row.has("hands_required") else 1
+	new_weapon.ammunition_type = row.get("ammunition_type", 0) if row.has("ammunition_type") else 0
+	new_weapon.linked_weapon_id = row.get("linked_weapon_id", "") if row.has("linked_weapon_id") else ""
+	
+	if new_weapon.linked_weapon_id != "":
+		db.query("SELECT * FROM weapons WHERE id = '" + new_weapon.linked_weapon_id + "'")
+		if db.query_result.size() > 0:
+			new_weapon.combination_data = db.query_result[0]
+	
 	return new_weapon
 
 func get_shield(id: String) -> PFShield:
@@ -1082,6 +1118,38 @@ func get_shield(id: String) -> PFShield:
 	new_shield.broken_threshold = row["broken_threshold"]
 	
 	return new_shield
+
+func get_attachment(id: String) -> PFAttachment:
+	db.query("SELECT * FROM attachments WHERE id = '" + id + "'")
+	if db.query_result.size() == 0:
+		push_error("PFDatabase: Attachment not found -> " + id)
+		return null
+		
+	var row = db.query_result[0]
+	var new_attach = PFAttachment.new()
+	new_attach.entity_name = row["name"]
+	new_attach.level = row["level"]
+	new_attach.price_cp = row["price_cp"]
+	
+	if row["traits"] != "":
+		var split = row["traits"].split(",")
+		for t in split:
+			new_attach.traits.append(StringName(t.strip_edges()))
+			
+	if row["granted_traits"] != "":
+		var split = row["granted_traits"].split(",")
+		for t in split:
+			new_attach.granted_traits.append(StringName(t.strip_edges()))
+			
+	if row["valid_hosts"] != "":
+		var split = row["valid_hosts"].split(",")
+		for v in split:
+			new_attach.valid_hosts.append(v.strip_edges())
+			
+	if row["granted_weapon_id"] != "":
+		new_attach.granted_weapon = get_weapon(row["granted_weapon_id"])
+		
+	return new_attach
 
 func get_ancestry(id: String) -> PFAncestry:
 	db.query("SELECT * FROM ancestries WHERE id = '" + id + "'")

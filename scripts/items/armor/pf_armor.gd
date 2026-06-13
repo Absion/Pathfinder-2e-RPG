@@ -32,6 +32,8 @@ var strength_req: int
 var base_name: String
 var base_ac_bonus: int
 
+var attachment: PFAttachment = null
+
 # Updated constructor: Added p_price_gp
 func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int = 1, p_price_gp: float = 0.0,
 		p_category: PFEquipmentConstants.ArmorCategory = PFEquipmentConstants.ArmorCategory.UNARMORED, p_group: PFEquipmentConstants.ArmorGroup = PFEquipmentConstants.ArmorGroup.UNARMORED,

@@ -27,6 +27,8 @@ var base_hardness: int
 var base_max_hp: int
 var base_broken_threshold: int
 
+var attachment: PFAttachment = null
+
 func _init(p_name: String = "", p_level: int = 1, p_price_gp: float = 0.0, p_ac_bonus: int = 0, 
 		   p_hardness: int = 0, p_hp: int = 0, p_bt: int = 0, p_speed_penalty: int = 0, 
 		   p_material: PFEquipmentConstants.ItemMaterial = PFEquipmentConstants.ItemMaterial.WOOD, 

@@ -310,8 +310,14 @@ func get_strike_bonus(weapon: PFWeapon) -> int:
 	var stat_mod = attributes.dex_mod if weapon.weapon_type == PFEquipmentConstants.WeaponType.RANGED else attributes.str_mod
 	if weapon.has_trait(&"finesse") and attributes.dex_mod > attributes.str_mod:
 		stat_mod = attributes.dex_mod
+	elif weapon.has_trait(&"brutal"):
+		stat_mod = attributes.str_mod
+		
 	base_bonus = stat_mod + sheet.get_weapon_bonus(weapon.category, level)
 	base_bonus += weapon.potency_bonus 
+	
+	if weapon.has_trait(&"kickback") and attributes.str_mod < 2:
+		base_bonus -= 2
 	
 	if weapon.is_broken():
 		base_bonus -= 2
@@ -358,9 +364,25 @@ func get_spell_attack() -> int:
 
 func get_strike_damage_bonus(weapon: PFWeapon) -> int:
 	var dmg_bonus = 0
-	if weapon.weapon_type == PFEquipmentConstants.WeaponType.MELEE:
+	if weapon.weapon_type == PFEquipmentConstants.WeaponType.MELEE or weapon.has_trait(&"thrown"):
 		dmg_bonus = attributes.str_mod 
+	elif weapon.has_trait(&"propulsive"):
+		if attributes.str_mod < 0:
+			dmg_bonus = attributes.str_mod
+		else:
+			dmg_bonus = int(attributes.str_mod / 2.0)
+			
+	if weapon.has_trait(&"kickback"):
+		dmg_bonus += 1
 		
+	if weapon.has_trait(&"twin"):
+		var inv = get("inventory") as PFInventory
+		if inv and inv.main_hand_item and inv.off_hand_item:
+			var main = inv.main_hand_item as PFWeapon
+			var off = inv.off_hand_item as PFWeapon
+			if main and off and main.base_name == off.base_name:
+				dmg_bonus += weapon.dice_amount # +1 per damage die, not just +1. Wait, let me check the Twin trait... wait, Twin says "+1 circumstance bonus per damage die". Let's do that!
+	
 	if weapon.is_broken():
 		dmg_bonus -= 2
 		
