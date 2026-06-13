@@ -4,7 +4,7 @@ const Player = preload("res://scripts/actors/players/pf_player_character.gd")
 
 func test_hero_points():
 	# Player starts with 1 hero point
-	var player = Player.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0)
+	var player = auto_free(Player.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
 	assert_int(player.hero_points).is_equal(1)
 	
 	# Can spend one
@@ -29,7 +29,7 @@ func test_hero_points():
 
 func test_heroic_recovery():
 	var Condition = preload("res://scripts/conditions/pf_condition.gd")
-	var player = Player.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0)
+	var player = auto_free(Player.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
 	
 	player.take_damage(25) # Drop below 0 HP
 	player.apply_condition(Condition.create("dying", 1))
@@ -45,7 +45,7 @@ func test_heroic_recovery():
 	assert_int(player.health.current_hp).is_equal(0)
 
 func test_heroic_reroll():
-	var player = Player.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0)
+	var player = auto_free(Player.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
 	
 	# Start with 1 hero point, should successfully reroll
 	var reroll = player.heroic_reroll()

@@ -10,33 +10,43 @@ Here is a high-level view of the core engine components and their relationships:
 
 ```mermaid
 classDiagram
-    %% Core Entities
+    %% Core Entities (Data)
     class PFEntity {
-        <<Base Class>>
+        <<Base Class (RefCounted)>>
+        +StringName id
         +String entity_name
         +Array traits
         +Rarity rarity
     }
     
     class PFDatabase {
-        <<Singleton>>
+        <<Singleton (Node)>>
         +SQLite db
         +get_pf_spell(id) PFSpell
         +get_pf_class(id) PFClass
     }
 
-    %% Base Actor
+    class PFGameRoot {
+        <<Singleton (Node)>>
+        +current_context
+    }
+
+    %% Base Actor (Node3D)
     class PFActor {
-        <<Base Class>>
+        <<Base Class (Node3D)>>
+        +PFEntity core
+        +String entity_name
         +int level
+        +Array traits
+        +Rarity rarity
         +PFHealthComponent health
         +PFActionComponent action_economy
         +Array conditions
         +get_ac() int
-        +get_strike_bonus() int
+        +get_strike_bonus(PFWeapon) int
         +get_spell_dc() int
     }
-    PFEntity <|-- PFActor
+    PFActor *-- PFEntity : composes
     
     %% Hybrid Inheritance
     class PFPlayerCharacter {
@@ -61,6 +71,13 @@ classDiagram
     }
     PFActor <|-- PFNpc
 
+    class PFConstruct {
+        +int hardness
+        +int broken_threshold
+        +take_damage(amount, type)
+    }
+    PFActor <|-- PFConstruct
+
     class PFMinion {
         +PFActor master
         +receive_command()
@@ -82,15 +99,33 @@ classDiagram
     PFMinion <|-- PFFamiliar
 
     %% Components
-    class PFProficiencySheet {
+    class PFComponent {
+        <<Component (Node)>>
+    }
+
+    class PFHealthComponent {
         <<Component>>
+        +int current_hp
+        +int max_hp
+    }
+    PFComponent <|-- PFHealthComponent
+
+    class PFActionComponent {
+        <<Component>>
+        +int actions_remaining
+        +int reactions_remaining
+    }
+    PFComponent <|-- PFActionComponent
+
+    class PFProficiencySheet {
+        <<Component (RefCounted)>>
         +int level
         +calculate_proficiency()
     }
     PFPlayerCharacter *-- PFProficiencySheet : owns
 
     class PFInventory {
-        <<Component>>
+        <<Component (RefCounted)>>
         +Array items
         +int copper_pieces
         +get_total_bulk() int
@@ -106,7 +141,7 @@ classDiagram
     PFEntity <|-- PFSpell
     
     class PFSpellVariant {
-        <<Resource>>
+        <<Resource (RefCounted)>>
         +ActionCost action_cost
         +Distance spell_range
         +int damage_dice
@@ -140,23 +175,55 @@ classDiagram
     }
     PFItem <|-- PFShield
     
+    %% Actions
+    class PFAction {
+        +ActionCost cost
+        +int map_weight
+        +execute(user, target) bool
+    }
+    PFEntity <|-- PFAction
+    
+    %% Conditions
+    class PFCondition {
+        <<RefCounted>>
+        +String condition_id
+        +String condition_name
+        +int value
+        +get_modifier(context) int
+    }
+    PFActor *-- PFCondition : holds
+
+    %% Contexts
+    class PFContext {
+        <<Base Context (Node)>>
+    }
+    class PFCombatContext {
+    }
+    class PFOverworldContext {
+    }
+    class PFMainMenuContext {
+    }
+    PFContext <|-- PFCombatContext
+    PFContext <|-- PFOverworldContext
+    PFContext <|-- PFMainMenuContext
+
     %% Combat & Systems
     class PFCombatGrid {
-        <<Manager>>
+        <<Manager (Node3D)>>
         +MultiMeshInstance3D multimesh_instance
         +draw_base_grid(width, height)
         +highlight_tiles(tiles, color)
     }
 
     class PFCameraRig {
-        <<3D Controller>>
+        <<3D Controller (Node3D)>>
         +float target_zoom
         +float target_rotation_y
         +focus_on_position(pos)
     }
     
     class PFActionMenu {
-        <<UI Controller>>
+        <<UI Controller (Control)>>
         +MenuPosition menu_position
         +bind_to_actor(PFActor)
     }

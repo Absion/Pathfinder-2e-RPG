@@ -5,13 +5,23 @@
 class_name PFActor
 extends Node3D
 
-const PFTimeManager = preload("res://scripts/core/pf_time_manager.gd")
 
-# --- BASE ENTITY DATA ---
-var entity_name: String
+# --- CORE ENTITY DATA (Composition) ---
+var core: PFEntity
+
+var entity_name: String:
+	get: return core.entity_name if core else ""
+	set(val): if core: core.entity_name = val
+
+var traits: Array[StringName]:
+	get: return core.traits if core else []
+	set(val): if core: core.traits = val
+
+var rarity: PFBiographyConstants.Rarity:
+	get: return core.rarity if core else PFBiographyConstants.Rarity.COMMON
+	set(val): if core: core.rarity = val
+
 var level: int = 1
-var traits: Array[StringName] = []
-var rarity: PFBiographyConstants.Rarity = PFBiographyConstants.Rarity.COMMON
 
 # --- COMPONENTS ---
 var health: PFHealthComponent
@@ -24,9 +34,8 @@ var has_raised_shield: bool = false
 
 func _init(p_name: String, p_traits: Array[StringName], p_level: int, p_hp: int):
 	
-	entity_name = p_name
+	core = PFEntity.new(p_name, p_traits)
 	level = p_level
-	traits = p_traits
 	
 	# Component Initialization
 	health = PFHealthComponent.new()
@@ -150,7 +159,7 @@ func get_actor_bulk() -> int:
 	var base_bulk = 60 # Default Medium (6 Bulk)
 	if "size_id" in self:
 		var db_inst = PFDatabase.get_instance()
-		var size_data = db_inst.get_size_data(self.get("size_id")) if db_inst else null
+		var size_data = db_inst.get_size_data(self.get("size_id")) if db_inst else {}
 		if size_data:
 			base_bulk = size_data.get("base_bulk", 60)
 			
@@ -170,27 +179,27 @@ func get_actor_bulk() -> int:
 func get_ac() -> int:
 	return 10 + get_condition_modifier(&"ac")
 
-func get_strike_bonus(weapon: PFWeapon) -> int:
+func get_strike_bonus(_weapon: PFWeapon) -> int:
 	return get_condition_modifier(&"attack")
 
 func get_wielded_shield() -> PFShield:
 	# Virtual function for polymorphism
 	return null
 
-func get_strike_damage_bonus(weapon: PFWeapon) -> int:
+func get_strike_damage_bonus(_weapon: PFWeapon) -> int:
 	# Virtual function for polymorphism
 	return 0
 
-func get_skill_bonus(skill: StringName) -> int:
+func get_skill_bonus(_skill: StringName) -> int:
 	# Virtual function for polymorphism
 	return 0
 
-func get_ability_modifier(ability: StringName) -> int:
+func get_ability_modifier(_ability: StringName) -> int:
 	# Virtual function for polymorphism
 	return 0
 
 func has_trait(trait_name: StringName) -> bool:
-	return traits.has(trait_name)
+	return core.has_trait(trait_name) if core else false
 
 func get_speed_land() -> int:
 	# Virtual function for polymorphism

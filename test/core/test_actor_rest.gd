@@ -5,7 +5,7 @@ const Condition = preload("res://scripts/conditions/pf_condition.gd")
 
 func test_rest_healing():
 	# Player level 2, CON modifier +2, max hp 30.
-	var player = Player.new("Valeros", [&"human", &"humanoid"], 2, 30, 0, 0, 0)
+	var player = auto_free(Player.new("Valeros", [&"human", &"humanoid"], 2, 30, 0, 0, 0))
 	player.attributes.apply_background_boost(&"con")
 	player.attributes.apply_class_boost(&"con")
 	# CON mod should be +2
@@ -20,7 +20,7 @@ func test_rest_healing():
 	assert_int(player.health.current_hp).is_equal(24)
 
 func test_rest_condition_decay():
-	var player = Player.new("Valeros", [&"human", &"humanoid"], 1, 30, 0, 0, 0)
+	var player = auto_free(Player.new("Valeros", [&"human", &"humanoid"], 1, 30, 0, 0, 0))
 	player.attributes.con_mod = 1
 	
 	player.apply_condition(Condition.create("doomed", 2))
@@ -41,7 +41,7 @@ func test_rest_condition_decay():
 
 func test_rest_minimum_healing():
 	# CON modifier -1, level 5
-	var player = Player.new("Ezren", [&"human", &"humanoid"], 5, 30, 0, 0, 0)
+	var player = auto_free(Player.new("Ezren", [&"human", &"humanoid"], 5, 30, 0, 0, 0))
 	player.attributes.apply_voluntary_flaw(&"con") 
 	# CON mod should be -1 
 	

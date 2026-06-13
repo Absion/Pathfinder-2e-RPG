@@ -62,6 +62,18 @@ func _initialize_schema_if_needed():
 	db.query("DROP TABLE IF EXISTS heritages;")
 	db.query("DROP TABLE IF EXISTS ethnicities;")
 	db.query("DROP TABLE IF EXISTS animal_companions;")
+	db.query("DROP TABLE IF EXISTS actions;")
+	db.query("DROP TABLE IF EXISTS specific_familiars;")
+	db.query("DROP TABLE IF EXISTS feats;")
+	db.query("DROP TABLE IF EXISTS class_features;")
+	db.query("DROP TABLE IF EXISTS class_progressions;")
+	db.query("DROP TABLE IF EXISTS weapons;")
+	db.query("DROP TABLE IF EXISTS shields;")
+	db.query("DROP TABLE IF EXISTS backgrounds;")
+	db.query("DROP TABLE IF EXISTS classes;")
+	db.query("DROP TABLE IF EXISTS domains;")
+	db.query("DROP TABLE IF EXISTS edicts;")
+	db.query("DROP TABLE IF EXISTS anathemas;")
 	
 	# Core Data-Driven Mechanics Tables
 	db.query("CREATE TABLE IF NOT EXISTS sizes (
@@ -965,7 +977,7 @@ func get_class_feature_data(id: StringName) -> Dictionary:
 	return _class_features_cache[id]
 
 func get_class_progression(class_id: StringName, level: int) -> Dictionary:
-	var key = String(class_id) + "_" + str(level)
+	var _key = String(class_id) + "_" + str(level)
 	# Note: progression cache could be added here later if needed
 	db.query("SELECT * FROM class_progressions WHERE class_id = '" + String(class_id) + "' AND level = " + str(level))
 	if db.query_result.size() == 0:

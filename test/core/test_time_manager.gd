@@ -3,7 +3,7 @@ extends GdUnitTestSuite
 const TimeManager = preload("res://scripts/core/pf_time_manager.gd")
 
 func test_time_advancement():
-	var tm = TimeManager.new()
+	var tm = auto_free(TimeManager.new())
 	tm._ready()
 	
 	assert_int(tm.current_day).is_equal(1)
@@ -21,7 +21,7 @@ func test_time_advancement():
 	tm.free()
 
 func test_day_rollover():
-	var tm = TimeManager.new()
+	var tm = auto_free(TimeManager.new())
 	tm._ready()
 	
 	assert_int(tm.current_day).is_equal(1)
@@ -38,7 +38,7 @@ func test_day_rollover():
 	tm.free()
 
 func test_rest_for_night():
-	var tm = TimeManager.new()
+	var tm = auto_free(TimeManager.new())
 	tm._ready()
 	
 	tm.rest_for_night()

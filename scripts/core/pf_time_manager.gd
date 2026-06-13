@@ -57,6 +57,7 @@ func rest_for_night() -> void:
 
 func _check_day_rollover() -> void:
 	if current_time_seconds >= SECONDS_PER_DAY:
+		@warning_ignore("integer_division")
 		var days_passed = current_time_seconds / SECONDS_PER_DAY
 		current_time_seconds = current_time_seconds % SECONDS_PER_DAY
 		advance_days(days_passed)
