@@ -5,8 +5,8 @@ var defender: PFActor
 var trip_weapon: PFWeapon
 
 func before_test():
-	attacker = PFPlayerCharacter.new("Attacker", [&"humanoid"], 1, 20)
-	defender = PFPlayerCharacter.new("Defender", [&"humanoid"], 1, 20)
+	attacker = PFPlayerCharacter.new("Attacker", [&"humanoid"], 1, 20, 0, 0, 0)
+	defender = PFPlayerCharacter.new("Defender", [&"humanoid"], 1, 20, 0, 0, 0)
 	auto_free(attacker)
 	auto_free(defender)
 	add_child(attacker)

@@ -10,7 +10,7 @@ func _init(p_weapon: PFWeapon):
 	weapon = p_weapon
 	super._init("Parry with " + p_weapon.entity_name, initial_traits, PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, _target: PFActor = null) -> bool:
 	var inv = user.get("inventory") as PFInventory
 	if inv:
 		if weapon.hands_required == 2 and inv.two_handed_item != weapon:

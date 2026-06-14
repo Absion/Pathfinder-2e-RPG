@@ -8,8 +8,8 @@ var nonlethal_weapon: PFWeapon
 var parry_weapon: PFWeapon
 
 func before_test():
-	attacker = PFPlayerCharacter.new("Attacker", [&"humanoid"], 1, 20)
-	defender = PFPlayerCharacter.new("Defender", [&"humanoid"], 1, 20)
+	attacker = PFPlayerCharacter.new("Attacker", [&"humanoid"], 1, 20, 0, 0, 0)
+	defender = PFPlayerCharacter.new("Defender", [&"humanoid"], 1, 20, 0, 0, 0)
 	auto_free(attacker)
 	auto_free(defender)
 	add_child(attacker)
@@ -55,7 +55,7 @@ func test_versatile_trait():
 	# By default it's slashing
 
 func test_nonlethal_trait():
-	var initial_hp = defender.health.current_hp
+	var _initial_hp = defender.health.current_hp
 	
 	# Lethal attack with nonlethal weapon (-2 penalty)
 	var strike = PFActionStrike.new(nonlethal_weapon, false)

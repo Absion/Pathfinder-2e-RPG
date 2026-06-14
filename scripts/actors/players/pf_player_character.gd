@@ -436,6 +436,8 @@ func get_spellcasting_mod() -> int:
 	# Returns the highest mental attribute modifier
 	return max(attributes.int_mod, max(attributes.wis_mod, attributes.cha_mod))
 
+
+
 func get_speed_land() -> int:
 	var current_speed = movement.speed_land
 	

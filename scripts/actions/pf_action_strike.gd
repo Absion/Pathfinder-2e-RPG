@@ -267,7 +267,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		
 		if user.has_method("has_critical_specialization") and user.has_critical_specialization(weapon.group):
 			print("    *** CRITICAL SPECIALIZATION TRIGGERED! ***")
-			_apply_critical_specialization(target)
+			_apply_critical_specialization(user, target)
 			
 		print("    Base Rolled: %sd%d %s = %d + %d = %d Base Damage" % [weapon.dice_amount, current_die_faces, dice_str, damage_result.total, damage_stat, base_total])
 		
@@ -342,30 +342,67 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		
 	return true
 
-func _apply_critical_specialization(target: PFActor) -> void:
+func _apply_critical_specialization(user: PFActor, target: PFActor) -> void:
 	match weapon.group:
-		PFEquipmentConstants.WeaponGroup.SWORD:
-			var off_guard = PFCondition.new(&"off_guard")
-			target.apply_condition(off_guard)
-			print("    > Sword Specialization: Target is Off-Guard until start of your next turn!")
-		PFEquipmentConstants.WeaponGroup.BOW:
-			var immobilized = PFCondition.new(&"immobilized")
-			target.apply_condition(immobilized)
-			print("    > Bow Specialization: Target is Immobilized!")
-		PFEquipmentConstants.WeaponGroup.CLUB:
-			print("    > Club Specialization: Target is knocked 10 feet away!")
-		PFEquipmentConstants.WeaponGroup.SPEAR:
-			var clumsy = PFCondition.new(&"clumsy")
-			clumsy.value = 1
-			target.apply_condition(clumsy)
-			print("    > Spear Specialization: Target is Clumsy 1 until start of your next turn!")
 		PFEquipmentConstants.WeaponGroup.AXE:
-			print("    > Axe Specialization: You may deal damage to an adjacent enemy!")
-		PFEquipmentConstants.WeaponGroup.FIREARM:
-			print("    > Firearm Specialization: Target must succeed at a Fortitude save or be stunned 1!")
-		PFEquipmentConstants.WeaponGroup.DART:
-			print("    > Dart Specialization: Target takes persistent bleed damage!")
-		PFEquipmentConstants.WeaponGroup.KNIFE:
-			print("    > Knife Specialization: Target takes persistent bleed damage!")
+			print("    > Axe Specialization: You may deal damage equal to 1 weapon damage die to an adjacent enemy!")
+		PFEquipmentConstants.WeaponGroup.BOMB:
+			print("    > Bomb Specialization: Splash radius increased to 10 feet!")
+		PFEquipmentConstants.WeaponGroup.BOW:
+			target.conditions.append(PFCondition.create(&"immobilized"))
+			print("    > Bow Specialization: Target is Immobilized!")
+		PFEquipmentConstants.WeaponGroup.BRAWLING:
+			var save_mod = target.attributes.fort_save.value() if target.get("attributes") else 0
+			var roll = PFDice.roll_d20()
+			var total = roll + save_mod
+			var dc = user.get_class_dc() if user.has_method("get_class_dc") else 10
+			var degree = PFDice.determine_success(total, dc, roll)
+			if degree == PFMathConstants.DegreeOfSuccess.FAIL or degree == PFMathConstants.DegreeOfSuccess.CRIT_FAIL:
+				var slowed = PFCondition.create(&"slowed")
+				slowed.value = 1
+				target.conditions.append(slowed)
+				print("    > Brawling Specialization (Rolled %d vs DC %d): Target failed Fort save and is Slowed 1!" % [total, dc])
+			else:
+				print("    > Brawling Specialization (Rolled %d vs DC %d): Target succeeded Fort save." % [total, dc])
+		PFEquipmentConstants.WeaponGroup.CLUB:
+			print("    > Club Specialization: Target is knocked up to 10 feet away!")
+		PFEquipmentConstants.WeaponGroup.CROSSBOW, PFEquipmentConstants.WeaponGroup.DART, PFEquipmentConstants.WeaponGroup.KNIFE:
+			var pd = PFCondition.create(&"persistent_damage")
+			pd.value = weapon.dice_amount
+			pd.target_stat = "bleed"
+			target.conditions.append(pd)
+			print("    > %s Specialization: Target takes %dd6 persistent bleed damage!" % [PFEquipmentConstants.WeaponGroup.keys()[weapon.group].capitalize(), weapon.dice_amount])
+		PFEquipmentConstants.WeaponGroup.FIREARM, PFEquipmentConstants.WeaponGroup.SLING:
+			var save_mod = target.attributes.fort_save.value() if target.get("attributes") else 0
+			var roll = PFDice.roll_d20()
+			var total = roll + save_mod
+			var dc = user.get_class_dc() if user.has_method("get_class_dc") else 10
+			var degree = PFDice.determine_success(total, dc, roll)
+			if degree == PFMathConstants.DegreeOfSuccess.FAIL or degree == PFMathConstants.DegreeOfSuccess.CRIT_FAIL:
+				var stunned = PFCondition.create(&"stunned")
+				stunned.value = 1
+				target.conditions.append(stunned)
+				print("    > %s Specialization (Rolled %d vs DC %d): Target failed Fort save and is Stunned 1!" % [PFEquipmentConstants.WeaponGroup.keys()[weapon.group].capitalize(), total, dc])
+			else:
+				print("    > %s Specialization (Rolled %d vs DC %d): Target succeeded Fort save." % [PFEquipmentConstants.WeaponGroup.keys()[weapon.group].capitalize(), total, dc])
+		PFEquipmentConstants.WeaponGroup.FLAIL, PFEquipmentConstants.WeaponGroup.HAMMER:
+			target.conditions.append(PFCondition.create(&"prone"))
+			print("    > %s Specialization: Target is knocked Prone!" % PFEquipmentConstants.WeaponGroup.keys()[weapon.group].capitalize())
+		PFEquipmentConstants.WeaponGroup.PICK:
+			var pick_dmg = 2 * weapon.dice_amount
+			print("    > Pick Specialization: Deal %d additional damage!" % pick_dmg)
+			target.take_damage(pick_dmg, weapon.active_damage_type, weapon.traits)
+		PFEquipmentConstants.WeaponGroup.POLEARM:
+			print("    > Polearm Specialization: Target is moved 5 feet!")
+		PFEquipmentConstants.WeaponGroup.SHIELD:
+			print("    > Shield Specialization: Target is pushed back 5 feet!")
+		PFEquipmentConstants.WeaponGroup.SPEAR:
+			var clumsy = PFCondition.create(&"clumsy")
+			clumsy.value = 1
+			target.conditions.append(clumsy)
+			print("    > Spear Specialization: Target is Clumsy 1 until start of your next turn!")
+		PFEquipmentConstants.WeaponGroup.SWORD:
+			target.conditions.append(PFCondition.create(&"off_guard"))
+			print("    > Sword Specialization: Target is Off-Guard until start of your next turn!")
 		_:
 			print("    > (No critical specialization effect implemented for this group yet).")

@@ -107,6 +107,12 @@ func equip_weapon(weapon: PFItem, hands: int = 1, main_hand: bool = true) -> voi
 		held_off_hand = weapon
 		two_handed_item = null
 
+func wield_as_improvised(item: PFItem, main_hand: bool = true, damage_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.BLUDGEONING) -> void:
+	var improvised_weapon = PFWeapon.create_improvised(item, damage_type)
+	if not items.has(item):
+		add_item(item)
+	hold_item(improvised_weapon, main_hand)
+
 # Add this method to allow feats/effects to modify the limit
 func set_max_invested_items(new_limit: int) -> void:
 	max_invested_items = new_limit
