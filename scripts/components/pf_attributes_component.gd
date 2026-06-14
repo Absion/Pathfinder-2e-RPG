@@ -22,6 +22,19 @@ var fort_save: PFStat
 var ref_save: PFStat
 var will_save: PFStat
 
+# --- TEMPORARY MODIFIERS (Buffs/Debuffs) ---
+var item_bonus_to_attack: int = 0
+var status_bonus_to_attack: int = 0
+var circumstance_penalty_to_attack: int = 0
+var status_penalty_to_attack: int = 0
+
+var item_bonus_to_dc: int = 0
+var status_bonus_to_dc: int = 0
+var circumstance_penalty_to_dc: int = 0
+var status_penalty_to_dc: int = 0
+
+var item_penalty_to_save: int = 0
+
 # --- ABC BOOST TRACKING ---
 var is_npc: bool = false
 var use_alternate_ancestry_boosts: bool = false

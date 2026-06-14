@@ -5,12 +5,17 @@ class_name PFActionStrike
 extends PFAction
 
 var weapon: PFWeapon
+var intent_nonlethal: bool = false
+var active_versatile_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.UNTYPED
 
-func _init(p_weapon: PFWeapon):
+func _init(p_weapon: PFWeapon, p_intent_nonlethal: bool = false, p_versatile_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.UNTYPED):
 	var initial_traits: Array[StringName] = [&"attack"]
 	initial_traits.append_array(p_weapon.traits)
 	
 	weapon = p_weapon
+	intent_nonlethal = p_intent_nonlethal
+	active_versatile_type = p_versatile_type
+	
 	super._init("Strike with " + p_weapon.entity_name, initial_traits, PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
 func execute(user: PFActor, target: PFActor = null) -> bool:
@@ -24,7 +29,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			print("    > [ERROR] %s requires two hands, but is not being held with two hands!" % weapon.entity_name)
 			return false
 		elif weapon.hands_required == 1 and inv.held_main_hand != weapon and inv.held_off_hand != weapon and inv.two_handed_item != weapon:
-			if not weapon.has_trait(&"free-hand"):
+			if not weapon.has_trait(&"free-hand") and not weapon.has_trait(&"unarmed"):
 				print("    > [ERROR] %s must be held to strike!" % weapon.entity_name)
 				return false
 			
@@ -32,7 +37,8 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		if not weapon.is_loaded:
 			print("    > [ERROR] %s is not loaded!" % weapon.entity_name)
 			return false
-		weapon.is_loaded = false # Unload after firing
+		if not weapon.has_trait(&"repeating"):
+			weapon.is_loaded = false # Unload after firing
 		
 		# Capacity hint
 		for t in weapon.traits:
@@ -60,10 +66,32 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		print("    > Backswing trait triggers! +1 circumstance bonus.")
 	user.set_meta("backswing_active", false)
 
+	# Nonlethal Checks
+	if weapon.has_trait(&"nonlethal") and not intent_nonlethal:
+		base_attack_bonus -= 2
+		print("    > Lethal attack with nonlethal weapon penalty: -2")
+	elif not weapon.has_trait(&"nonlethal") and intent_nonlethal:
+		base_attack_bonus -= 2
+		print("    > Nonlethal attack with lethal weapon penalty: -2")
+
 	# Range & Volley Penalties
 	var range_penalty = 0
-	if weapon.weapon_type == PFEquipmentConstants.WeaponType.RANGED or weapon.has_trait(&"thrown"):
-		var dist_ft = user.global_position.distance_to(target.global_position)
+	var dist_ft = user.global_position.distance_to(target.global_position)
+	
+	if weapon.weapon_type == PFEquipmentConstants.WeaponType.MELEE and not weapon.has_trait(&"thrown"):
+		var base_reach = 5
+		for t in weapon.traits:
+			var ts = String(t)
+			if ts == "reach":
+				base_reach = 10
+			elif ts.begins_with("reach "):
+				var parts = ts.split(" ")
+				if parts.size() > 1 and parts[1].is_valid_int():
+					base_reach = parts[1].to_int()
+		if dist_ft > base_reach:
+			print("    > [ERROR] Target is out of melee reach (%d ft > %d ft)!" % [dist_ft, base_reach])
+			return false
+	elif weapon.weapon_type == PFEquipmentConstants.WeaponType.RANGED or weapon.has_trait(&"thrown"):
 		if weapon.range_increment > 0:
 			var increments = int(dist_ft / weapon.range_increment)
 			if increments > 0:
@@ -125,7 +153,27 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	# ---------------------------------------------------------
 	
 	var final_damage_type = weapon.active_damage_type
-	if has_trait(&"concussive") and final_damage_type == PFCombatConstants.DamageType.PIERCING:
+	if active_versatile_type != PFCombatConstants.DamageType.UNTYPED:
+		var has_versatile = false
+		for t in weapon.traits:
+			var ts = String(t)
+			if ts.begins_with("versatile"):
+				var parts = ts.split(" ")
+				if parts.size() > 1:
+					var v_type = parts[1].to_lower()
+					var mapped_type = PFCombatConstants.DamageType.UNTYPED
+					match v_type:
+						"b": mapped_type = PFCombatConstants.DamageType.BLUDGEONING
+						"p": mapped_type = PFCombatConstants.DamageType.PIERCING
+						"s": mapped_type = PFCombatConstants.DamageType.SLASHING
+					if mapped_type == active_versatile_type:
+						has_versatile = true
+						break
+		if has_versatile:
+			final_damage_type = active_versatile_type
+			print("    > Versatile trait active! Damage type changed to %s." % PFCombatConstants.DamageType.keys()[final_damage_type])
+			
+	if weapon.has_trait(&"concussive") and final_damage_type == PFCombatConstants.DamageType.PIERCING:
 		var resists_p = target.resistances.has(PFCombatConstants.DamageType.PIERCING) or target.immunities.has(PFCombatConstants.DamageType.PIERCING)
 		var weak_b = target.weaknesses.has(PFCombatConstants.DamageType.BLUDGEONING)
 		
@@ -256,6 +304,8 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		var traits_with_crit = weapon.traits.duplicate()
 		if not traits_with_crit.has(&"critical"):
 			traits_with_crit.append(&"critical")
+		if intent_nonlethal:
+			traits_with_crit.append(&"nonlethal")
 			
 		# Send final damage to the target, passing the weapon traits for Sanctification/Material checks!
 		target.take_damage(crit_damage, final_damage_type, traits_with_crit)
@@ -264,9 +314,27 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		print("    * HIT! *")
 		print("    Damage Rolled: %sd%d %s = %d + %d = %d Total Damage." % [weapon.dice_amount, current_die_faces, dice_str, damage_result.total, damage_stat, base_total])
 		
-		# Send final damage to the target, passing the weapon traits!
-		target.take_damage(base_total, final_damage_type, weapon.traits)
+		var traits_with_hit = weapon.traits.duplicate()
+		if intent_nonlethal:
+			traits_with_hit.append(&"nonlethal")
 			
+		# Send final damage to the target, passing the weapon traits!
+		target.take_damage(base_total, final_damage_type, traits_with_hit)
+			
+	if weapon.has_trait(&"splash") and degree != PFMathConstants.DegreeOfSuccess.CRIT_FAIL:
+		var splash_dmg = 0
+		for t in weapon.traits:
+			var ts = String(t)
+			if ts.begins_with("splash "):
+				var parts = ts.split(" ")
+				if parts.size() > 1 and parts[1].is_valid_int():
+					splash_dmg = parts[1].to_int()
+		if splash_dmg == 0:
+			splash_dmg = weapon.dice_amount # Default
+			
+		print("    > Splash trait triggers! Target takes %d splash damage." % splash_dmg)
+		target.take_damage(splash_dmg, final_damage_type, weapon.traits)
+		
 	if weapon.has_trait(&"injection") and weapon.injection_payload != null:
 		print("    > Injection Trait triggers! Delivering payload: %s" % weapon.injection_payload.entity_name)
 		# TODO: We would apply the poison/potion effect to the target here

@@ -12,6 +12,13 @@ var duration: String
 var is_cantrip: bool
 var description: String
 
+# Basic Default Effect Properties
+var damage_dice: int = 0
+var die_faces: int = 4
+var damage_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.UNTYPED
+var scaling_rules: int = 0
+var scaling_dice: int = 0
+
 func _init(p_id: StringName):
 	var db = PFDatabase.get_instance()
 	var s_data = db.get_spell_data(p_id)
@@ -30,11 +37,67 @@ func _init(p_id: StringName):
 	traits = spell_traits
 	rarity = PFBiographyConstants.Rarity.COMMON
 	
-	base_spell_rank = s_data["base_spell_rank"]
-	cast_time = str(s_data["cast_time"])
-	range_ft = s_data["range_ft"]
-	targets = str(s_data["targets"])
-	saving_throw = str(s_data["saving_throw"])
-	duration = str(s_data["duration"])
-	is_cantrip = s_data["is_cantrip"] == 1
-	description = str(s_data["description"])
+	base_spell_rank = s_data.get("base_spell_rank", 1)
+	cast_time = str(s_data.get("cast_time", "2"))
+	range_ft = s_data.get("range_ft", 0)
+	targets = str(s_data.get("targets", ""))
+	saving_throw = str(s_data.get("saving_throw", ""))
+	duration = str(s_data.get("duration", ""))
+	is_cantrip = int(s_data.get("is_cantrip", 0)) == 1
+	description = str(s_data.get("description", ""))
+	
+	scaling_rules = int(s_data.get("scaling_rules", 0))
+	scaling_dice = int(s_data.get("scaling_dice", 0))
+
+func requires_attack_roll() -> bool:
+	return has_trait(&"attack")
+
+func get_saving_throw() -> StringName:
+	if saving_throw == "":
+		return &""
+	return StringName(saving_throw.to_lower())
+
+## Default effect resolution for spells.
+## Can be overridden by custom spell scripts attached to complex spells.
+func resolve_effect(_caster: PFActor, target: PFActor, degree: PFDice.Degree, rank: int) -> void:
+	if damage_dice <= 0:
+		return # No basic damage to deal
+		
+	var final_damage_dice = damage_dice
+	if scaling_rules > 0 and rank > base_spell_rank:
+		var rank_difference = rank - base_spell_rank
+		var increments = floor(rank_difference / float(scaling_rules))
+		final_damage_dice += (increments * scaling_dice)
+		
+	# Standard spell damage scaling based on degree of success
+	var multiplier = 1.0
+	
+	if get_saving_throw() != &"":
+		# Save spell
+		match degree:
+			PFDice.Degree.CRIT_SUCCESS:
+				multiplier = 0.0 # No damage on crit save
+			PFDice.Degree.SUCCESS:
+				multiplier = 0.5 # Half damage on success save
+			PFDice.Degree.FAIL:
+				multiplier = 1.0 # Full damage on fail save
+			PFDice.Degree.CRIT_FAIL:
+				multiplier = 2.0 # Double damage on crit fail save
+	else:
+		# Attack spell (or automatic)
+		match degree:
+			PFDice.Degree.CRIT_SUCCESS:
+				multiplier = 2.0 # Double damage on crit hit
+			PFDice.Degree.SUCCESS:
+				multiplier = 1.0 # Full damage on hit
+			PFDice.Degree.FAIL, PFDice.Degree.CRIT_FAIL:
+				multiplier = 0.0 # No damage on miss
+				
+	if multiplier > 0:
+		var total_damage = 0
+		for i in range(final_damage_dice):
+			total_damage += PFDice.roll(1, die_faces).total
+			
+		total_damage = floor(total_damage * multiplier)
+		print("    > %s deals %d %s damage to %s (Multiplier: %s)" % [entity_name, total_damage, PFCombatConstants.DamageType.keys()[damage_type], target.entity_name, multiplier])
+		target.take_damage(total_damage, damage_type)

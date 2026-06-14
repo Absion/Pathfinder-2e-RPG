@@ -597,6 +597,7 @@ func _seed_data():
 		('off_guard', 'Off-Guard', 'circumstance', 'ac', -2, ''),
 		('paralyzed', 'Paralyzed', '', '', 0, ''),
 		('persistent_damage', 'Persistent Damage', '', '', 0, 'res://scripts/conditions/pf_condition_persistent.gd'),
+		('parry', 'Parry', 'circumstance', 'ac', 1, ''),
 		('petrified', 'Petrified', '', '', 0, ''),
 		('prone', 'Prone', 'circumstance', 'attack', -2, 'res://scripts/conditions/pf_condition_prone.gd'),
 		('quickened', 'Quickened', '', '', 0, 'res://scripts/conditions/pf_condition_quickened.gd'),

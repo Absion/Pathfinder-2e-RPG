@@ -140,6 +140,24 @@ func restore_daily_slots() -> void:
 	
 	focus_points = max_focus_points
 
+# --- FOCUS POINTS ---
+
+func spend_focus_point() -> bool:
+	if focus_points > 0:
+		focus_points -= 1
+		print("%s spent a Focus Point. (%d remaining)" % [owner.entity_name, focus_points])
+		return true
+	print("%s tried to spend a Focus Point but has none left!" % owner.entity_name)
+	return false
+
+func refocus() -> void:
+	# TODO: Hook this into the exploration/rest systems later
+	if focus_points < max_focus_points:
+		focus_points += 1
+		print("%s refocused and regained a Focus Point. (%d/%d)" % [owner.entity_name, focus_points, max_focus_points])
+	else:
+		print("%s refocused but already has maximum Focus Points." % owner.entity_name)
+
 # --- CASTING INTERFACE ---
 
 func expend_slot(rank: int) -> bool:
@@ -155,10 +173,14 @@ func cast_spell(spell: PFSpell, rank_cast_at: int = -1) -> bool:
 		print("%s casts the cantrip %s!" % [owner.entity_name, spell.entity_name])
 		return true
 		
+	if spell.has_trait(&"focus"):
+		if spend_focus_point():
+			print("%s successfully casts the focus spell %s!" % [owner.entity_name, spell.entity_name])
+			return true
+		return false
+		
 	var actual_rank = rank_cast_at if rank_cast_at > 0 else spell.base_spell_rank
 	
-	# For now, we assume if they call this, they are trying to expend a slot.
-	# Later we can differentiate innate spells (1/day tracking) and focus spells (cost 1 focus point).
 	if expend_slot(actual_rank):
 		print("%s successfully casts %s at Rank %d!" % [owner.entity_name, spell.entity_name, actual_rank])
 		return true

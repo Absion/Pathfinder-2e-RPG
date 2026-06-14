@@ -297,7 +297,10 @@ func has_feat(feat_id: StringName) -> bool:
 
 func get_ac() -> int:
 	var base_ac = 10
-	var armor = inventory.worn_items.filter(func(i): return i is PFArmor).front()
+	var armor = null
+	var armor_items = inventory.worn_items.filter(func(i): return i is PFArmor)
+	if armor_items.size() > 0:
+		armor = armor_items[0]
 	if not armor: armor = PFArmor.new("Unarmored", [], 0, 0.0, PFEquipmentConstants.ArmorCategory.UNARMORED, PFEquipmentConstants.ArmorGroup.UNARMORED, 0, 99)
 	
 	var capped_dex = mini(attributes.dex_mod, armor.dex_cap)
@@ -313,7 +316,11 @@ func get_strike_bonus(weapon: PFWeapon) -> int:
 	elif weapon.has_trait(&"brutal"):
 		stat_mod = attributes.str_mod
 		
-	base_bonus = stat_mod + sheet.get_weapon_bonus(weapon.category, level)
+	var category_to_use = weapon.category
+	if weapon.has_trait(&"unarmed"):
+		category_to_use = PFEquipmentConstants.WeaponCategory.UNARMED
+		
+	base_bonus = stat_mod + sheet.get_weapon_bonus(category_to_use, level)
 	base_bonus += weapon.potency_bonus 
 	
 	if weapon.has_trait(&"kickback") and attributes.str_mod < 2:
@@ -348,7 +355,7 @@ func get_spell_dc() -> int:
 		key_attr = actor_class.key_abilities[0]
 		
 	var stat_mod = get_ability_modifier(key_attr)
-	return 10 + prof_bonus + stat_mod
+	return 10 + prof_bonus + stat_mod + attributes.status_bonus_to_dc + attributes.item_bonus_to_dc - attributes.circumstance_penalty_to_dc - attributes.status_penalty_to_dc
 
 func get_spell_attack() -> int:
 	if not actor_class or not actor_class.is_spellcaster: return 0
@@ -360,7 +367,7 @@ func get_spell_attack() -> int:
 		key_attr = actor_class.key_abilities[0]
 		
 	var stat_mod = get_ability_modifier(key_attr)
-	return prof_bonus + stat_mod
+	return prof_bonus + stat_mod + attributes.status_bonus_to_attack + attributes.item_bonus_to_attack - attributes.circumstance_penalty_to_attack - attributes.status_penalty_to_attack
 
 func get_strike_damage_bonus(weapon: PFWeapon) -> int:
 	var dmg_bonus = 0
@@ -394,6 +401,22 @@ func get_skill_bonus(skill: StringName) -> int:
 	var base_bonus = ability_mod + sheet.get_skill_bonus(skill, level)
 		
 	return base_bonus + get_condition_modifier(&"skill")
+
+func get_maneuver_bonus(maneuver: StringName, weapon: PFWeapon = null) -> int:
+	var base_bonus = get_skill_bonus(&"athletics")
+	
+	if weapon and weapon.has_trait(maneuver):
+		# If the weapon has the maneuver trait, you can use its item bonus.
+		var weapon_bonus = weapon.potency_bonus
+		
+		# Can use Finesse for maneuvers if the weapon has Finesse
+		if weapon.has_trait(&"finesse") and attributes.dex_mod > attributes.str_mod:
+			# Skill bonus already includes STR. Let's substitute DEX for STR.
+			base_bonus = base_bonus - attributes.str_mod + attributes.dex_mod
+			
+		base_bonus += weapon_bonus
+		
+	return base_bonus
 
 func get_ability_modifier(ability: StringName) -> int:
 	match ability:
