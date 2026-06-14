@@ -364,7 +364,7 @@ func get_spell_attack() -> int:
 
 func get_strike_damage_bonus(weapon: PFWeapon) -> int:
 	var dmg_bonus = 0
-	if weapon.weapon_type == PFEquipmentConstants.WeaponType.MELEE or weapon.has_trait(&"thrown"):
+	if weapon.weapon_type == PFEquipmentConstants.WeaponType.MELEE or weapon.can_be_thrown():
 		dmg_bonus = attributes.str_mod 
 	elif weapon.has_trait(&"propulsive"):
 		if attributes.str_mod < 0:

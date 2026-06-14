@@ -28,6 +28,7 @@ var base_max_hp: int
 var base_broken_threshold: int
 
 var attachment: PFAttachment = null
+var adjustment = null # Will be typed PFAdjustment when created
 
 func _init(p_name: String = "", p_level: int = 1, p_price_gp: float = 0.0, p_ac_bonus: int = 0, 
 		   p_hardness: int = 0, p_hp: int = 0, p_bt: int = 0, p_speed_penalty: int = 0, 
@@ -82,9 +83,20 @@ func apply_reinforcing_rune(rune: PFEquipmentConstants.ReinforcingRune) -> void:
 	])
 
 func get_bash_weapon() -> PFWeapon:
-	# The PFWeapon constructor receives 0.0, 
-	# which set_price_from_gp() will correctly convert to 0 cp.
-	return PFWeapon.new(entity_name + " Bash", [&"agile"], level, 0.0,
+	var bash_traits: Array[StringName] = [&"agile"]
+	
+	if adjustment != null:
+		for t in adjustment.granted_traits:
+			if not bash_traits.has(t):
+				bash_traits.append(t)
+				
+	if attachment != null:
+		for t in attachment.granted_traits:
+			if not bash_traits.has(t):
+				bash_traits.append(t)
+				
+	var w = PFWeapon.new(entity_name + " Bash", bash_traits, level, 0.0,
 		PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.MARTIAL, PFEquipmentConstants.WeaponGroup.SHIELD, 
 		1, 4, PFCombatConstants.DamageType.BLUDGEONING, 
 		item_material, hardness, max_hp, 0, 0, grade)
+	return w

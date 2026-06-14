@@ -44,6 +44,7 @@ var ammunition_type: PFEquipmentConstants.AmmunitionType = PFEquipmentConstants.
 var is_improvised: bool = false
 var is_loaded: bool = false
 var attachment: PFAttachment = null
+var adjustment = null # Will be typed PFAdjustment when created
 var property_runes: Array[PFEquipmentConstants.PropertyRune] = []
 
 var linked_weapon_id: String = ""
@@ -152,3 +153,18 @@ func set_versatile_type(new_type: PFCombatConstants.DamageType) -> void:
 	
 	if is_valid: active_damage_type = new_type
 	else: push_error("Weapon lacks required versatile or modular trait.")
+
+func can_be_thrown() -> bool:
+	for t in traits:
+		if String(t).to_lower().begins_with("thrown"):
+			return true
+	return false
+
+func get_thrown_range() -> int:
+	for t in traits:
+		var ts = String(t).to_lower()
+		if ts.begins_with("thrown_"):
+			var parts = ts.split("_")
+			if parts.size() > 1 and parts[1].is_valid_int():
+				return parts[1].to_int()
+	return 0
