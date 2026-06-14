@@ -31,6 +31,10 @@ var action_economy: PFActionComponent
 var has_spirit: bool = true
 var conditions: Array[PFCondition] = []
 var has_raised_shield: bool = false
+var is_dead: bool = false
+
+# --- PASSIVES & FLAGS ---
+var has_armor_specialization: bool = false
 
 func _init(p_name: String, p_traits: Array[StringName], p_level: int, p_hp: int):
 	
@@ -53,7 +57,7 @@ func _ready() -> void:
 func _on_rested_for_night() -> void:
 	# Base Healing: CON mod * Level (minimum 1)
 	var con_mod = get_ability_modifier(&"CON")
-	var amount_to_heal = maxi(1, con_mod * level)
+	var amount_to_heal = maxi(1, con_mod) * level
 	heal(amount_to_heal)
 	print("    > %s recovers %d HP after a full night's rest." % [entity_name, amount_to_heal])
 	
@@ -65,6 +69,15 @@ func _on_rested_for_night() -> void:
 	if "spellbook" in self and self.get("spellbook") != null:
 		self.get("spellbook").restore_daily_slots()
 		print("    > %s recovers all daily spell slots." % entity_name)
+		
+	# Sleeping in Armor Rule (Pathfinder 2e Remaster)
+	var armor = get_worn_armor()
+	if armor != null:
+		var category = armor.category
+		var is_medium_or_heavy = category == PFEquipmentConstants.ArmorCategory.MEDIUM or category == PFEquipmentConstants.ArmorCategory.HEAVY
+		if is_medium_or_heavy and not armor.has_trait(&"comfort"):
+			print("    > %s slept in uncomfortable %s armor!" % [entity_name, armor.entity_name])
+			apply_condition(PFCondition.create("fatigued", 1))
 
 # ---------------------------------------------------------
 # ---------------------------------------------------------
@@ -159,15 +172,25 @@ func get_actor_bulk() -> int:
 	var base_bulk = 60 # Default Medium (6 Bulk)
 	if "size_id" in self:
 		var db_inst = PFDatabase.get_instance()
-		var size_data = db_inst.get_size_data(self.get("size_id")) if db_inst else {}
-		if size_data:
-			base_bulk = size_data.get("base_bulk", 60)
+		if db_inst:
+			var size_data = db_inst.get_size_data(self.get("size_id"))
+			var eff_size = size_data.get("effective_size", 1) if size_data else 1
+			if eff_size == 0: base_bulk = 30
+			elif eff_size == 2: base_bulk = 120
+			elif eff_size >= 3: base_bulk = 240
 			
 	var inventory_bulk = 0
 	if "inventory" in self and self.get("inventory") != null:
 		inventory_bulk = self.get("inventory").get_total_bulk()
 		
 	return base_bulk + inventory_bulk
+
+func get_worn_armor() -> PFArmor:
+	if "inventory" in self and self.get("inventory") != null:
+		var armors = self.get("inventory").worn_items.filter(func(i): return i is PFArmor)
+		if armors.size() > 0:
+			return armors[0]
+	return null
 
 # ---------------------------------------------------------
 # THE UNIFIED MATH DELEGATES (VIRTUAL)
@@ -326,6 +349,27 @@ func take_damage(amount: int, damage_type: PFCombatConstants.DamageType = PFComb
 	for t in effect_traits:
 		if health.trait_resistances.has(t):
 			highest_resistance = maxi(highest_resistance, health.trait_resistances[t])
+			
+	# Armor Specialization Processing
+	if has_armor_specialization:
+		var armor = get_worn_armor()
+		if armor and armor.category in [PFEquipmentConstants.ArmorCategory.MEDIUM, PFEquipmentConstants.ArmorCategory.HEAVY]:
+			var spec_base = 1 if armor.category == PFEquipmentConstants.ArmorCategory.MEDIUM else 2
+			var spec_resist = spec_base + armor.potency_bonus
+			var spec_crit = (4 if armor.category == PFEquipmentConstants.ArmorCategory.MEDIUM else 6) + armor.potency_bonus
+			
+			if armor.group == PFEquipmentConstants.ArmorGroup.LEATHER and damage_type == PFCombatConstants.DamageType.BLUDGEONING:
+				highest_resistance = maxi(highest_resistance, spec_resist)
+				print("    > Leather Armor Specialization grants %d resistance!" % spec_resist)
+			elif armor.group == PFEquipmentConstants.ArmorGroup.COMPOSITE and damage_type == PFCombatConstants.DamageType.PIERCING:
+				highest_resistance = maxi(highest_resistance, spec_resist)
+				print("    > Composite Armor Specialization grants %d resistance!" % spec_resist)
+			elif armor.group == PFEquipmentConstants.ArmorGroup.PLATE and damage_type == PFCombatConstants.DamageType.SLASHING:
+				highest_resistance = maxi(highest_resistance, spec_resist)
+				print("    > Plate Armor Specialization grants %d resistance!" % spec_resist)
+			elif armor.group == PFEquipmentConstants.ArmorGroup.CHAIN and effect_traits.has(&"critical"):
+				highest_resistance = maxi(highest_resistance, spec_crit)
+				print("    > Chain Armor Specialization grants %d resistance against Critical Hits!" % spec_crit)
 			
 	if highest_resistance > 0:
 		final_damage -= highest_resistance

@@ -48,6 +48,16 @@ func _init(p_name: String = "", p_level: int = 1, p_price_gp: float = 0.0, p_ac_
 	
 	for d_type in p_extra_blockable_types:
 		add_blockable_type(d_type)
+		
+	apply_material_stats()
+
+func apply_material_stats() -> void:
+	super.apply_material_stats()
+	
+	if item_material == PFEquipmentConstants.ItemMaterial.MITHRAL:
+		speed_penalty = mini(0, speed_penalty + 5)
+		bulk_value = maxi(0, bulk_value - 1)
+		base_bulk_value = bulk_value
 
 # Helper to add types dynamically (e.g., from Feats or Enchantments)
 func add_blockable_type(d_type: PFCombatConstants.DamageType) -> void:
@@ -58,6 +68,10 @@ func can_block(damage_type: PFCombatConstants.DamageType) -> bool:
 	return damage_type in blockable_damage_types
 
 func apply_reinforcing_rune(rune: PFEquipmentConstants.ReinforcingRune) -> void:
+	if item_material != PFEquipmentConstants.ItemMaterial.STANDARD and rune != PFEquipmentConstants.ReinforcingRune.NONE:
+		push_error("Shields made of precious materials cannot be etched with reinforcing runes.")
+		return
+		
 	active_rune = rune
 	var stats = RUNE_STATS[rune]
 	

@@ -81,7 +81,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	var base_map = -5
 	var db_inst = PFDatabase.get_instance()
 	for t in weapon.traits:
-		var trait_data = db_inst.get_trait_data(t) if db_inst else null
+		var trait_data = db_inst.get_trait_data(t) if db_inst else {}
 		if trait_data and trait_data.get("mechanic_hook") == "modifies_map":
 			# Use the positive hook value as a penalty (e.g., agile provides 4, penalty is -4)
 			base_map = -trait_data.get("hook_value", 4)
@@ -253,8 +253,12 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			crit_damage += fusion_dmg
 			print("    > Critical Fusion Trait triggers: +%d precision damage added!" % fusion_dmg)
 			
+		var traits_with_crit = weapon.traits.duplicate()
+		if not traits_with_crit.has(&"critical"):
+			traits_with_crit.append(&"critical")
+			
 		# Send final damage to the target, passing the weapon traits for Sanctification/Material checks!
-		target.take_damage(crit_damage, final_damage_type, weapon.traits)
+		target.take_damage(crit_damage, final_damage_type, traits_with_crit)
 		
 	elif degree == PFMathConstants.DegreeOfSuccess.SUCCESS:
 		print("    * HIT! *")

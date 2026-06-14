@@ -35,7 +35,7 @@ func test_attaching_scope_to_crossbow() -> void:
 	assert_bool(crossbow.has_trait(&"deadly_d6")).is_false()
 	
 	# Attach scope
-	var attach_action = load("res://scripts/actions/pf_action_interact_attach.gd").new(scope, crossbow)
+	var attach_action = PFActionInteractAttach.new(scope, crossbow)
 	assert_bool(attach_action.execute(attacker)).is_true()
 	
 	# Verify attachment
@@ -63,7 +63,7 @@ func test_attaching_bayonet_weapon() -> void:
 	inv.add_item(crossbow)
 	inv.add_item(bayonet)
 	
-	var attach_action = load("res://scripts/actions/pf_action_interact_attach.gd").new(bayonet, crossbow)
+	var attach_action = PFActionInteractAttach.new(bayonet, crossbow)
 	assert_bool(attach_action.execute(attacker)).is_true()
 	
 	# Ensure bayonet attack exists

@@ -22,7 +22,7 @@ func before_test() -> void:
 
 func test_improvised_weapon_creation_and_penalty() -> void:
 	var inv = attacker.get("inventory") as PFInventory
-	var weapon = inv.create_improvised_weapon(PFCombatConstants.DamageType.BLUDGEONING, 1)
+	var weapon = inv.create_improvised_weapon("Improvised Weapon", [], 1, 4, PFCombatConstants.DamageType.BLUDGEONING, 0, 1)
 	
 	assert_object(weapon).is_not_null()
 	assert_bool(weapon.is_improvised).is_true()
@@ -106,7 +106,7 @@ func test_injection_payload() -> void:
 	inv.equip_weapon(weapon, 2)
 	
 	# Load it
-	var inject_action = load("res://scripts/actions/pf_action_interact_inject.gd").new(weapon, poison)
+	var inject_action = PFActionInteractInject.new(weapon, poison)
 	assert_bool(inject_action.execute(attacker)).is_true()
 	
 	# Payload should be loaded, inventory should not have poison
@@ -114,6 +114,7 @@ func test_injection_payload() -> void:
 	assert_bool(inv.items.has(poison)).is_false()
 	
 	# Strike target
+	weapon.potency_bonus = 20 # Force a hit
 	var strike = PFActionStrike.new(weapon)
 	assert_bool(strike.execute(attacker, defender)).is_true()
 	

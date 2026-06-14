@@ -32,6 +32,9 @@ var strength_req: int
 var base_name: String
 var base_ac_bonus: int
 
+var property_runes: Array[PFEquipmentConstants.PropertyRune] = []
+var potency_bonus: int = 0
+
 var attachment: PFAttachment = null
 var adjustment = null # Will be typed PFAdjustment when created
 
@@ -55,12 +58,45 @@ func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int =
 	check_penalty = p_check_penalty
 	speed_penalty = p_speed_penalty
 	strength_req = p_strength_req
+	
+	apply_material_stats()
+
+func apply_material_stats() -> void:
+	super.apply_material_stats()
+	
+	if item_material == PFEquipmentConstants.ItemMaterial.MITHRAL:
+		check_penalty = mini(0, check_penalty + 1)
+		speed_penalty = mini(0, speed_penalty + 5)
+		bulk_value = maxi(0, bulk_value - 1)
+		base_bulk_value = bulk_value
+
+func add_property_rune(rune: PFEquipmentConstants.PropertyRune) -> bool:
+	if property_runes.size() >= potency_bonus:
+		print("    > [ERROR] Cannot add property rune! Armor can only hold as many property runes as its potency bonus (Current limit: %d)." % potency_bonus)
+		return false
+		
+	if property_runes.has(rune):
+		print("    > [ERROR] Armor already has this property rune!")
+		return false
+		
+	property_runes.append(rune)
+	print("    > Property rune added. Total runes: %d/%d" % [property_runes.size(), potency_bonus])
+	return true
 
 func apply_fundamental_runes(potency: PFEquipmentConstants.PotencyRune, resilient: PFEquipmentConstants.ResilientRune) -> void:
+	if item_material != PFEquipmentConstants.ItemMaterial.STANDARD:
+		if grade == PFEquipmentConstants.MaterialGrade.LOW and (potency > PFEquipmentConstants.PotencyRune.PLUS_ONE or resilient > PFEquipmentConstants.ResilientRune.RESILIENT):
+			push_error("Low-grade precious materials can only hold up to +1 potency and basic resilient runes.")
+			return
+		if grade == PFEquipmentConstants.MaterialGrade.STANDARD and (potency > PFEquipmentConstants.PotencyRune.PLUS_TWO or resilient > PFEquipmentConstants.ResilientRune.GREATER):
+			push_error("Standard-grade precious materials can only hold up to +2 potency and greater resilient runes.")
+			return
+
 	var pot_stats = POTENCY_STATS[potency]
 	var res_stats = RESILIENT_STATS[resilient]
 	
 	ac_bonus = base_ac_bonus + pot_stats[0] 
+	potency_bonus = pot_stats[0]
 	resilient_bonus = res_stats[0] 
 	
 	level = maxi(base_level, maxi(pot_stats[1], res_stats[1]))

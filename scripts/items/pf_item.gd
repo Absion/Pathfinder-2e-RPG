@@ -77,7 +77,45 @@ func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int =
 	max_hp = p_hp
 	current_hp = p_hp
 	
-	broken_threshold = p_bt if p_bt > 0 else int(max_hp / 2)
+	broken_threshold = p_bt if p_bt > 0 else int(max_hp / 2.0)
+	
+	apply_material_stats()
+
+func apply_material_stats() -> void:
+	if item_material == PFEquipmentConstants.ItemMaterial.STANDARD:
+		return
+		
+	# Overwrite Hardness, HP, and BT based on material and grade
+	match item_material:
+		PFEquipmentConstants.ItemMaterial.ADAMANTINE:
+			if grade == PFEquipmentConstants.MaterialGrade.LOW:
+				hardness = 10; max_hp = 40
+			elif grade == PFEquipmentConstants.MaterialGrade.STANDARD:
+				hardness = 14; max_hp = 56
+			elif grade == PFEquipmentConstants.MaterialGrade.HIGH:
+				hardness = 17; max_hp = 68
+		PFEquipmentConstants.ItemMaterial.COLD_IRON, PFEquipmentConstants.ItemMaterial.SILVER:
+			if grade == PFEquipmentConstants.MaterialGrade.LOW:
+				hardness = 5; max_hp = 20
+			elif grade == PFEquipmentConstants.MaterialGrade.STANDARD:
+				hardness = 9; max_hp = 36
+			elif grade == PFEquipmentConstants.MaterialGrade.HIGH:
+				hardness = 13; max_hp = 52
+		PFEquipmentConstants.ItemMaterial.MITHRAL:
+			if grade == PFEquipmentConstants.MaterialGrade.LOW:
+				hardness = 5; max_hp = 20
+			elif grade == PFEquipmentConstants.MaterialGrade.STANDARD:
+				hardness = 9; max_hp = 36
+			elif grade == PFEquipmentConstants.MaterialGrade.HIGH:
+				hardness = 13; max_hp = 52
+		PFEquipmentConstants.ItemMaterial.DRAGONHIDE:
+			if grade == PFEquipmentConstants.MaterialGrade.STANDARD:
+				hardness = 8; max_hp = 32
+			elif grade == PFEquipmentConstants.MaterialGrade.HIGH:
+				hardness = 12; max_hp = 48
+				
+	broken_threshold = int(max_hp / 2.0)
+	current_hp = max_hp
 
 # ---------------------------------------------------------
 # ECONOMY HELPERS
@@ -87,7 +125,14 @@ func set_price_from_gp(gp_float: float) -> void:
 	price_cp = int(round(gp_float * 100.0))
 
 func get_price_string() -> String:
-	return PFInventory.format_copper_to_string(price_cp)
+	var gp = price_cp / 100
+	var sp = (price_cp % 100) / 10
+	var cp = price_cp % 10
+	var parts = []
+	if gp > 0: parts.append(str(gp) + " gp")
+	if sp > 0: parts.append(str(sp) + " sp")
+	if cp > 0 or parts.is_empty(): parts.append(str(cp) + " cp")
+	return " ".join(parts)
 
 func get_selling_price_cp() -> int:
 	var multiplier = 1.0

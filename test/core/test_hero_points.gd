@@ -1,10 +1,10 @@
 extends GdUnitTestSuite
 
-const Player = preload("res://scripts/actors/players/pf_player_character.gd")
+
 
 func test_hero_points():
 	# Player starts with 1 hero point
-	var player = auto_free(Player.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
+	var player = auto_free(PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
 	assert_int(player.hero_points).is_equal(1)
 	
 	# Can spend one
@@ -28,11 +28,11 @@ func test_hero_points():
 	assert_int(player.hero_points).is_equal(3)
 
 func test_heroic_recovery():
-	var Condition = preload("res://scripts/conditions/pf_condition.gd")
-	var player = auto_free(Player.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
+
+	var player = auto_free(PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
 	
 	player.take_damage(25) # Drop below 0 HP
-	player.apply_condition(Condition.create("dying", 1))
+	player.apply_condition(PFCondition.create("dying", 1))
 	
 	assert_bool(player.has_condition("dying")).is_true()
 	assert_int(player.health.current_hp).is_equal(0) # clamped to 0
@@ -45,7 +45,7 @@ func test_heroic_recovery():
 	assert_int(player.health.current_hp).is_equal(0)
 
 func test_heroic_reroll():
-	var player = auto_free(Player.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
+	var player = auto_free(PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
 	
 	# Start with 1 hero point, should successfully reroll
 	var reroll = player.heroic_reroll()

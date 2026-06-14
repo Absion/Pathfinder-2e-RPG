@@ -186,20 +186,18 @@ func _is_hand_free_for_buckler(item: PFItem) -> bool:
 # ---------------------------------------------------------
 # IMPROVISED WEAPONS
 # ---------------------------------------------------------
-func create_improvised_weapon(damage_type: PFCombatConstants.DamageType, hands: int = 1) -> PFWeapon:
-	var imp_weapon = PFWeapon.new("Improvised Weapon", [&"improvised"], 1, 0.0)
+func create_improvised_weapon(item_name: String, traits: Array[StringName], dice_amount: int, die_faces: int, damage_type: PFCombatConstants.DamageType, range_increment: int = 0, hands: int = 1) -> PFWeapon:
+	var imp_weapon = PFWeapon.new(item_name, traits, 1, 0.0)
 	
-	imp_weapon.weapon_type = PFEquipmentConstants.WeaponType.MELEE
+	imp_weapon.weapon_type = PFEquipmentConstants.WeaponType.MELEE if range_increment == 0 else PFEquipmentConstants.WeaponType.RANGED
 	imp_weapon.category = PFEquipmentConstants.WeaponCategory.SIMPLE
 	imp_weapon.group = PFEquipmentConstants.WeaponGroup.NONE
-	imp_weapon.dice_amount = 1
-	imp_weapon.die_faces = 4
+	imp_weapon.dice_amount = dice_amount
+	imp_weapon.die_faces = die_faces
 	imp_weapon.base_damage_type = damage_type
 	imp_weapon.active_damage_type = damage_type
-	imp_weapon.material = PFEquipmentConstants.ItemMaterial.WOOD
-	imp_weapon.base_hardness = 5
+	imp_weapon.item_material = PFEquipmentConstants.ItemMaterial.WOOD
 	imp_weapon.hardness = 5
-	imp_weapon.base_max_hp = 20
 	imp_weapon.max_hp = 20
 	imp_weapon.current_hp = 20
 	imp_weapon.deadly_die = 0
@@ -207,10 +205,17 @@ func create_improvised_weapon(damage_type: PFCombatConstants.DamageType, hands: 
 	imp_weapon.grade = PFEquipmentConstants.MaterialGrade.STANDARD
 	imp_weapon.hands_required = hands
 	imp_weapon.is_improvised = true
+	imp_weapon.range_increment = range_increment
+	
+	if not imp_weapon.traits.has(&"improvised"):
+		imp_weapon.traits.append(&"improvised")
+		
+	if range_increment > 0 and not imp_weapon.traits.has(&"thrown"):
+		imp_weapon.traits.append(&"thrown")
 	
 	add_item(imp_weapon)
 	wield_item(imp_weapon, true)
-	print("    > %s quickly created and wielded an improvised weapon!" % owner.entity_name)
+	print("    > %s quickly created and wielded an improvised weapon: %s!" % [owner.entity_name, item_name])
 	return imp_weapon
 
 # ---------------------------------------------------------
@@ -245,11 +250,11 @@ func get_total_wealth_in_copper() -> int:
 static func format_copper_to_string(total_cp: int) -> String:
 	if total_cp == 0: return "0 cp"
 		
-	var pp = total_cp / 1000
+	var pp = int(total_cp / 1000.0)
 	var remainder = total_cp % 1000
-	var gp = remainder / 100
+	var gp = int(remainder / 100.0)
 	remainder = remainder % 100
-	var sp = remainder / 10
+	var sp = int(remainder / 10.0)
 	var cp = remainder % 10
 	
 	var parts: Array[String] = []
@@ -280,7 +285,7 @@ func get_perceived_bulk(item: PFItem) -> int:
 	if diff > 0:
 		# Actor is larger than item
 		if diff == 1:
-			return int(item.bulk_value / 10)
+			return int(item.bulk_value / 10.0)
 		else:
 			return 0 # Negligible
 	else:

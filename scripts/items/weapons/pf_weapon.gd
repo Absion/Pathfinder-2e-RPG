@@ -97,6 +97,14 @@ func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int =
 					range_increment = parts[1].to_int()
 
 func apply_fundamental_runes(potency: PFEquipmentConstants.PotencyRune, striking: PFEquipmentConstants.StrikingRune) -> void:
+	if item_material != PFEquipmentConstants.ItemMaterial.STANDARD:
+		if grade == PFEquipmentConstants.MaterialGrade.LOW and (potency > PFEquipmentConstants.PotencyRune.PLUS_ONE or striking > PFEquipmentConstants.StrikingRune.STRIKING):
+			push_error("Low-grade precious materials can only hold up to +1 potency and basic striking runes.")
+			return
+		if grade == PFEquipmentConstants.MaterialGrade.STANDARD and (potency > PFEquipmentConstants.PotencyRune.PLUS_TWO or striking > PFEquipmentConstants.StrikingRune.GREATER):
+			push_error("Standard-grade precious materials can only hold up to +2 potency and greater striking runes.")
+			return
+
 	var pot_stats = POTENCY_STATS[potency]
 	var str_stats = STRIKING_STATS[striking]
 	

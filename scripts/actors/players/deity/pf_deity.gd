@@ -3,7 +3,7 @@
 class_name PFDeity
 extends PFEntity
 
-const PFDivineBoon = preload("res://scripts/conditions/pf_divine_boon.gd")
+
 
 var category: String
 var edicts: Array[StringName]

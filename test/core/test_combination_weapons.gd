@@ -40,7 +40,7 @@ func test_combination_toggle() -> void:
 	inv.equip_weapon(gunblade, 1, true)
 	
 	# Interact to toggle
-	var toggle_action = load("res://scripts/actions/pf_action_interact_combination.gd").new(gunblade)
+	var toggle_action = PFActionInteractCombination.new(gunblade)
 	assert_bool(toggle_action.execute(attacker)).is_true()
 	
 	# Should now be ranged

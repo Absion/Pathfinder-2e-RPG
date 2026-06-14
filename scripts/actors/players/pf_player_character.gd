@@ -469,9 +469,8 @@ func spend_hero_point() -> bool:
 
 func heroic_reroll() -> int:
 	if spend_hero_point():
-		var Math = preload("res://scripts/core/pf_game_math.gd")
 		var new_roll = randi_range(1, 20)
-		var final_roll = Math.apply_keeley_hero_point_reroll(new_roll)
+		var final_roll = PFGameMath.apply_keeley_hero_point_reroll(new_roll)
 		print("    > %s invokes a Heroic Reroll! Raw d20 roll: %d | Final d20 result (Keeley Rule): %d" % [entity_name, new_roll, final_roll])
 		return final_roll
 	return -1 # Represents failure to reroll
@@ -492,10 +491,8 @@ func heroic_recovery() -> bool:
 				health.current_hp = 0
 			
 			if not has_condition("unconscious"):
-				var Condition = preload("res://scripts/conditions/pf_condition.gd")
-				apply_condition(Condition.create("unconscious", 1))
+				apply_condition(PFCondition.create("unconscious", 1))
 				
 		return true
 	print("    > %s has no Hero Points for a Heroic Recovery!" % entity_name)
 	return false
-

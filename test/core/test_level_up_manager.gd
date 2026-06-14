@@ -7,7 +7,7 @@ var db: PFDatabase
 func before():
 	db = PFDatabase.get_instance()
 	if db == null:
-		db = preload("res://scripts/database/pf_database.gd").new()
+		db = PFDatabase.new()
 		db.name = "PFDatabase"
 		Engine.get_main_loop().root.add_child(db)
 		db._ready()

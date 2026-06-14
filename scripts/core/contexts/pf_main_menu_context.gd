@@ -3,7 +3,7 @@
 class_name PFMainMenuContext
 extends PFContext
 
-func enter_context(args: Dictionary = {}) -> void:
+func enter_context(_args: Dictionary = {}) -> void:
 	print("Entering Main Menu Context...")
 	build_services()
 	bind_services()

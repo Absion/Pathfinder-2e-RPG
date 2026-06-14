@@ -1,9 +1,9 @@
 extends GdUnitTestSuite
 
-const TurnManager = preload("res://scripts/core/managers/pf_turn_manager.gd")
+
 
 func test_initiative_sorting():
-	var tm = auto_free(TurnManager.new())
+	var tm = auto_free(PFTurnManager.new())
 	var a1 = auto_free(PFActor.new("Hero", [&"humanoid"], 1, 10))
 	var a2 = auto_free(PFActor.new("Goblin", [&"humanoid"], 1, 10))
 	var a3 = auto_free(PFActor.new("Boss", [&"humanoid"], 1, 10))
@@ -29,7 +29,7 @@ func test_initiative_sorting():
 	assert_str(tm.combatants[2].actor.entity_name).is_equal("Hero")
 	
 func test_turn_loop():
-	var tm = auto_free(TurnManager.new())
+	var tm = auto_free(PFTurnManager.new())
 	var a1 = auto_free(PFActor.new("Hero", [&"humanoid"], 1, 10))
 	var a2 = auto_free(PFActor.new("Goblin", [&"humanoid"], 1, 10))
 	
@@ -53,22 +53,22 @@ func test_turn_loop():
 	assert_str(tm.get_current_actor().entity_name).is_equal("Hero")
 
 func test_initiative_modifiers():
-	var tm = auto_free(TurnManager.new())
-	var Condition = preload("res://scripts/conditions/pf_condition.gd")
+	var tm = auto_free(PFTurnManager.new())
+
 	
 	var a1 = auto_free(PFActor.new("Hero", [&"humanoid"], 1, 10))
 	var a2 = auto_free(PFActor.new("Goblin", [&"humanoid"], 1, 10))
 	var a3 = auto_free(PFActor.new("Scout", [&"humanoid"], 1, 10))
 	
 	# Give the Scout an initiative modifier
-	var scout_cond = Condition.create("scout_bonus", 1)
+	var scout_cond = PFCondition.create("scout_bonus", 1)
 	scout_cond.modifier_type = "circumstance"
 	scout_cond.target_stat = "initiative"
 	scout_cond.multiplier = 2 # +2 circumstance bonus to initiative
 	a3.apply_condition(scout_cond)
 	
 	# Give Hero force first
-	a1.apply_condition(Condition.create("initiative_first", 1))
+	a1.apply_condition(PFCondition.create("initiative_first", 1))
 	
 	tm.add_combatant(a1, false)
 	tm.add_combatant(a2, true)
