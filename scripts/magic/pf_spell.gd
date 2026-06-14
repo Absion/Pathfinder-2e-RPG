@@ -11,6 +11,7 @@ var saving_throw: String
 var duration: String
 var is_cantrip: bool
 var description: String
+var script_path: String
 
 # Basic Default Effect Properties
 var damage_dice: int = 0
@@ -48,6 +49,18 @@ func _init(p_id: StringName):
 	
 	scaling_rules = int(s_data.get("scaling_rules", 0))
 	scaling_dice = int(s_data.get("scaling_dice", 0))
+	script_path = str(s_data.get("script_path", ""))
+
+static func create(p_id: StringName) -> PFSpell:
+	var db = PFDatabase.get_instance()
+	var s_data = db.get_spell_data(p_id)
+	
+	if s_data.has("script_path") and s_data["script_path"] != "":
+		var custom_script = load(s_data["script_path"])
+		if custom_script:
+			return custom_script.new(p_id)
+			
+	return PFSpell.new(p_id)
 
 func requires_attack_roll() -> bool:
 	return has_trait(&"attack")

@@ -2,8 +2,14 @@
 class_name PFIgnitionSpell
 extends PFSpell
 
-func _init(p_id: StringName = &"mock_ignition"):
+func _init(p_id: StringName = &"ignition"):
 	super._init(p_id)
+	
+	# Fallback if variants aren't loaded correctly by the base class yet
+	if damage_dice == 0:
+		damage_dice = 2
+		die_faces = 4
+		damage_type = PFCombatConstants.DamageType.FIRE
 
 func resolve_effect(_caster: PFActor, target: PFActor, degree: PFDice.Degree, rank: int) -> void:
 	# Calculate heightened increments
@@ -27,6 +33,8 @@ func resolve_effect(_caster: PFActor, target: PFActor, degree: PFDice.Degree, ra
 		# Persistent damage heightened scales identically: +1d4 per increment
 		var persistent_dice = 1 + increments
 		print("    > Ignition ignites the target! They take %dd4 Persistent Fire damage." % persistent_dice)
-		# Assuming we have a condition system, we would apply the condition here:
-		# var condition = PFPersistentDamageCondition.new(PFCombatConstants.DamageType.FIRE, persistent_dice, 4)
-		# target.apply_condition(condition)
+		
+		var pd = PFCondition.create(&"persistent_damage")
+		pd.value = persistent_dice
+		pd.target_stat = "fire"
+		target.conditions.append(pd)

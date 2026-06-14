@@ -320,6 +320,16 @@ func get_strike_bonus(weapon: PFWeapon) -> int:
 	if weapon.has_trait(&"unarmed"):
 		category_to_use = PFEquipmentConstants.WeaponCategory.UNARMED
 		
+	# Apply Ancestry Weapon Familiarity category downgrades
+	if ancestry:
+		for t in ancestry.traits:
+			if weapon.has_trait(t) and has_ancestry_weapon_familiarity(t):
+				if category_to_use == PFEquipmentConstants.WeaponCategory.ADVANCED:
+					category_to_use = PFEquipmentConstants.WeaponCategory.MARTIAL
+				elif category_to_use == PFEquipmentConstants.WeaponCategory.MARTIAL:
+					category_to_use = PFEquipmentConstants.WeaponCategory.SIMPLE
+				break
+		
 	base_bonus = stat_mod + sheet.get_weapon_bonus(category_to_use, level)
 	base_bonus += weapon.potency_bonus 
 	
@@ -342,8 +352,14 @@ func get_class_dc() -> int:
 		key_attr = actor_class.key_abilities[0]
 		
 	var stat_mod = get_ability_modifier(key_attr)
-		
-	return 10 + prof_bonus + stat_mod
+	return 10 + stat_mod + prof_bonus
+
+func has_ancestry_weapon_familiarity(ancestry_trait: StringName) -> bool:
+	var familiarity_id = StringName(str(ancestry_trait) + "_weapon_familiarity")
+	for f in feats:
+		if f.id == familiarity_id:
+			return true
+	return false
 
 func get_spell_dc() -> int:
 	if not actor_class or not actor_class.is_spellcaster: return 10
