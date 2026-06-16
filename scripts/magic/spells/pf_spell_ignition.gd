@@ -34,7 +34,5 @@ func resolve_effect(_caster: PFActor, target: PFActor, degree: PFDice.Degree, ra
 		var persistent_dice = 1 + increments
 		print("    > Ignition ignites the target! They take %dd4 Persistent Fire damage." % persistent_dice)
 		
-		var pd = PFCondition.create(&"persistent_damage")
-		pd.value = persistent_dice
-		pd.target_stat = "fire"
+		var pd = PFConditionPersistent.new(PFCombatConstants.DamageType.FIRE, persistent_dice, 4)
 		target.conditions.append(pd)

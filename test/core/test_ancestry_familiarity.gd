@@ -8,6 +8,7 @@ func test_ancestry_weapon_familiarity():
 	
 	# Give them the familiar feat
 	var feat = PFFeat.new(&"elf_weapon_familiarity")
+	feat.id = &"elf_weapon_familiarity"
 	elf.feats.append(feat)
 	
 	# Give them an ancestry

@@ -14,7 +14,10 @@ var target_stat: String
 var multiplier: int
 var strategy_script_path: String
 
-func _init(p_id: StringName, p_initial_value: int = 1):
+# For conditions like Grabbed or Restrained that require an Escape check
+var source_dc: int = 0
+
+func _init(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0):
 	condition_id = p_id
 	var db_inst = PFDatabase.get_instance()
 	var data = db_inst.get_condition_data(p_id) if db_inst else null
@@ -32,16 +35,17 @@ func _init(p_id: StringName, p_initial_value: int = 1):
 		strategy_script_path = ""
 		
 	value = p_initial_value
+	source_dc = p_source_dc
 
 # NEW: Factory method for instantiating the correct condition subclass
-static func create(p_id: StringName, p_initial_value: int = 1) -> PFCondition:
+static func create(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0) -> PFCondition:
 	var db_inst = PFDatabase.get_instance()
 	var data = db_inst.get_condition_data(p_id) if db_inst else null
 	if data and data.get("script_path", "") != "":
 		var script = load(data["script_path"])
 		if script:
-			return script.new(p_id, p_initial_value)
-	return PFCondition.new(p_id, p_initial_value)
+			return script.new(p_id, p_initial_value, p_source_dc)
+	return PFCondition.new(p_id, p_initial_value, p_source_dc)
 
 # NEW: Called right before it is added to the actor. Return false to reject the condition.
 func on_apply(owner: PFActor) -> bool:

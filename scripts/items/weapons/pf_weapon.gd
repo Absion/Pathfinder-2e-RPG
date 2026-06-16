@@ -180,8 +180,8 @@ func get_thrown_range() -> int:
 static func create_improvised(base_item: PFItem, damage_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.BLUDGEONING) -> PFWeapon:
 	var weapon = PFWeapon.new("Improvised " + base_item.entity_name, base_item.traits.duplicate(), base_item.level, 0.0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.SIMPLE, PFEquipmentConstants.WeaponGroup.CLUB, 1, 4, damage_type)
 	weapon.is_improvised = true
-	weapon.bulk = base_item.bulk
-	weapon.description = base_item.description
+	weapon.bulk_value = base_item.bulk_value
+
 	
 	if base_item.has_trait(&"thrown") or base_item.has_trait(&"throwable"):
 		if not weapon.has_trait(&"thrown"): weapon.traits.append(&"thrown")

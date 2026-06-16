@@ -25,14 +25,14 @@ func test_ignition_heightening_and_persistent_damage():
 	assert_int(target.conditions.size()).is_equal(0)
 	
 	# Reset target HP
-	target.hp = 100
+	target.health.current_hp = 100
 	
 	# Test 2: Cast at Rank 3. Base damage should be 2d4 + 2d4 = 4d4.
 	spell.resolve_effect(caster, target, PFDice.Degree.SUCCESS, 3)
 	assert_int(target.conditions.size()).is_equal(0)
 	
 	# Reset target
-	target.hp = 100
+	target.health.current_hp = 100
 	
 	# Test 3: Critical Hit at Rank 3.
 	spell.resolve_effect(caster, target, PFDice.Degree.CRIT_SUCCESS, 3)
@@ -40,10 +40,10 @@ func test_ignition_heightening_and_persistent_damage():
 	# Target should now have a persistent damage condition
 	assert_int(target.conditions.size()).is_equal(1)
 	var condition = target.conditions[0]
-	assert_str(condition.id).is_equal("persistent_damage")
+	assert_str(condition.condition_name).is_equal("Persistent Fire")
 	
 	# Ignition scales persistent damage: +1d4 per increment.
 	# Rank 3 - Rank 1 = 2 increments (since scaling_rules = 1)
 	# Base persistent is 1d4 + 2 = 3d4.
-	assert_int(condition.value).is_equal(3)
-	assert_str(condition.target_stat).is_equal("fire")
+	assert_int(condition.dice_amount).is_equal(3)
+	assert_int(condition.damage_type).is_equal(PFCombatConstants.DamageType.FIRE)

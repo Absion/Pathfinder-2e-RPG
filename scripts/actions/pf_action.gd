@@ -18,6 +18,6 @@ func _init(p_name: String, p_traits: Array[StringName], p_cost: PFCombatConstant
 
 # This is a virtual function. Specific actions (like Strike or Stride) will 
 # override this to perform their unique logic.
-func execute(user: PFActor, _target: PFActor = null) -> bool:
+func execute(user: PFActor, _target: PFActor = null):
 	print("%s performs %s!" % [user.entity_name, entity_name])
 	return true

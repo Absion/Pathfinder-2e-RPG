@@ -25,6 +25,7 @@ class CombatantRecord extends RefCounted:
 		initiative_modifier = 0
 
 var combatants: Array[CombatantRecord] = []
+var delayed_combatants: Array[CombatantRecord] = []
 var current_turn_index: int = -1
 var round_number: int = 0
 var in_encounter: bool = false
@@ -126,3 +127,76 @@ func get_current_actor() -> PFActor:
 	if not in_encounter or current_turn_index < 0 or current_turn_index >= combatants.size():
 		return null
 	return combatants[current_turn_index].actor
+
+# --- DELAY LOGIC ---
+
+func delay_current_turn() -> bool:
+	if not in_encounter or combatants.is_empty():
+		return false
+		
+	var current_record = combatants[current_turn_index]
+	var current_actor = current_record.actor
+	
+	print("    > %s chooses to Delay their turn!" % current_actor.entity_name)
+	
+	# Move to delayed list
+	combatants.remove_at(current_turn_index)
+	delayed_combatants.append(current_record)
+	
+	# We DO NOT call end_turn() because the turn is delayed, not finished.
+	# End-of-turn conditions should not tick.
+	
+	# Since we removed the current actor, the array size shrank by 1.
+	# The *next* actor is now at `current_turn_index`, so we do not increment it.
+	
+	# Round rollover check
+	if current_turn_index >= combatants.size():
+		current_turn_index = 0
+		round_number += 1
+		print("--- ROUND %d ---" % round_number)
+		round_advanced.emit(round_number)
+		
+	if not combatants.is_empty():
+		_start_current_turn()
+		
+	return true
+
+func resume_delayed_turn(actor: PFActor) -> bool:
+	if not in_encounter:
+		return false
+		
+	var record_to_resume: CombatantRecord = null
+	for i in range(delayed_combatants.size()):
+		if delayed_combatants[i].actor == actor:
+			record_to_resume = delayed_combatants[i]
+			delayed_combatants.remove_at(i)
+			break
+			
+	if not record_to_resume:
+		print("    > [ERROR] %s cannot resume turn because they are not delayed!" % actor.entity_name)
+		return false
+		
+	print("    > %s resumes their delayed turn!" % actor.entity_name)
+	
+	# Insert right after the CURRENT turn index. 
+	# Wait, if they interrupt, they actually take their turn *now*. 
+	# If we insert at current_turn_index + 1, they go next. 
+	# PF2e says "you can return to the initiative order as a free action triggered by the end of any other creature's turn."
+	# So they are essentially inserted at `current_turn_index` and we shift the rest down.
+	# Wait, if it's the end of someone else's turn, `next_turn()` will have advanced the index to the next person.
+	# So inserting exactly at `current_turn_index` means they become the active turn immediately.
+	
+	# Adjust their initiative to match the person who just went, minus a tiny fraction so they go after them next round.
+	# For simplicity, we just insert them at the current index.
+	combatants.insert(current_turn_index, record_to_resume)
+	
+	# Adjust their recorded initiative roll so the sorting stays stable in future rounds
+	# We can just copy the initiative of the person right before them (or the person who just finished)
+	var prev_idx = current_turn_index - 1
+	if prev_idx < 0: prev_idx = combatants.size() - 1
+	if prev_idx >= 0 and prev_idx < combatants.size():
+		record_to_resume.initiative_roll = combatants[prev_idx].initiative_roll
+		record_to_resume.initiative_modifier = combatants[prev_idx].initiative_modifier
+	
+	_start_current_turn()
+	return true

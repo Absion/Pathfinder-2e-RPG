@@ -238,10 +238,8 @@ func has_critical_specialization(_weapon_group: PFEquipmentConstants.WeaponGroup
 # ---------------------------------------------------------
 
 func start_turn() -> void:
-	action_economy.actions_remaining = 3
-	action_economy.reactions_remaining = 1
-	action_economy.attack_stacks = 0 
-	print("\n--- %s starts their turn! (3 Actions) ---" % entity_name)
+	action_economy.start_turn()
+	print("\n--- %s starts their turn! (%d Actions) ---" % [entity_name, action_economy.actions_remaining])
 	
 	for c in conditions:
 		if c.is_active: c.on_turn_start(self)
@@ -257,12 +255,12 @@ func use_action(action: PFAction, target: PFActor = null) -> void:
 	action_economy.actions_remaining -= cost_val
 	print("[%s spends %d action(s). %d remaining]" % [entity_name, cost_val, action_economy.actions_remaining])
 	
-	if action.execute(self, target):
+	if await action.execute(self, target):
 		action_economy.attack_stacks += action.map_weight
 
 func execute_subordinate_action(action: PFAction, target: PFActor = null) -> void:
 	print("  > [Subordinate Action] %s performs %s" % [entity_name, action.entity_name])
-	if action.execute(self, target):
+	if await action.execute(self, target):
 		action_economy.attack_stacks += action.map_weight
 
 func end_turn() -> void:

@@ -40,7 +40,6 @@ func test_pick_crit_spec():
 	auto_free(strike)
 	
 	strike.weapon = pick
-	strike.active_damage_type = PFCombatConstants.DamageType.PIERCING
 	strike._apply_critical_specialization(attacker, target)
 	
 	# Should deal 2 * dice_amount (1) = 2 damage directly

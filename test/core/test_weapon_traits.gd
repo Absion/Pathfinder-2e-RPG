@@ -32,21 +32,27 @@ func test_reach_trait():
 	defender.global_position = Vector3(10, 0, 0) # 10 feet away
 	
 	# Normal weapon should fail
+	attacker.inventory.add_item(versatile_weapon)
+	attacker.inventory.equip_weapon(versatile_weapon, 1)
 	var strike = PFActionStrike.new(versatile_weapon)
 	auto_free(strike)
-	var success = strike.execute(attacker, defender)
+	var success = await strike.execute(attacker, defender)
 	assert_bool(success).is_false()
 	
 	# Reach weapon should succeed
+	attacker.inventory.add_item(reach_weapon)
+	attacker.inventory.equip_weapon(reach_weapon, 2)
 	var reach_strike = PFActionStrike.new(reach_weapon)
 	auto_free(reach_strike)
-	var reach_success = reach_strike.execute(attacker, defender)
+	var reach_success = await reach_strike.execute(attacker, defender)
 	assert_bool(reach_success).is_true()
 
 func test_versatile_trait():
+	attacker.inventory.add_item(versatile_weapon)
+	attacker.inventory.equip_weapon(versatile_weapon, 1)
 	var strike = PFActionStrike.new(versatile_weapon, false, PFCombatConstants.DamageType.PIERCING)
 	auto_free(strike)
-	strike.execute(attacker, defender)
+	await strike.execute(attacker, defender)
 	# Longsword should deal piercing damage now due to versatile p
 	assert_int(versatile_weapon.active_damage_type).is_equal(PFCombatConstants.DamageType.SLASHING) # Base type shouldn't change
 	
@@ -58,21 +64,25 @@ func test_nonlethal_trait():
 	var _initial_hp = defender.health.current_hp
 	
 	# Lethal attack with nonlethal weapon (-2 penalty)
+	attacker.inventory.add_item(nonlethal_weapon)
+	attacker.inventory.equip_weapon(nonlethal_weapon, 1)
 	var strike = PFActionStrike.new(nonlethal_weapon, false)
 	auto_free(strike)
-	strike.execute(attacker, defender)
+	await strike.execute(attacker, defender)
 	
 	# Nonlethal attack with nonlethal weapon (no penalty)
 	var strike2 = PFActionStrike.new(nonlethal_weapon, true)
 	auto_free(strike2)
-	strike2.execute(attacker, defender)
+	await strike2.execute(attacker, defender)
 
 func test_parry_action():
+	attacker.inventory.add_item(parry_weapon)
+	attacker.inventory.equip_weapon(parry_weapon, 1)
 	var initial_ac = attacker.get_ac()
 	var parry_action = PFActionParry.new(parry_weapon)
 	auto_free(parry_action)
 	
-	var success = parry_action.execute(attacker)
+	var success = await parry_action.execute(attacker)
 	assert_bool(success).is_true()
 	
 	var new_ac = attacker.get_ac()

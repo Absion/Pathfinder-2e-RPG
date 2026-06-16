@@ -1,0 +1,57 @@
+# pf_reaction_reactive_strike.gd
+class_name PFReactionReactiveStrike
+extends RefCounted
+
+static func condition(listener: PFActor, trigger_actor: PFActor, event_data: Dictionary) -> bool:
+	if trigger_actor == listener:
+		return false
+		
+	# Check reach
+	var dist_ft = listener.global_position.distance_to(trigger_actor.global_position)
+	var reach = 5
+	
+	# Determine if listener has a melee weapon
+	var weapon = PFWeapon.new_unarmed()
+	var inv = listener.get("inventory") as PFInventory
+	if inv and inv.held_main_hand and inv.held_main_hand is PFWeapon and inv.held_main_hand.weapon_type == PFEquipmentConstants.WeaponType.MELEE:
+		weapon = inv.held_main_hand
+	
+	for t in weapon.traits:
+		var ts = String(t)
+		if ts == "reach":
+			reach = 10
+		elif ts.begins_with("reach "):
+			var parts = ts.split(" ")
+			if parts.size() > 1 and parts[1].is_valid_int():
+				reach = parts[1].to_int()
+				
+	if dist_ft > reach:
+		return false
+		
+	return true
+
+static func execute(listener: PFActor, trigger_actor: PFActor, event_data: Dictionary) -> Dictionary:
+	print("    > [REACTION] %s uses Reactive Strike against %s!" % [listener.entity_name, trigger_actor.entity_name])
+	
+	# Reactive Strike is a free Strike action that doesn't increase MAP.
+	var weapon = PFWeapon.new_unarmed()
+	var inv = listener.get("inventory") as PFInventory
+	if inv and inv.held_main_hand and inv.held_main_hand is PFWeapon:
+		weapon = inv.held_main_hand
+		
+	var strike_action = PFActionStrike.new(weapon)
+	
+	# Store the current MAP
+	var current_map = listener.action_economy.attack_stacks
+	
+	# Force MAP to 0 for this strike
+	listener.action_economy.attack_stacks = 0
+	
+	# In a real async flow, we await this
+	await strike_action.execute(listener, trigger_actor)
+	
+	# Restore MAP
+	listener.action_economy.attack_stacks = current_map
+	
+	# Event data is unchanged
+	return event_data

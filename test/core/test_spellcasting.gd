@@ -70,7 +70,7 @@ func test_spell_attack_cantrip() -> void:
 	var action = PFActionCastSpell.new(spell)
 	
 	var initial_hp = target.health.current_hp
-	assert_bool(action.execute(caster, target)).is_true()
+	assert_bool(await action.execute(caster, target)).is_true()
 	
 	# As a level 5 caster, cantrip heightens to Rank 3. Base rank 1. Difference = 2 ranks.
 	# Scaling is +1 dice per 1 rank. So +2 dice. Total = 4 dice.
@@ -99,7 +99,7 @@ func test_saving_throw_spell() -> void:
 	# Test casting it at Rank 4! (Heightened)
 	var action = PFActionCastSpell.new(spell, 4)
 	var initial_hp = target.health.current_hp
-	assert_bool(action.execute(caster, target)).is_true()
+	assert_bool(await action.execute(caster, target)).is_true()
 	
 	# Fireball is base Rank 3, cast at Rank 4. Heightened (+1) adds 2d6 damage.
 	# Total dice = 8d6.
@@ -119,15 +119,15 @@ func test_focus_points() -> void:
 	assert_int(sb.focus_points).is_equal(2)
 	
 	var action = PFActionCastSpell.new(spell)
-	assert_bool(action.execute(caster, caster)).is_true()
+	assert_bool(await action.execute(caster, caster)).is_true()
 	
 	assert_int(sb.focus_points).is_equal(1)
 	
-	assert_bool(action.execute(caster, caster)).is_true()
+	assert_bool(await action.execute(caster, caster)).is_true()
 	assert_int(sb.focus_points).is_equal(0)
 	
 	# Trying to cast again should fail
-	assert_bool(action.execute(caster, caster)).is_false()
+	assert_bool(await action.execute(caster, caster)).is_false()
 	
 	# Refocus
 	sb.refocus()

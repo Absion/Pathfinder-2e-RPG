@@ -7,6 +7,8 @@ signal actions_changed(remaining: int)
 signal reactions_changed(remaining: int)
 signal attack_stacks_changed(stacks: int)
 
+var extra_reactions: Dictionary = {}
+
 @export var actions_remaining: int = 0 :
 	set(val):
 		actions_remaining = clampi(val, 0, 4)
@@ -36,11 +38,12 @@ func start_turn():
 		var slowed = parent.get_condition("slowed")
 		
 		var actions_lost = 0
-		
 		var stunned_val = 0
 		if stunned:
 			stunned_val = stunned.value
-			stunned.value -= new_actions
+			# Stunned prevents actions, reducing the stunned condition by the number of actions lost
+			var actions_prevented = mini(new_actions, stunned.value)
+			stunned.value -= actions_prevented
 			if stunned.value <= 0:
 				parent.remove_condition("stunned")
 				
@@ -53,7 +56,13 @@ func start_turn():
 			
 	actions_remaining = max(new_actions, 0)
 	reactions_remaining = 1
+	extra_reactions.clear()
 	attack_stacks = 0
+
+func add_extra_reaction(type: StringName, amount: int = 1) -> void:
+	if not extra_reactions.has(type):
+		extra_reactions[type] = 0
+	extra_reactions[type] += amount
 
 func consume_actions(amount: int) -> bool:
 	if actions_remaining >= amount:
@@ -61,7 +70,11 @@ func consume_actions(amount: int) -> bool:
 		return true
 	return false
 
-func consume_reaction() -> bool:
+func consume_reaction(type: StringName = &"") -> bool:
+	if type != &"" and extra_reactions.has(type) and extra_reactions[type] > 0:
+		extra_reactions[type] -= 1
+		return true
+		
 	if reactions_remaining > 0:
 		reactions_remaining -= 1
 		return true

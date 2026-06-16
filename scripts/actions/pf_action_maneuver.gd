@@ -72,10 +72,10 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	var target_dc = 10
 	if maneuver_type == ManeuverType.GRAPPLE or maneuver_type == ManeuverType.SHOVE:
 		if target.get("attributes"):
-			target_dc = 10 + target.attributes.fort_save.value()
+			target_dc = 10 + target.attributes.fort_save.get_total()
 	elif maneuver_type == ManeuverType.TRIP or maneuver_type == ManeuverType.DISARM:
 		if target.get("attributes"):
-			target_dc = 10 + target.attributes.ref_save.value()
+			target_dc = 10 + target.attributes.ref_save.get_total()
 			
 	var degree = PFDice.determine_success(roll_total, target_dc, nat_roll)
 	

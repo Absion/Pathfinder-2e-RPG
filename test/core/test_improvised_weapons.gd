@@ -28,7 +28,7 @@ func test_improvised_factory():
 func test_scavenge_forest():
 	var action = PFActionScavenge.new([&"forest"])
 	auto_free(action)
-	var success = action.execute(attacker)
+	var success = await action.execute(attacker)
 	
 	assert_bool(success).is_true()
 	var inv = attacker.get("inventory") as PFInventory
@@ -44,7 +44,7 @@ func test_scavenge_road():
 	
 	var action = PFActionScavenge.new([&"road"])
 	auto_free(action)
-	var success = action.execute(attacker)
+	var success = await action.execute(attacker)
 	
 	assert_bool(success).is_true()
 	var held = inv.held_main_hand as PFWeapon

@@ -23,6 +23,16 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		print("Strike failed: No target.")
 		return false
 		
+	if PFContext.detection_manager:
+		if not PFContext.detection_manager.roll_flat_check_for_targeting(user, target):
+			print("    > Strike automatically fails due to concealment/invisibility.")
+			# Still costs an action and MAP, so we don't return false directly without charging it.
+			# But wait, PFAction's base execute() already burned the action. So returning true is fine
+			# but we don't want to deal damage. Actually, we should just abort the rest of the method.
+			# If we return true here, it means "the action was performed (but missed)".
+			user.action_economy.increment_attack()
+			return true
+		
 	var inv = user.get("inventory") as PFInventory
 	if inv:
 		if weapon.hands_required == 2 and inv.two_handed_item != weapon:
@@ -308,8 +318,13 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			traits_with_crit.append(&"nonlethal")
 			
 		# Send final damage to the target, passing the weapon traits for Sanctification/Material checks!
+		if PFContext.reaction_manager:
+			var event_data = {"damage": crit_damage, "type": final_damage_type, "traits": traits_with_crit, "source_weapon": weapon}
+			event_data = await PFContext.reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.BEFORE_TAKE_DAMAGE, user, event_data)
+			crit_damage = event_data.get("damage", crit_damage)
+			final_damage_type = event_data.get("type", final_damage_type)
+			
 		target.take_damage(crit_damage, final_damage_type, traits_with_crit)
-		
 	elif degree == PFMathConstants.DegreeOfSuccess.SUCCESS:
 		print("    * HIT! *")
 		print("    Damage Rolled: %sd%d %s = %d + %d = %d Total Damage." % [weapon.dice_amount, current_die_faces, dice_str, damage_result.total, damage_stat, base_total])
@@ -319,6 +334,12 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			traits_with_hit.append(&"nonlethal")
 			
 		# Send final damage to the target, passing the weapon traits!
+		if PFContext.reaction_manager:
+			var event_data = {"damage": base_total, "type": final_damage_type, "traits": traits_with_hit, "source_weapon": weapon}
+			event_data = await PFContext.reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.BEFORE_TAKE_DAMAGE, user, event_data)
+			base_total = event_data.get("damage", base_total)
+			final_damage_type = event_data.get("type", final_damage_type)
+			
 		target.take_damage(base_total, final_damage_type, traits_with_hit)
 			
 	if weapon.has_trait(&"splash") and degree != PFMathConstants.DegreeOfSuccess.CRIT_FAIL:
