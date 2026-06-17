@@ -26,7 +26,13 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			
 		var state = PFContext.detection_manager.get_detection_state(user, t)
 		if state >= PFCombatConstants.DetectionState.HIDDEN:
-			var stealth_dc = 10 + t.get_skill_bonus(&"stealth")
+			var user_prof = user.get_skill_rank(&"perception") if user.has_method("get_skill_rank") else PFMathConstants.ProficiencyRank.UNTRAINED
+			
+			if t is PFHazard and user_prof < t.stealth_min_proficiency:
+				print("    > %s lacks the minimum Perception proficiency to notice %s." % [user.entity_name, t.entity_name])
+				continue
+				
+			var stealth_dc = t.stealth_dc if t is PFHazard else 10 + t.get_skill_bonus(&"stealth")
 			var degree = PFGameMath.get_degree_of_success(perc_roll, stealth_dc)
 			
 			if degree >= PFCombatConstants.DegreeOfSuccess.SUCCESS:

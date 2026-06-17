@@ -239,6 +239,10 @@ func get_skill_bonus(_skill: StringName) -> int:
 	# Virtual function for polymorphism
 	return 0
 
+func get_skill_rank(_skill: StringName) -> int:
+	# Virtual function. Defaults to UNTRAINED for NPCs unless overridden.
+	return PFMathConstants.ProficiencyRank.UNTRAINED
+
 func get_ability_modifier(_ability: StringName) -> int:
 	# Virtual function for polymorphism
 	return 0

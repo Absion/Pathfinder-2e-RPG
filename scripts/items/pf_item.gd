@@ -116,6 +116,11 @@ func apply_material_stats() -> void:
 				
 	broken_threshold = int(max_hp / 2.0)
 	current_hp = max_hp
+	
+	# Automatically inject the material name as a trait for weakness/resistance bypassing
+	var mat_trait = StringName(PFEquipmentConstants.ItemMaterial.keys()[item_material].to_lower())
+	if not traits.has(mat_trait):
+		traits.append(mat_trait)
 
 # ---------------------------------------------------------
 # ECONOMY HELPERS

@@ -126,6 +126,24 @@ func _initialize_schema_if_needed():
 		script_path TEXT
 	);")
 
+	db.query("CREATE TABLE IF NOT EXISTS hazards (
+		id TEXT PRIMARY KEY,
+		name TEXT,
+		level INTEGER,
+		complexity TEXT,
+		traits TEXT,
+		stealth_dc INTEGER,
+		stealth_min_proficiency INTEGER,
+		disable_methods TEXT,
+		hardness INTEGER,
+		hp INTEGER,
+		immunities TEXT,
+		weaknesses TEXT,
+		resistances TEXT,
+		abilities TEXT,
+		description TEXT
+	);")
+
 	db.query("CREATE TABLE IF NOT EXISTS conditions (
 		id TEXT PRIMARY KEY,
 		name TEXT,
@@ -1441,4 +1459,13 @@ func update_player_knowledge(monster_id: String, updates: Dictionary) -> void:
 			
 	var query = "UPDATE player_knowledge SET " + ", ".join(set_statements) + " WHERE monster_id = '" + monster_id + "';"
 	db.query(query)
+
+# --- HAZARDS ---
+
+func get_hazard_data(hazard_id: String) -> Dictionary:
+	db.query("SELECT * FROM hazards WHERE id = '" + hazard_id + "';")
+	var result = db.query_result
+	if result.is_empty():
+		return {}
+	return result[0]
 

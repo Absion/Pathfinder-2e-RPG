@@ -14,7 +14,15 @@ static func condition(listener: PFActor, trigger_actor: PFActor, event_data: Dic
 	if type != PFCombatConstants.DamageType.BLUDGEONING and type != PFCombatConstants.DamageType.PIERCING and type != PFCombatConstants.DamageType.SLASHING:
 		return false
 		
-	# Must have a shield equipped and raised (handled by the condition registering this)
+	# Must have a shield equipped and raised
+	var raised_cond = listener.get_condition("Raised Shield")
+	if not raised_cond or not "shield" in raised_cond:
+		return false
+		
+	var shield = raised_cond.shield as PFShield
+	if not shield or shield.is_broken():
+		return false
+		
 	return true
 
 ## Executes the Shield Block

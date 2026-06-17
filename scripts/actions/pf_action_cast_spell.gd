@@ -33,6 +33,11 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		print("    > [ERROR] %s cannot cast spells (no spellbook)." % user.entity_name)
 		return false
 		
+	if PFContext.environment_manager and PFContext.environment_manager.is_underwater:
+		if spell.has_trait(&"fire"):
+			print("    > [ERROR] Cannot cast fire spells underwater!")
+			return false
+		
 	# Dynamic Heightening
 	var active_rank = spell_rank
 	if active_rank <= 0:

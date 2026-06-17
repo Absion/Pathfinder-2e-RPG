@@ -116,6 +116,18 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			
 	base_attack_bonus += range_penalty
 	
+	# Aquatic Combat Rules
+	if PFContext.environment_manager and PFContext.environment_manager.is_underwater:
+		# Check if the weapon naturally lacks the aquatic/underwater trait (if those existed)
+		# For now, apply -2 to Bludgeoning and Slashing.
+		if weapon.active_damage_type == PFCombatConstants.DamageType.BLUDGEONING or weapon.active_damage_type == PFCombatConstants.DamageType.SLASHING:
+			# If the actor lacks a swim speed, they take a -2 penalty
+			var has_swim_speed = false
+			# TODO: check actor.speeds once implemented
+			if not has_swim_speed:
+				base_attack_bonus -= 2
+				print("    > Aquatic Combat Penalty: -2 to hit with Bludgeoning/Slashing weapons underwater.")
+	
 	var base_map = -5
 	var db_inst = PFDatabase.get_instance()
 	for t in weapon.traits:

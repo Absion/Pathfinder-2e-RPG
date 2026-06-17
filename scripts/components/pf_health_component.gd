@@ -43,6 +43,8 @@ var temp_hp: int = 0 :
 		temp_hp = max(val, 0)
 		temp_hp_changed.emit(temp_hp)
 
+var hardness: int = 0
+
 var immunities: Array[PFCombatConstants.DamageType] = []
 var weaknesses: Dictionary = {} 
 var resistances: Dictionary = {} 
@@ -84,6 +86,14 @@ func apply_damage(amount: int, type: PFCombatConstants.DamageType = PFCombatCons
 		if trait_resistances.has(tag):
 			triggered_resistance = true
 			final_damage = max(0, final_damage - trait_resistances[tag])
+			
+	# Apply Hardness (objects/hazards/shields)
+	if hardness > 0:
+		# Note: Certain energy types might bypass hardness entirely depending on exact GM rules,
+		# but by default hardness reduces all damage.
+		final_damage = max(0, final_damage - hardness)
+		if final_damage == 0:
+			return 0
 			
 	# Passive Bestiary Discovery/Un-discovery
 	var parent = get_parent()

@@ -3,6 +3,15 @@
 class_name PFNpc
 extends PFActor
 
+# --- DISPOSITION ---
+enum Attitude {
+	HOSTILE,
+	UNFRIENDLY,
+	INDIFFERENT,
+	FRIENDLY,
+	HELPFUL
+}
+
 # --- COMPONENTS ---
 var attributes: PFAttributesComponent
 var movement: PFMovementComponent
@@ -17,6 +26,7 @@ var size_id: StringName = &"medium"
 var npc_spell_dc: int = 10
 var npc_spell_attack: int = 0
 var description: String = ""
+var disposition: Attitude = Attitude.INDIFFERENT
 
 func _init(p_base_id: StringName, p_name: String, p_traits: Array[StringName], p_level: int,
 		p_hp: int, p_fort: int, p_ref: int, p_will: int,
@@ -76,8 +86,18 @@ func _init(p_base_id: StringName, p_name: String, p_traits: Array[StringName], p
 	spellbook = PFSpellbook.new(self)
 
 # ---------------------------------------------------------
-# THE UNIFIED MATH DELEGATES
+# THE UNIFIED MATH DELEGATES (OVERRIDES)
 # ---------------------------------------------------------
+
+# --- DISPOSITION LOGIC ---
+func set_disposition(new_attitude: Attitude) -> void:
+	if disposition != new_attitude:
+		disposition = new_attitude
+		print("    > [Disposition] %s is now %s towards the party." % [entity_name, Attitude.keys()[disposition]])
+
+func set_combat_hostile() -> void:
+	# Forces an NPC to become hostile when explicitly spawned into a combat scenario
+	set_disposition(Attitude.HOSTILE)
 
 func get_ac() -> int:
 	var base_ac = monster_stats.get("ac", 10)

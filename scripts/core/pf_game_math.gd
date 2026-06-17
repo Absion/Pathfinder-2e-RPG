@@ -20,6 +20,36 @@ const DC_ADJUSTMENTS: Dictionary = {
 	&"incredibly_hard": 10
 }
 
+const DAMAGE_BY_LEVEL: Dictionary = {
+	-1: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [1, 4], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [1, 6], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [2, 6], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [4, 6] },
+	0: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [1, 4], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [1, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [2, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [4, 8] },
+	1: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [1, 6], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [2, 6], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [3, 6], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [4, 6] },
+	2: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [1, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [2, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [3, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [4, 8] },
+	3: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [1, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [2, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [4, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [5, 10] },
+	4: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [2, 6], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [3, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [5, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [6, 8] },
+	5: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [2, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [4, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [6, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [7, 8] },
+	6: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [2, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [5, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [7, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [8, 8] },
+	7: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [2, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [5, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [7, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [9, 10] },
+	8: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [3, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [6, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [8, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [10, 8] },
+	9: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [3, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [6, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [9, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [11, 10] },
+	10: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [4, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [7, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [10, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [12, 8] },
+	11: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [4, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [7, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [11, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [14, 10] },
+	12: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [5, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [8, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [12, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [15, 8] },
+	13: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [5, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [9, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [13, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [16, 10] },
+	14: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [6, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [10, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [14, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [18, 8] },
+	15: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [6, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [11, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [15, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [19, 10] },
+	16: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [7, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [12, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [16, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [20, 8] },
+	17: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [7, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [13, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [18, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [22, 10] },
+	18: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [8, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [14, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [19, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [24, 8] },
+	19: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [8, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [15, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [20, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [26, 10] },
+	20: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [9, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [16, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [22, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [28, 8] },
+	21: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [9, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [17, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [23, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [30, 10] },
+	22: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [10, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [18, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [25, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [32, 8] },
+	23: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [10, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [19, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [26, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [34, 10] },
+	24: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [11, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [20, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [28, 8], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [36, 8] },
+	25: { PFEnvironmentConstants.EnvironmentDamageSeverity.MINOR: [11, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MODERATE: [21, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MAJOR: [30, 10], PFEnvironmentConstants.EnvironmentDamageSeverity.MASSIVE: [38, 10] }
+}
+
 ## Returns the standard DC for a given level. Clamps between 0 and 25.
 static func get_dc_by_level(level: int) -> int:
 	var clamped_level = clampi(level, 0, 25)
@@ -40,6 +70,12 @@ static func adjust_dc(base_dc: int, adjustment_type: StringName) -> int:
 	if DC_ADJUSTMENTS.has(adjustment_type):
 		return base_dc + DC_ADJUSTMENTS[adjustment_type]
 	return base_dc
+
+## Returns the appropriate amount of damage for a Hazard or Environment based on the level and severity.
+static func get_environmental_damage(level: int, severity: PFEnvironmentConstants.EnvironmentDamageSeverity) -> PFDice.Result:
+	var clamped_level = clampi(level, -1, 25)
+	var damage_def = DAMAGE_BY_LEVEL[clamped_level][severity]
+	return PFDice.roll(damage_def[0], damage_def[1])
 
 ## Evaluates a d20 roll against a DC to determine the Degree of Success.
 ## Automatically handles Natural 1s (-1 degree) and Natural 20s (+1 degree).

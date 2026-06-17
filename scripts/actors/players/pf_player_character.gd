@@ -313,7 +313,8 @@ func get_ac() -> int:
 	var armor_items = inventory.worn_items.filter(func(i): return i is PFArmor)
 	if armor_items.size() > 0:
 		armor = armor_items[0]
-	if not armor: armor = PFArmor.new("Unarmored", [], 0, 0.0, PFEquipmentConstants.ArmorCategory.UNARMORED, PFEquipmentConstants.ArmorGroup.UNARMORED, 0, 99)
+	if not armor or armor.is_destroyed(): 
+		armor = PFArmor.new("Unarmored", [], 0, 0.0, PFEquipmentConstants.ArmorCategory.UNARMORED, PFEquipmentConstants.ArmorGroup.UNARMORED, 0, 99)
 	
 	var capped_dex = mini(attributes.dex_mod, armor.dex_cap)
 	base_ac += capped_dex + armor.ac_bonus + sheet.get_armor_bonus(armor.category, level)
@@ -597,3 +598,10 @@ func heroic_recovery() -> bool:
 		return true
 	print("    > %s has no Hero Points for a Heroic Recovery!" % entity_name)
 	return false
+
+# ---------------------------------------------------------
+# OVERRIDES
+# ---------------------------------------------------------
+func get_skill_rank(skill: StringName) -> int:
+	return sheet.get_skill_rank(skill)
+

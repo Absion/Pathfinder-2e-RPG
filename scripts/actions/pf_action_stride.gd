@@ -15,5 +15,15 @@ func execute(user: PFActor, target: PFActor = null):
 			"from_position": user.global_position
 		})
 		
-	print("%s moves to a new location." % user.entity_name)
+	var terrain_multiplier = 1.0
+	if PFContext.environment_manager:
+		if PFContext.environment_manager.current_terrain == PFEnvironmentConstants.TerrainType.DIFFICULT:
+			terrain_multiplier = 2.0
+		elif PFContext.environment_manager.current_terrain == PFEnvironmentConstants.TerrainType.GREATER_DIFFICULT:
+			terrain_multiplier = 3.0
+			
+	if terrain_multiplier > 1.0:
+		print("%s moves to a new location. (Terrain Multiplier: x%.1f)" % [user.entity_name, terrain_multiplier])
+	else:
+		print("%s moves to a new location." % user.entity_name)
 	return true
