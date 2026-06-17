@@ -3,6 +3,8 @@
 class_name PFInventory
 extends RefCounted
 
+signal inventory_changed(new_bulk_units: int, is_encumbered: bool)
+
 var owner: PFActor
 
 # --- INVENTORY STORAGE ---
@@ -44,6 +46,7 @@ func is_lootable() -> bool:
 func add_item(item: PFItem) -> void:
 	items.append(item)
 	print("    > %s added %s to their inventory." % [owner.entity_name, item.entity_name])
+	_emit_inventory_update()
 
 func equip_item(item: PFItem) -> void:
 	# If the item requires investment, verify it is invested first
@@ -65,6 +68,19 @@ func equip_item(item: PFItem) -> void:
 			return
 	
 	worn_items.append(item)
+	
+	if item is PFEquipment:
+		item.on_equipped(owner)
+		
+	_emit_inventory_update()
+
+func unequip_item(item: PFItem) -> void:
+	if worn_items.has(item):
+		worn_items.erase(item)
+		if item is PFEquipment:
+			item.on_unequipped(owner)
+		print("    > %s unequipped %s." % [owner.entity_name, item.entity_name])
+		_emit_inventory_update()
 
 # pf_inventory.gd
 
@@ -84,12 +100,14 @@ func hold_item(item: PFItem, main_hand: bool = true) -> void:
 		held_off_hand = item
 		
 	print("    > %s is now holding %s." % [owner.entity_name, item.entity_name])
+	_emit_inventory_update()
 
 func release_item(main_hand: bool = true) -> void:
 	if main_hand:
 		held_main_hand = null
 	else:
 		held_off_hand = null
+	_emit_inventory_update()
 
 func equip_weapon(weapon: PFItem, hands: int = 1, main_hand: bool = true) -> void:
 	if weapon.requires_investment and not invested_items.has(weapon):
@@ -106,6 +124,7 @@ func equip_weapon(weapon: PFItem, hands: int = 1, main_hand: bool = true) -> voi
 	else:
 		held_off_hand = weapon
 		two_handed_item = null
+	_emit_inventory_update()
 
 func wield_as_improvised(item: PFItem, main_hand: bool = true, damage_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.BLUDGEONING) -> void:
 	var improvised_weapon = PFWeapon.create_improvised(item, damage_type)
@@ -317,6 +336,9 @@ func get_total_bulk() -> int:
 		total_bulk_units += maxi(0, _calculate_container_contents(container) - container.bulk_reduction_value)
 		
 	return total_bulk_units
+
+func _emit_inventory_update() -> void:
+	inventory_changed.emit(get_total_bulk(), is_encumbered())
 
 func _calculate_container_contents(container: PFItem) -> int:
 	if not "stored_items" in container: return 0

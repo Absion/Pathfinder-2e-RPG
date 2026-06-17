@@ -33,7 +33,11 @@ func _init(p_action_id: StringName):
 	super._init(action_name, traits_array, action_cost)
 	action_id = p_action_id
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: PFActor = null) -> Variant:
+	if await check_trait_triggers(user):
+		print(" -> %s's action was disrupted!" % user.entity_name)
+		return false
+		
 	super.execute(user, target)
 	
 	match action_id:

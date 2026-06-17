@@ -23,17 +23,9 @@ var ref_save: PFStat
 var will_save: PFStat
 
 # --- TEMPORARY MODIFIERS (Buffs/Debuffs) ---
-var item_bonus_to_attack: int = 0
-var status_bonus_to_attack: int = 0
-var circumstance_penalty_to_attack: int = 0
-var status_penalty_to_attack: int = 0
-
-var item_bonus_to_dc: int = 0
-var status_bonus_to_dc: int = 0
-var circumstance_penalty_to_dc: int = 0
-var status_penalty_to_dc: int = 0
-
-var item_penalty_to_save: int = 0
+var attack_modifiers: PFStat
+var dc_modifiers: PFStat
+var ac_modifiers: PFStat
 
 # --- ABC BOOST TRACKING ---
 var is_npc: bool = false
@@ -51,6 +43,9 @@ func initialize(p_fort: int, p_ref: int, p_will: int) -> void:
 	fort_save = PFStat.new(p_fort)
 	ref_save = PFStat.new(p_ref)
 	will_save = PFStat.new(p_will)
+	attack_modifiers = PFStat.new(0)
+	dc_modifiers = PFStat.new(0)
+	ac_modifiers = PFStat.new(0)
 
 ## Validates and applies an ancestry boost. If it overlaps with an existing ancestry boost (and it's not the alternate rule), returns false.
 func apply_ancestry_boost(stat: StringName, is_voluntary_flaw_boost: bool = false) -> bool:

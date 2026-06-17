@@ -373,7 +373,7 @@ func _apply_critical_specialization(user: PFActor, target: PFActor) -> void:
 			target.conditions.append(PFCondition.create(&"immobilized"))
 			print("    > Bow Specialization: Target is Immobilized!")
 		PFEquipmentConstants.WeaponGroup.BRAWLING:
-			var save_mod = target.attributes.fort_save.value() if target.get("attributes") else 0
+			var save_mod = target.get_save_bonus(&"fortitude")
 			var roll = PFDice.roll_d20()
 			var total = roll + save_mod
 			var dc = user.get_class_dc() if user.has_method("get_class_dc") else 10
@@ -394,7 +394,7 @@ func _apply_critical_specialization(user: PFActor, target: PFActor) -> void:
 			target.conditions.append(pd)
 			print("    > %s Specialization: Target takes %dd6 persistent bleed damage!" % [PFEquipmentConstants.WeaponGroup.keys()[weapon.group].capitalize(), weapon.dice_amount])
 		PFEquipmentConstants.WeaponGroup.FIREARM, PFEquipmentConstants.WeaponGroup.SLING:
-			var save_mod = target.attributes.fort_save.value() if target.get("attributes") else 0
+			var save_mod = target.get_save_bonus(&"fortitude")
 			var roll = PFDice.roll_d20()
 			var total = roll + save_mod
 			var dc = user.get_class_dc() if user.has_method("get_class_dc") else 10

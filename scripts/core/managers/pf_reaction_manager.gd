@@ -9,6 +9,9 @@ signal reaction_prompted(listener: PFActor, trigger_actor: PFActor, reaction_id:
 ## Emitted by the UI to resolve the pending reaction.
 signal reaction_resolved(use_reaction: bool)
 
+## Set to true during unit tests to automatically approve/resolve reactions without pausing.
+var auto_resolve_prompts: bool = false
+
 class ReactionRegistration extends RefCounted:
 	var listener: PFActor
 	var reaction_id: StringName
@@ -64,7 +67,7 @@ func notify_event(trigger_type: StringName, trigger_actor: PFActor, event_data: 
 		var will_use = false
 		
 		# If AI, standard logic applies (always use for now, or roll chance)
-		if reg.listener.get_meta("is_ai", false) or reg.listener is PFNpc:
+		if auto_resolve_prompts or reg.listener.get_meta("is_ai", false) or reg.listener is PFNpc:
 			will_use = true
 		else:
 			# If Player, pause and prompt UI

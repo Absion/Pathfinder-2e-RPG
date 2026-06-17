@@ -54,7 +54,12 @@ func initialize(p_max_hp: int):
 	current_hp = max_hp
 
 func apply_damage(amount: int, type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.UNTYPED, tags: Array[StringName] = []) -> int:
+	var triggered_immunity = false
+	var triggered_weakness = false
+	var triggered_resistance = false
+	
 	if immunities.has(type):
+		triggered_immunity = true
 		return 0 # Completely immune
 		
 	var final_damage = amount
@@ -62,20 +67,54 @@ func apply_damage(amount: int, type: PFCombatConstants.DamageType = PFCombatCons
 	
 	# Handle Weaknesses
 	if weaknesses.has(type):
+		triggered_weakness = true
 		final_damage += weaknesses[type]
 		
 	for tag in tags:
 		if trait_weaknesses.has(tag):
+			triggered_weakness = true
 			final_damage += trait_weaknesses[tag]
 			
 	# Handle Resistances
 	if resistances.has(type):
+		triggered_resistance = true
 		final_damage = max(0, final_damage - resistances[type])
 		
 	for tag in tags:
 		if trait_resistances.has(tag):
+			triggered_resistance = true
 			final_damage = max(0, final_damage - trait_resistances[tag])
 			
+	# Passive Bestiary Discovery/Un-discovery
+	var parent = get_parent()
+	if parent is PFNpc and parent.base_id != &"":
+		var db = PFDatabase.get_instance()
+		if db:
+			var knowledge = db.get_player_knowledge(parent.base_id)
+			if not knowledge.is_empty():
+				var type_str = PFCombatConstants.DamageType.keys()[type].to_lower()
+				
+				# Weakness Check
+				if triggered_weakness:
+					if knowledge.get("state_weaknesses", 0) != 1: # 1 is KNOWN
+						db.update_player_knowledge(parent.base_id, {"state_weaknesses": 1})
+						print("    > [Bestiary Discovery] You discovered %s is weak to %s!" % [parent.entity_name, type_str])
+				else:
+					var false_data_str = knowledge.get("false_data", "{}")
+					var false_data = JSON.parse_string(false_data_str) if false_data_str else {}
+					if false_data.has("weaknesses"):
+						for w in false_data["weaknesses"]:
+							if w.has("type") and w["type"] == type_str:
+								print("    > [Bestiary Discovery] You realize the supposed weakness to %s was false!" % type_str)
+								false_data.erase("weaknesses")
+								db.update_player_knowledge(parent.base_id, {
+									"state_weaknesses": 0,
+									"false_data": JSON.stringify(false_data)
+								})
+								break
+				
+				# Similar checks could be added for Resistance and Immunity
+	
 	# Apply to temp hp first
 	if temp_hp > 0:
 		if final_damage <= temp_hp:

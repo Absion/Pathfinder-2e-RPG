@@ -85,18 +85,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		var save_type = spell.get_saving_throw()
 		var spell_dc = user.get_spell_dc()
 		
-		var save_bonus = 0
-		var save_stat = null
-		match save_type.to_lower():
-			"fortitude": save_stat = target.attributes.fort_save
-			"reflex": save_stat = target.attributes.ref_save
-			"will": save_stat = target.attributes.will_save
-		
-		if save_stat:
-			save_bonus = save_stat.value() if save_stat.has_method("value") else save_stat.get_total() if save_stat.has_method("get_total") else 0
-			
-		# Apply penalties
-		save_bonus -= target.attributes.item_penalty_to_save
+		var save_bonus = target.get_save_bonus(save_type)
 		
 		var d20_roll = PFDice.roll_d20()
 		var total = d20_roll + save_bonus

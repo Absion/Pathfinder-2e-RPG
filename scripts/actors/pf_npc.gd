@@ -11,13 +11,14 @@ var inventory: PFInventory
 var spellbook: PFSpellbook
 
 # --- NPC STATS ---
+var base_id: StringName = &""
 var monster_stats: Dictionary = {}
 var size_id: StringName = &"medium"
 var npc_spell_dc: int = 10
 var npc_spell_attack: int = 0
 var description: String = ""
 
-func _init(p_name: String, p_traits: Array[StringName], p_level: int,
+func _init(p_base_id: StringName, p_name: String, p_traits: Array[StringName], p_level: int,
 		p_hp: int, p_fort: int, p_ref: int, p_will: int,
 		p_str: int, p_dex: int, p_con: int, p_int: int, p_wis: int, p_cha: int,
 		p_speed_land: int = 25, p_speed_fly: int = 0, p_speed_swim: int = 0,
@@ -28,6 +29,7 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int,
 	# Call PFActor initialization
 	super._init(p_name, p_traits, p_level, p_hp)
 	
+	base_id = p_base_id
 	has_spirit = p_has_spirit
 	description = p_description
 	
@@ -79,7 +81,7 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int,
 
 func get_ac() -> int:
 	var base_ac = monster_stats.get("ac", 10)
-	return base_ac + get_condition_modifier(&"ac")
+	return base_ac + attributes.ac_modifiers.get_total()
 
 func get_strike_bonus(weapon: PFWeapon) -> int:
 	var base_bonus = monster_stats.get("attack", 0)
@@ -87,7 +89,7 @@ func get_strike_bonus(weapon: PFWeapon) -> int:
 	if weapon and weapon.is_broken():
 		base_bonus -= 2
 		
-	return base_bonus + get_condition_modifier(&"attack")
+	return base_bonus + attributes.attack_modifiers.get_total()
 
 func get_class_dc() -> int:
 	return monster_stats.get("dc", 10)
@@ -97,6 +99,20 @@ func get_spell_dc() -> int:
 
 func get_spell_attack() -> int:
 	return npc_spell_attack
+
+func get_save_bonus(save_type: StringName) -> int:
+	var base_save = 0
+	match save_type.to_lower():
+		"fortitude", "fort": base_save = attributes.fort_save.get_total()
+		"reflex", "ref": base_save = attributes.ref_save.get_total()
+		"will": base_save = attributes.will_save.get_total()
+		
+	base_save -= attributes.item_penalty_to_save
+	return base_save
+
+func get_skill_dc(skill_name: StringName) -> int:
+	# NPCs should ideally read this from their stat block
+	return monster_stats.get(str(skill_name).to_lower() + "_dc", 10)
 
 func get_strike_damage_bonus(weapon: PFWeapon) -> int:
 	var dmg_bonus = monster_stats.get("damage", attributes.str_mod) 
@@ -140,3 +156,15 @@ func get_wielded_shield() -> PFShield:
 	if inventory.held_main_hand is PFShield:
 		return inventory.held_main_hand
 	return null
+
+func get_weaknesses() -> Array:
+	return monster_stats.get("weaknesses", [])
+
+func get_resistances() -> Array:
+	return monster_stats.get("resistances", [])
+
+func get_immunities() -> Array:
+	return monster_stats.get("immunities", [])
+
+func get_special_abilities() -> Array:
+	return monster_stats.get("special_abilities", [])

@@ -20,18 +20,32 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 	print("    > %s rolls Stealth: %d" % [user.entity_name, stealth_roll])
 	
 	# Evaluate against all potential observers
-	# We'll need a way to get all actors. For now, we can check active_party and reserve_party
-	# Assuming this handles both PCs and Enemies properly.
 	var all_combatants = []
 	all_combatants.append_array(PFContext.active_party)
 	all_combatants.append_array(PFContext.reserve_party)
 	
-	# If we are in CombatContext, we might get them from TurnManager. 
-	# For simplicity, we just use the global parties if available, or if they are in the tree.
 	var observers = user.get_tree().get_nodes_in_group("actors") if user.is_inside_tree() else all_combatants
+	var valid_observers = 0
 	
 	for obs in observers:
 		if obs == user or not obs is PFActor:
+			continue
+			
+		valid_observers += 1
+		
+		# 1. Environment Check: Must have Cover or Concealment
+		var cover = PFContext.detection_manager.get_cover(obs, user)
+		var concealed = PFContext.detection_manager.is_concealed(obs, user)
+		
+		if cover == PFCombatConstants.CoverType.NONE and not concealed:
+			print("    > %s automatically fails to Hide from %s (No Cover or Concealment)." % [user.entity_name, obs.entity_name])
+			PFContext.detection_manager.set_detection_state(obs, user, PFCombatConstants.DetectionState.OBSERVED)
+			continue
+			
+		# 2. Senses Check: Bypassing cover if precise sense is used
+		if PFContext.detection_manager.detects_with_precise_sense(obs, user):
+			print("    > %s automatically fails to Hide from %s (Detected by precise non-visual sense)." % [user.entity_name, obs.entity_name])
+			PFContext.detection_manager.set_detection_state(obs, user, PFCombatConstants.DetectionState.OBSERVED)
 			continue
 			
 		var obs_perception_dc = 10 + obs.get_skill_bonus(&"perception")
@@ -53,8 +67,10 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 			print("    > %s failed against %s's Perception DC (%d). They remain observed." % [
 				user.entity_name, obs.entity_name, obs_perception_dc
 			])
-			# Critical Failure means you become Observed
 			if degree == PFCombatConstants.DegreeOfSuccess.CRITICAL_FAILURE:
 				PFContext.detection_manager.set_detection_state(obs, user, PFCombatConstants.DetectionState.OBSERVED)
 				
+	if valid_observers == 0:
+		print("    > %s hid, but there was no one around to observe them." % user.entity_name)
+		
 	return true

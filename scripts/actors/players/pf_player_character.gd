@@ -37,6 +37,7 @@ var feats: Array[PFFeat] = []
 # --- PROGRESSION ---
 var experience_points: int = 0
 var pending_level_up_choices: Array[Dictionary] = []
+var progression_history: Dictionary = {}
 
 # --- META CURRENCY ---
 var hero_points: int = 1
@@ -82,6 +83,7 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int,
 	
 	sheet = PFProficiencySheet.new()
 	inventory = PFInventory.new(self)
+	inventory.inventory_changed.connect(_on_inventory_changed)
 	spellbook = PFSpellbook.new(self)
 
 # DATA SETTERS & BACKGROUND
@@ -114,8 +116,18 @@ func set_ethnicity(new_ethnicity: StringName) -> bool:
 					return false
 	
 	ethnicity = new_ethnicity
-	print("    > %s's ethnicity is now %s." % [entity_name, ethnicity])
+	print("    > Ethnicity updated to [%s]." % ethnicity)
 	return true
+
+func _on_inventory_changed(new_bulk_units: int, is_encumbered: bool) -> void:
+	if is_encumbered:
+		# Add encumbered condition if they don't have it
+		if not has_condition(&"encumbered"):
+			var encumbered = PFCondition.create(&"encumbered")
+			add_condition(encumbered)
+	else:
+		if has_condition(&"encumbered"):
+			remove_condition(&"encumbered")
 
 func apply_ancestry(new_ancestry: PFAncestry) -> void:
 	ancestry = new_ancestry
@@ -306,7 +318,7 @@ func get_ac() -> int:
 	var capped_dex = mini(attributes.dex_mod, armor.dex_cap)
 	base_ac += capped_dex + armor.ac_bonus + sheet.get_armor_bonus(armor.category, level)
 	if armor.is_broken(): base_ac -= 2 
-	return base_ac + get_condition_modifier(&"ac")
+	return base_ac + attributes.ac_modifiers.get_total()
 
 func get_strike_bonus(weapon: PFWeapon) -> int:
 	var base_bonus = 0
@@ -371,7 +383,55 @@ func get_spell_dc() -> int:
 		key_attr = actor_class.key_abilities[0]
 		
 	var stat_mod = get_ability_modifier(key_attr)
-	return 10 + prof_bonus + stat_mod + attributes.status_bonus_to_dc + attributes.item_bonus_to_dc - attributes.circumstance_penalty_to_dc - attributes.status_penalty_to_dc
+	return 10 + prof_bonus + stat_mod + attributes.dc_modifiers.get_total()
+
+func get_save_bonus(save_type: StringName) -> int:
+	var short_save_type = save_type
+	match save_type.to_lower():
+		"fortitude": short_save_type = &"fort"
+		"reflex": short_save_type = &"ref"
+		"willpower": short_save_type = &"will"
+		
+	var prof_rank = sheet.get_save_rank(short_save_type)
+	var prof_bonus = PFProficiency.calculate_bonus(prof_rank, level)
+	
+	var stat_mod = 0
+	var save_stat: PFStat = null
+	
+	match save_type.to_lower():
+		"fortitude", "fort":
+			stat_mod = attributes.con_mod
+			save_stat = attributes.fort_save
+		"reflex", "ref":
+			stat_mod = attributes.dex_mod
+			save_stat = attributes.ref_save
+		"will":
+			stat_mod = attributes.wis_mod
+			save_stat = attributes.will_save
+			
+	var base_save = prof_bonus + stat_mod
+	
+	# Apply any temporary modifiers stored on the actual stat object
+	if save_stat:
+		base_save += (save_stat.get_total() - save_stat.base_value)
+		
+	return base_save
+
+func get_skill_dc(skill_name: StringName) -> int:
+	var prof_rank = sheet.get_skill_rank(skill_name)
+	var prof_bonus = PFProficiency.calculate_bonus(prof_rank, level)
+	
+	var stat_mod = 0
+	# TODO: Get correct key attribute for skill
+	# For now, we will default to 0 to prevent crashes until we have a skill-to-attribute map.
+	match skill_name:
+		&"acrobatics", &"stealth", &"thievery": stat_mod = attributes.dex_mod
+		&"athletics": stat_mod = attributes.str_mod
+		&"arcana", &"crafting", &"lore", &"occultism", &"society": stat_mod = attributes.int_mod
+		&"medicine", &"nature", &"religion", &"survival": stat_mod = attributes.wis_mod
+		&"deception", &"diplomacy", &"intimidation", &"performance": stat_mod = attributes.cha_mod
+	
+	return 10 + prof_bonus + stat_mod
 
 func get_spell_attack() -> int:
 	if not actor_class or not actor_class.is_spellcaster: return 0
@@ -383,7 +443,7 @@ func get_spell_attack() -> int:
 		key_attr = actor_class.key_abilities[0]
 		
 	var stat_mod = get_ability_modifier(key_attr)
-	return prof_bonus + stat_mod + attributes.status_bonus_to_attack + attributes.item_bonus_to_attack - attributes.circumstance_penalty_to_attack - attributes.status_penalty_to_attack
+	return prof_bonus + stat_mod + attributes.attack_modifiers.get_total()
 
 func get_strike_damage_bonus(weapon: PFWeapon) -> int:
 	var dmg_bonus = 0

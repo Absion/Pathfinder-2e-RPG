@@ -16,8 +16,25 @@ func _init(p_name: String, p_traits: Array[StringName], p_cost: PFCombatConstant
 	cost = p_cost
 	map_weight = p_map_weight
 
-# This is a virtual function. Specific actions (like Strike or Stride) will 
-# override this to perform their unique logic.
-func execute(user: PFActor, _target: PFActor = null):
+func execute(user: PFActor, _target: PFActor = null) -> Variant:
 	print("%s performs %s!" % [user.entity_name, entity_name])
 	return true
+
+## Checks trait-based triggers like ON_MANIPULATE or ON_MOVE.
+## Subclasses should `await` this at the start of their execute() function.
+## Returns `true` if the action was disrupted (e.g., by a critical Reactive Strike on a manipulate action), `false` otherwise.
+func check_trait_triggers(user: PFActor) -> bool:
+	var disrupted = false
+	var event_data = {"disrupted": false}
+	
+	if has_trait(&"manipulate"):
+		event_data = await PFContext.reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.ON_MANIPULATE, user, event_data)
+		if event_data.get("disrupted", false):
+			disrupted = true
+			
+	if has_trait(&"move"):
+		event_data = await PFContext.reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.ON_MOVE, user, event_data)
+		if event_data.get("disrupted", false):
+			disrupted = true
+			
+	return disrupted

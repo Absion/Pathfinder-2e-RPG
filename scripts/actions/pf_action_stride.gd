@@ -10,7 +10,10 @@ func _init():
 func execute(user: PFActor, target: PFActor = null):
 	# In a real game, this would interface with your grid movement system.
 	if PFContext.reaction_manager:
-		await PFContext.reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.ON_LEAVE_SQUARE, user, {})
+		await PFContext.reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.ON_LEAVE_SQUARE, user, {
+			"trigger_type": PFCombatConstants.ReactionTriggers.ON_LEAVE_SQUARE,
+			"from_position": user.global_position
+		})
 		
 	print("%s moves to a new location." % user.entity_name)
 	return true

@@ -6,16 +6,13 @@ static func condition(listener: PFActor, trigger_actor: PFActor, event_data: Dic
 	if trigger_actor == listener:
 		return false
 		
-	# Check reach
-	var dist_ft = listener.global_position.distance_to(trigger_actor.global_position)
-	var reach = 5
-	
 	# Determine if listener has a melee weapon
 	var weapon = PFWeapon.new_unarmed()
 	var inv = listener.get("inventory") as PFInventory
 	if inv and inv.held_main_hand and inv.held_main_hand is PFWeapon and inv.held_main_hand.weapon_type == PFEquipmentConstants.WeaponType.MELEE:
 		weapon = inv.held_main_hand
 	
+	var reach = 5
 	for t in weapon.traits:
 		var ts = String(t)
 		if ts == "reach":
@@ -25,8 +22,17 @@ static func condition(listener: PFActor, trigger_actor: PFActor, event_data: Dic
 			if parts.size() > 1 and parts[1].is_valid_int():
 				reach = parts[1].to_int()
 				
-	if dist_ft > reach:
-		return false
+	# If the trigger is ON_LEAVE_SQUARE, we check the distance to the square they left
+	if event_data.has("trigger_type") and event_data["trigger_type"] == PFCombatConstants.ReactionTriggers.ON_LEAVE_SQUARE:
+		var from_pos = event_data.get("from_position", trigger_actor.global_position)
+		var dist_ft = listener.global_position.distance_to(from_pos)
+		if dist_ft > reach:
+			return false
+	else:
+		# Check reach to their current position
+		var dist_ft = listener.global_position.distance_to(trigger_actor.global_position)
+		if dist_ft > reach:
+			return false
 		
 	return true
 

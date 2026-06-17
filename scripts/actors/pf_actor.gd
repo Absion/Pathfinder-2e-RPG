@@ -53,6 +53,9 @@ func _ready() -> void:
 	var tm = PFTimeManager.get_instance()
 	if tm:
 		tm.rested_for_night.connect(_on_rested_for_night)
+		
+	# Every actor gets Grab an Edge inherently
+	PFReactionGrabEdge.register(self)
 
 func _on_rested_for_night() -> void:
 	# Base Healing: CON mod * Level (minimum 1)
@@ -78,6 +81,25 @@ func _on_rested_for_night() -> void:
 		if is_medium_or_heavy and not armor.has_trait(&"comfort"):
 			print("    > %s slept in uncomfortable %s armor!" % [entity_name, armor.entity_name])
 			apply_condition(PFCondition.create("fatigued", 1))
+
+func grant_reaction(reaction_class_name: String) -> void:
+	# In a real system, we might look this up via a factory or load it
+	# Since it's hardcoded classes for now, we just match on name
+	match reaction_class_name:
+		"Reactive Strike":
+			var cond = Callable(PFReactionReactiveStrike, "condition").bind(self)
+			var exec = Callable(PFReactionReactiveStrike, "execute").bind(self)
+			PFContext.reaction_manager.register_listener(PFCombatConstants.ReactionTriggers.ON_LEAVE_SQUARE, self, &"Reactive Strike", cond, exec)
+			PFContext.reaction_manager.register_listener(PFCombatConstants.ReactionTriggers.ON_MANIPULATE, self, &"Reactive Strike", cond, exec)
+			PFContext.reaction_manager.register_listener(PFCombatConstants.ReactionTriggers.ON_RANGED_ATTACK, self, &"Reactive Strike", cond, exec)
+		"Shield Block":
+			var cond = Callable(PFReactionShieldBlock, "condition").bind(self)
+			var exec = Callable(PFReactionShieldBlock, "execute").bind(self)
+			PFContext.reaction_manager.register_listener(PFCombatConstants.ReactionTriggers.BEFORE_TAKE_DAMAGE, self, &"Shield Block", cond, exec)
+
+func remove_reaction(reaction_id: StringName) -> void:
+	if PFContext.reaction_manager:
+		PFContext.reaction_manager.unregister_listener(self, reaction_id)
 
 # ---------------------------------------------------------
 # ---------------------------------------------------------

@@ -76,6 +76,7 @@ func _initialize_schema_if_needed():
 	db.query("DROP TABLE IF EXISTS domains;")
 	db.query("DROP TABLE IF EXISTS edicts;")
 	db.query("DROP TABLE IF EXISTS anathemas;")
+	db.query("DROP TABLE IF EXISTS player_knowledge;")
 	
 	# Core Data-Driven Mechanics Tables
 	db.query("CREATE TABLE IF NOT EXISTS sizes (
@@ -83,6 +84,27 @@ func _initialize_schema_if_needed():
 		name TEXT,
 		effective_size INTEGER,
 		base_bulk INTEGER
+	);")
+	
+	db.query("CREATE TABLE IF NOT EXISTS player_knowledge (
+		monster_id TEXT PRIMARY KEY,
+		state_name INTEGER DEFAULT 0,
+		state_description INTEGER DEFAULT 0,
+		state_traits INTEGER DEFAULT 0,
+		state_level INTEGER DEFAULT 0,
+		state_hp INTEGER DEFAULT 0,
+		state_ac INTEGER DEFAULT 0,
+		state_saves INTEGER DEFAULT 0,
+		state_attributes INTEGER DEFAULT 0,
+		state_speeds INTEGER DEFAULT 0,
+		state_senses INTEGER DEFAULT 0,
+		state_immunities INTEGER DEFAULT 0,
+		state_weaknesses INTEGER DEFAULT 0,
+		state_resistances INTEGER DEFAULT 0,
+		state_strikes INTEGER DEFAULT 0,
+		state_spells INTEGER DEFAULT 0,
+		state_special_abilities INTEGER DEFAULT 0,
+		false_data TEXT DEFAULT '{}'
 	);")
 	
 	db.query("CREATE TABLE IF NOT EXISTS traits (
@@ -1384,3 +1406,39 @@ func get_action_data(action_id: StringName) -> Dictionary:
 		return {}
 	_actions_cache[action_id] = result[0]
 	return result[0]
+
+# --- PLAYER KNOWLEDGE (BESTIARY) ---
+
+## Retrieves the current player knowledge state for a given monster base ID.
+func get_player_knowledge(monster_id: String) -> Dictionary:
+	db.query("SELECT * FROM player_knowledge WHERE monster_id = '" + monster_id + "';")
+	var result = db.query_result
+	if result.is_empty():
+		return {}
+	return result[0]
+
+## Updates specific knowledge fields for a given monster ID.
+## Updates is a dictionary of { "state_field": value }
+func update_player_knowledge(monster_id: String, updates: Dictionary) -> void:
+	if updates.is_empty(): return
+	
+	# Check if exists
+	db.query("SELECT monster_id FROM player_knowledge WHERE monster_id = '" + monster_id + "';")
+	var exists = not db.query_result.is_empty()
+	
+	if not exists:
+		db.query("INSERT INTO player_knowledge (monster_id) VALUES ('" + monster_id + "');")
+		
+	var set_statements = []
+	for key in updates.keys():
+		var val = updates[key]
+		if typeof(val) == TYPE_STRING:
+			# Escape single quotes
+			val = val.replace("'", "''")
+			set_statements.append("%s = '%s'" % [key, val])
+		else:
+			set_statements.append("%s = %s" % [key, str(val)])
+			
+	var query = "UPDATE player_knowledge SET " + ", ".join(set_statements) + " WHERE monster_id = '" + monster_id + "';"
+	db.query(query)
+

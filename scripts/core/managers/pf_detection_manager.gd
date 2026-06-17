@@ -68,3 +68,40 @@ func roll_flat_check_for_targeting(observer: PFActor, target: PFActor) -> bool:
 	else:
 		print("    > Flat Check (%s DC %d): %s rolled %d. Failure! The attack misses." % [state_str, dc, observer.entity_name, roll])
 		return false
+
+## Calculates the current cover the target has relative to the observer.
+## In a full 3D game, this would use raycasting. For the backend, we provide a placeholder that can be mocked.
+func get_cover(observer: PFActor, target: PFActor) -> PFCombatConstants.CoverType:
+	# Default to no cover. Tests can override or mock this.
+	# We can check a mock dictionary for testing
+	if target.has_meta("mock_cover_vs_" + observer.name):
+		return target.get_meta("mock_cover_vs_" + observer.name) as PFCombatConstants.CoverType
+	return PFCombatConstants.CoverType.NONE
+
+## Calculates if the target is concealed from the observer (e.g. by fog, dim light).
+func is_concealed(observer: PFActor, target: PFActor) -> bool:
+	if target.has_meta("mock_concealed_vs_" + observer.name):
+		return target.get_meta("mock_concealed_vs_" + observer.name) as bool
+	return false
+
+## Evaluates if the observer's precise senses automatically detect the target, bypassing visual cover.
+func detects_with_precise_sense(observer: PFActor, target: PFActor) -> bool:
+	if not observer.has_node("PFSensesComponent"): return false
+	var senses_comp = observer.get_node("PFSensesComponent") as PFSensesComponent
+	
+	for sense in senses_comp.senses:
+		if sense.acuity == PFBiographyConstants.SenseAcuity.PRECISE:
+			# If it's vision, it requires line of sight (cover applies).
+			if sense.type == PFBiographyConstants.SenseType.VISION:
+				continue
+				
+			# If it's a non-visual precise sense (e.g., Scent, Tremorsense)
+			# For the backend testing, we return true if they have it and the target hasn't masked it.
+			if target.has_meta("masked_sense_" + str(sense.type)):
+				continue
+				
+			print("    > [Senses] %s detects %s using precise %s!" % [observer.entity_name, target.entity_name, PFBiographyConstants.SenseType.keys()[sense.type]])
+			return true
+				
+	return false
+

@@ -237,3 +237,59 @@ classDiagram
 - **Component Architecture:** Actors utilize a decoupled component model (`PFAttributesComponent`, `PFHealthComponent`, `PFActionComponent`) to avoid monolithic classes. 
 - **Polymorphic Unified Math:** Systems request combat math (e.g. `get_ac()`) from the base `PFActor`, and the subclass (`PFPlayerCharacter` or `PFNpc`) handles its unique calculation (Proficiency Matrix vs GMG Monster Scaling).
 - **Master Spellbook:** A single `PFSpellbook` manager tracks complex multi-class spell progressions, feats, innate spells, and extra slots simultaneously.
+
+## Engine Subsystems
+
+The backend operates heavily on specialized, stateless managers to process game logic rules correctly:
+
+```mermaid
+classDiagram
+    class PFLevelUpManager {
+        <<Manager>>
+        +get_available_boosts(level)
+        +apply_level_up(character, choices)
+        +retrain_choice(character, old_choice, new_choice)
+    }
+
+    class PFTimeManager {
+        <<Singleton>>
+        +int current_day
+        +int current_hour
+        +advance_time(days)
+    }
+
+    class PFDowntimeManager {
+        <<Manager>>
+        +start_downtime_activity(actor, activity, days)
+        +process_downtime_day()
+    }
+    
+    class PFDetectionManager {
+        <<Manager>>
+        +check_detection_level(seeker, target)
+        +has_cover(seeker, target)
+    }
+    
+    class PFDatabase {
+        +get_player_knowledge(base_id)
+        +update_player_knowledge(base_id, updates)
+    }
+
+    PFTimeManager --> PFDowntimeManager : Triggers daily ticks
+    PFDowntimeManager --> PFLevelUpManager : Validates Retraining Time
+```
+
+### 1. Leveling & Progression System
+A robust audit log progression engine (`progression_history`). Instead of permanently overwriting character stats, level-up choices are sandbox-validated in the `PFLevelUpService` and then permanently appended to the character's history. This allows for native support of the **Retraining** downtime activity!
+
+### 2. Stealth & Detection
+The `PFDetectionManager` uses an optimized Matrix to track detection states between all actors (Unnoticed, Undetected, Hidden, Observed). It actively checks line of sight, `CoverType` grids, and resolves `Precise` vs `Imprecise` senses (like Tremorsense and Scent) to determine if a character can legally execute the **Hide** or **Sneak** actions.
+
+### 3. Persistent Bestiary & Knowledge
+Instead of isolated dice rolls, the **Recall Knowledge** action hooks directly into the database. 
+* **Discovery:** Hitting a monster with Fire damage natively unlocks its Fire weakness in the Bestiary.
+* **Procedural Lies:** On a Critical Failure, the engine dynamically generates procedurally accurate fake stats (e.g., swapping Fortitude with Reflex, or generating a fake weakness) and caches it in the database. 
+* **Un-Discovery:** If you attack the monster expecting a fake weakness and it doesn't trigger, the engine realizes the lie and wipes the misinformation from the Bestiary!
+
+### 4. Time & Downtime Management
+A fully functional Paizo downtime loop. `PFTimeManager` advances the campaign calendar, triggering daily hook ticks on the `PFDowntimeManager`. Characters set to `is_busy` will automatically complete Crafting, Earn Income (depositing money straight to inventory), or Retraining actions while the rest of the party explores the overworld!

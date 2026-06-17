@@ -60,6 +60,45 @@ func set_skill_rank(skill: StringName, rank: PFMathConstants.ProficiencyRank) ->
 	else: 
 		push_error("Trying to set rank for invalid skill: " + skill)
 
+func upgrade_skill(skill_name: StringName, character_level: int) -> bool:
+	# Add lore dynamically if needed
+	if not skills.has(skill_name):
+		if str(skill_name).to_lower().ends_with("lore"):
+			add_lore_skill(skill_name, PFMathConstants.ProficiencyRank.TRAINED)
+			return true
+		return false
+		
+	var current_rank = skills[skill_name]
+	var next_rank = current_rank
+	
+	match current_rank:
+		PFMathConstants.ProficiencyRank.UNTRAINED:
+			next_rank = PFMathConstants.ProficiencyRank.TRAINED
+		PFMathConstants.ProficiencyRank.TRAINED:
+			if character_level >= 2:
+				next_rank = PFMathConstants.ProficiencyRank.EXPERT
+			else:
+				print("    > Cannot upgrade %s to Expert until Level 2." % skill_name)
+				return false
+		PFMathConstants.ProficiencyRank.EXPERT:
+			if character_level >= 7:
+				next_rank = PFMathConstants.ProficiencyRank.MASTER
+			else:
+				print("    > Cannot upgrade %s to Master until Level 7." % skill_name)
+				return false
+		PFMathConstants.ProficiencyRank.MASTER:
+			if character_level >= 15:
+				next_rank = PFMathConstants.ProficiencyRank.LEGENDARY
+			else:
+				print("    > Cannot upgrade %s to Legendary until Level 15." % skill_name)
+				return false
+		PFMathConstants.ProficiencyRank.LEGENDARY:
+			print("    > %s is already at Legendary proficiency!" % skill_name)
+			return false
+			
+	skills[skill_name] = next_rank
+	return true
+
 func get_skill_rank(skill: StringName) -> PFMathConstants.ProficiencyRank:
 	return skills.get(skill, PFMathConstants.ProficiencyRank.UNTRAINED)
 

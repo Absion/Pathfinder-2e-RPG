@@ -12,6 +12,9 @@ class ReactionTriggers:
 	const ON_FALL = &"on_fall"
 	const ON_ALLY_ACTION = &"on_ally_action"
 	const ON_CAST_SPELL = &"on_cast_spell"
+	const ON_MOVE = &"on_move"
+	const ON_MANIPULATE = &"on_manipulate"
+	const ON_RANGED_ATTACK = &"on_ranged_attack"
 
 enum DamageType { 
 	SLASHING, PIERCING, BLUDGEONING, 
@@ -27,4 +30,11 @@ enum DetectionState {
 	HIDDEN = 2,     # DC 11 flat check to target, observer knows grid square
 	UNDETECTED = 3, # Observer must guess grid square, DC 11 flat check if correct
 	UNNOTICED = 4   # Observer does not know target is present
+}
+
+enum CoverType {
+	NONE = 0,
+	LESSER = 1,     # +1 circumstance bonus to AC
+	STANDARD = 2,   # +2 circumstance bonus to AC, Reflex, Stealth
+	GREATER = 3     # +4 circumstance bonus to AC, Reflex, Stealth
 }
