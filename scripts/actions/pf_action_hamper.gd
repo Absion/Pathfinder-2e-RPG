@@ -1,4 +1,4 @@
-# pf_action_hamper.gd
+﻿# pf_action_hamper.gd
 class_name PFActionHamper
 extends PFAction
 
@@ -16,12 +16,12 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 		print("    > [ERROR] This weapon does not have the hampering trait!")
 		return false
 		
-	var inv = user.get("inventory") as PFInventory
+	var inv = user.get(&"inventory") as PFInventory
 	if inv:
 		if inv.held_main_hand != weapon and inv.held_off_hand != weapon and inv.two_handed_item != weapon:
 			print("    > [ERROR] You must be holding the weapon to hamper!")
 			return false
 			
-	user.set_meta("is_hampering", true)
+	user.set_meta(&"is_hampering", true)
 	print("    > %s thrashes their %s to create difficult terrain!" % [user.entity_name, weapon.entity_name])
 	return true

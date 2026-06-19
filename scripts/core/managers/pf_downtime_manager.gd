@@ -1,4 +1,4 @@
-# pf_downtime_manager.gd
+﻿# pf_downtime_manager.gd
 class_name PFDowntimeManager
 extends Node
 
@@ -23,10 +23,10 @@ func _on_day_passed() -> void:
 			
 	for actor in completed_actors:
 		active_tasks.erase(actor)
-		actor.set_meta("is_busy", false)
+		actor.set_meta(&"is_busy", false)
 		
 func begin_crafting(actor: PFActor, item_id: StringName, item_level: int) -> bool:
-	if actor.get_meta("is_busy", false):
+	if actor.get_meta(&"is_busy", false):
 		print("    > [Downtime] %s is already busy." % actor.entity_name)
 		return false
 		
@@ -56,11 +56,11 @@ func begin_crafting(actor: PFActor, item_id: StringName, item_level: int) -> boo
 		"days_remaining": days,
 		"data": { "item": item_id, "degree": degree }
 	}
-	actor.set_meta("is_busy", true)
+	actor.set_meta(&"is_busy", true)
 	return true
 	
 func begin_earn_income(actor: PFActor, skill: StringName, task_level: int, days: int) -> bool:
-	if actor.get_meta("is_busy", false): return false
+	if actor.get_meta(&"is_busy", false): return false
 	if days <= 0: return false
 	
 	print("    > [Downtime] %s starts Earn Income (%s) for %d days." % [actor.entity_name, skill, days])
@@ -70,11 +70,11 @@ func begin_earn_income(actor: PFActor, skill: StringName, task_level: int, days:
 		"days_remaining": days,
 		"data": { "skill": skill, "task_level": task_level }
 	}
-	actor.set_meta("is_busy", true)
+	actor.set_meta(&"is_busy", true)
 	return true
 	
 func begin_retraining(actor: PFActor, swap_out: StringName, swap_in: StringName, days: int) -> bool:
-	if actor.get_meta("is_busy", false): return false
+	if actor.get_meta(&"is_busy", false): return false
 	if days <= 0: return false
 	
 	print("    > [Downtime] %s starts Retraining (%s -> %s) for %d days." % [actor.entity_name, swap_out, swap_in, days])
@@ -84,7 +84,7 @@ func begin_retraining(actor: PFActor, swap_out: StringName, swap_in: StringName,
 		"days_remaining": days,
 		"data": { "out": swap_out, "in": swap_in }
 	}
-	actor.set_meta("is_busy", true)
+	actor.set_meta(&"is_busy", true)
 	return true
 	
 func _complete_task(actor: PFActor, task: Dictionary) -> void:

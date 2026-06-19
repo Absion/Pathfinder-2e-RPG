@@ -72,7 +72,7 @@ static func adjust_dc(base_dc: int, adjustment_type: StringName) -> int:
 	return base_dc
 
 ## Returns the appropriate amount of damage for a Hazard or Environment based on the level and severity.
-static func get_environmental_damage(level: int, severity: PFEnvironmentConstants.EnvironmentDamageSeverity) -> PFDice.Result:
+static func get_environmental_damage(level: int, severity: PFEnvironmentConstants.EnvironmentDamageSeverity) -> PFDice.RollResult:
 	var clamped_level = clampi(level, -1, 25)
 	var damage_def = DAMAGE_BY_LEVEL[clamped_level][severity]
 	return PFDice.roll(damage_def[0], damage_def[1])

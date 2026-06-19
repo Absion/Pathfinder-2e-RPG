@@ -1,4 +1,4 @@
-# test_weapon_logic.gd
+﻿# test_weapon_logic.gd
 class_name TestWeaponLogic
 extends GdUnitTestSuite
 
@@ -25,7 +25,7 @@ func before_test() -> void:
 	add_child(defender)
 
 func test_improvised_weapon_creation_and_penalty() -> void:
-	var inv = attacker.get("inventory") as PFInventory
+	var inv = attacker.get(&"inventory") as PFInventory
 	var weapon = inv.create_improvised_weapon("Improvised Weapon", [], 1, 4, PFCombatConstants.DamageType.BLUDGEONING, 0, 1)
 	
 	assert_object(weapon).is_not_null()
@@ -42,7 +42,7 @@ func test_improvised_weapon_creation_and_penalty() -> void:
 func test_weapon_handedness() -> void:
 	var weapon = PFWeapon.new("Greatsword", [], 1, 0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.MARTIAL, PFEquipmentConstants.WeaponGroup.SWORD, 1, 12, PFCombatConstants.DamageType.SLASHING, PFEquipmentConstants.ItemMaterial.STEEL, 5, 20, 0, 0, PFEquipmentConstants.MaterialGrade.STANDARD, 0, 0, 0, 2)
 	
-	var inv = attacker.get("inventory") as PFInventory
+	var inv = attacker.get(&"inventory") as PFInventory
 	inv.add_item(weapon)
 	
 	# Try striking without holding it in two hands (should fail)
@@ -56,7 +56,7 @@ func test_weapon_handedness() -> void:
 func test_reload_and_ammunition() -> void:
 	var bow = PFWeapon.new("Longbow", [], 1, 0, PFEquipmentConstants.WeaponType.RANGED, PFEquipmentConstants.WeaponCategory.MARTIAL, PFEquipmentConstants.WeaponGroup.BOW, 1, 8, PFCombatConstants.DamageType.PIERCING, PFEquipmentConstants.ItemMaterial.WOOD, 5, 20, 0, 0, PFEquipmentConstants.MaterialGrade.STANDARD, 100, 30, 0, 2, PFEquipmentConstants.AmmunitionType.ARROWS)
 	
-	var inv = attacker.get("inventory") as PFInventory
+	var inv = attacker.get(&"inventory") as PFInventory
 	inv.add_item(bow)
 	inv.equip_weapon(bow, 2)
 	
@@ -75,7 +75,7 @@ func test_reload_and_ammunition() -> void:
 func test_two_hand_trait() -> void:
 	var bastard_sword = PFWeapon.new("Bastard Sword", [&"two-hand d12"], 1, 0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.MARTIAL, PFEquipmentConstants.WeaponGroup.SWORD, 1, 8, PFCombatConstants.DamageType.SLASHING, PFEquipmentConstants.ItemMaterial.STEEL, 5, 20, 0, 0, PFEquipmentConstants.MaterialGrade.STANDARD, 0, 0, 0, 1)
 	
-	var inv = attacker.get("inventory") as PFInventory
+	var inv = attacker.get(&"inventory") as PFInventory
 	inv.add_item(bastard_sword)
 	
 	# Equip in one hand
@@ -104,7 +104,7 @@ func test_injection_payload() -> void:
 	var weapon = PFWeapon.new("Syringe Spear", [&"injection"], 1, 0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.MARTIAL, PFEquipmentConstants.WeaponGroup.SPEAR, 1, 6, PFCombatConstants.DamageType.PIERCING, PFEquipmentConstants.ItemMaterial.STEEL, 5, 20, 0, 0, PFEquipmentConstants.MaterialGrade.STANDARD, 0, 0, 0, 2)
 	var poison = PFItem.new("Giant Centipede Venom")
 	
-	var inv = attacker.get("inventory") as PFInventory
+	var inv = attacker.get(&"inventory") as PFInventory
 	inv.add_item(weapon)
 	inv.add_item(poison)
 	inv.equip_weapon(weapon, 2)

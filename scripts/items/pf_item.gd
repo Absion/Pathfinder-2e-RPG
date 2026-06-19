@@ -1,4 +1,4 @@
-# pf_item.gd
+﻿# pf_item.gd
 ## Base class for all physical items in the game world.
 class_name PFItem
 extends PFEntity # Force Reparse
@@ -61,7 +61,7 @@ func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int =
 	var pf_db = Engine.get_main_loop().root.get_node_or_null("PFDatabase") if Engine.get_main_loop() else null
 	if pf_db:
 		var size_data = pf_db.get_size_data(size_id)
-		eff_size = size_data.get("effective_size", 1) if size_data else 1
+		eff_size = size_data.get(&"effective_size", 1) if size_data else 1
 	
 	if eff_size == 0: # Tiny
 		bulk_value = int(bulk_value * 0.5)
@@ -145,7 +145,7 @@ func get_selling_price_cp() -> int:
 	var pf_db = Engine.get_main_loop().root.get_node_or_null("PFDatabase") if Engine.get_main_loop() else null
 	if pf_db:
 		var size_data = pf_db.get_size_data(size_id)
-		eff_size = size_data.get("effective_size", 1) if size_data else 1
+		eff_size = size_data.get(&"effective_size", 1) if size_data else 1
 	
 	if eff_size == 2: multiplier = 2.0
 	elif eff_size >= 3: multiplier = 4.0

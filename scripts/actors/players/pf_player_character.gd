@@ -1,4 +1,4 @@
-# pf_player_character.gd
+﻿# pf_player_character.gd
 ## A player-controlled character built using standard proficiency matrix mathematics.
 class_name PFPlayerCharacter
 extends PFActor
@@ -108,7 +108,7 @@ func set_ethnicity(new_ethnicity: StringName) -> bool:
 	if db:
 		var eth_data = db.get_ethnicity_data(new_ethnicity)
 		if not eth_data.is_empty():
-			var required = eth_data.get("required_traits", [])
+			var required = eth_data.get(&"required_traits", [])
 			# Check if character has ALL required traits
 			for req_trait in required:
 				if not traits.has(StringName(req_trait)):
@@ -119,12 +119,12 @@ func set_ethnicity(new_ethnicity: StringName) -> bool:
 	print("    > Ethnicity updated to [%s]." % ethnicity)
 	return true
 
-func _on_inventory_changed(new_bulk_units: int, is_encumbered: bool) -> void:
+func _on_inventory_changed(_new_bulk_units: int, is_encumbered: bool) -> void:
 	if is_encumbered:
 		# Add encumbered condition if they don't have it
 		if not has_condition(&"encumbered"):
 			var encumbered = PFCondition.create(&"encumbered")
-			add_condition(encumbered)
+			apply_condition(encumbered)
 	else:
 		if has_condition(&"encumbered"):
 			remove_condition(&"encumbered")
@@ -264,7 +264,7 @@ func apply_class(class_id: StringName) -> void:
 			"will": c_data["save_will"] as PFMathConstants.ProficiencyRank
 		},
 		c_data["trained_skills_count"],
-		{}, {}, str(c_data.get("description", "")), ([] as Array[StringName]), ([] as Array[StringName]),
+		{}, {}, str(c_data.get(&"description", "")), ([] as Array[StringName]), ([] as Array[StringName]),
 		c_data["is_spellcaster"] == 1,
 		c_data["caster_type"] as PFMagicConstants.CasterType,
 		c_data["spell_tradition"] as PFMagicConstants.MagicTradition,
@@ -319,7 +319,7 @@ func get_ac() -> int:
 	var capped_dex = mini(attributes.dex_mod, armor.dex_cap)
 	base_ac += capped_dex + armor.ac_bonus + sheet.get_armor_bonus(armor.category, level)
 	if armor.is_broken(): base_ac -= 2 
-	return base_ac + attributes.ac_modifiers.get_total()
+	return base_ac + attributes.ac_modifiers.get_total() + get_condition_modifier(&"ac")
 
 func get_strike_bonus(weapon: PFWeapon) -> int:
 	var base_bonus = 0
@@ -548,7 +548,7 @@ func gain_experience(amount: int) -> void:
 	
 	while experience_points >= 1000:
 		experience_points -= 1000
-		var choices = PFLevelUpManager.level_up(self)
+		var choices = PFLevelUpManager.generate_level_up_blueprint(self)
 		pending_level_up_choices.append(choices)
 		leveled_up.emit(level, choices)
 
@@ -604,4 +604,3 @@ func heroic_recovery() -> bool:
 # ---------------------------------------------------------
 func get_skill_rank(skill: StringName) -> int:
 	return sheet.get_skill_rank(skill)
-

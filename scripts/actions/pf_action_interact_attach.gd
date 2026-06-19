@@ -1,4 +1,4 @@
-# pf_action_interact_attach.gd
+﻿# pf_action_interact_attach.gd
 class_name PFActionInteractAttach
 extends PFAction
 
@@ -14,7 +14,7 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 	if not attachment or not target_item:
 		return false
 		
-	var inv = user.get("inventory")
+	var inv = user.get(&"inventory")
 	if inv:
 		if not inv.items.has(attachment):
 			print("    > [ERROR] %s does not have %s in their inventory!" % [user.entity_name, attachment.entity_name])

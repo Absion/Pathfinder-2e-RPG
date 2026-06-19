@@ -1,4 +1,4 @@
-# pf_beliefs.gd
+﻿# pf_beliefs.gd
 class_name PFBeliefs
 extends RefCounted
 
@@ -8,8 +8,8 @@ static func get_belief_data(id: StringName) -> Dictionary:
 
 static func is_valid_edict(edict: StringName) -> bool:
 	var data = get_belief_data(edict)
-	return data.has("type") and data["type"] == "edict"
+	return data.has(&"type") and data["type"] == "edict"
 
 static func is_valid_anathema(anathema: StringName) -> bool:
 	var data = get_belief_data(anathema)
-	return data.has("type") and data["type"] == "anathema"
+	return data.has(&"type") and data["type"] == "anathema"

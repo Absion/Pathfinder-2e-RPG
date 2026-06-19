@@ -1,4 +1,4 @@
-# pf_action_strike.gd
+﻿# pf_action_strike.gd
 # The core attack action for the engine.
 ## Standard offensive attack action using an equipped weapon or unarmed attack.
 class_name PFActionStrike
@@ -33,7 +33,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			user.action_economy.increment_attack()
 			return true
 		
-	var inv = user.get("inventory") as PFInventory
+	var inv = user.get(&"inventory") as PFInventory
 	if inv:
 		if weapon.hands_required == 2 and inv.two_handed_item != weapon:
 			print("    > [ERROR] %s requires two hands, but is not being held with two hands!" % weapon.entity_name)
@@ -66,15 +66,15 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		print("    > Improvised weapon penalty: -2")
 		
 	if weapon.has_trait(&"sweep"):
-		if user.has_meta("last_sweep_target") and user.get_meta("last_sweep_target") != target.get_instance_id():
+		if user.has_meta(&"last_sweep_target") and user.get_meta(&"last_sweep_target") != target.get_instance_id():
 			base_attack_bonus += 1
 			print("    > Sweep trait triggers! +1 circumstance bonus to attack.")
-		user.set_meta("last_sweep_target", target.get_instance_id())
+		user.set_meta(&"last_sweep_target", target.get_instance_id())
 		
-	if weapon.has_trait(&"backswing") and user.has_meta("backswing_active") and user.get_meta("backswing_active"):
+	if weapon.has_trait(&"backswing") and user.has_meta(&"backswing_active") and user.get_meta(&"backswing_active"):
 		base_attack_bonus += 1
 		print("    > Backswing trait triggers! +1 circumstance bonus.")
-	user.set_meta("backswing_active", false)
+	user.set_meta(&"backswing_active", false)
 
 	# Nonlethal Checks
 	if weapon.has_trait(&"nonlethal") and not intent_nonlethal:
@@ -132,9 +132,9 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	var db_inst = PFDatabase.get_instance()
 	for t in weapon.traits:
 		var trait_data = db_inst.get_trait_data(t) if db_inst else {}
-		if trait_data and trait_data.get("mechanic_hook") == "modifies_map":
+		if trait_data and trait_data.get(&"mechanic_hook") == "modifies_map":
 			# Use the positive hook value as a penalty (e.g., agile provides 4, penalty is -4)
-			base_map = -trait_data.get("hook_value", 4)
+			base_map = -trait_data.get(&"hook_value", 4)
 			
 	var map_penalty = mini(user.action_economy.attack_stacks, 2) * base_map
 	var total_attack_bonus = base_attack_bonus + map_penalty 
@@ -162,7 +162,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	if degree == PFMathConstants.DegreeOfSuccess.FAIL or degree == PFMathConstants.DegreeOfSuccess.CRIT_FAIL:
 		print("    Miss.")
 		if weapon.has_trait(&"backswing"):
-			user.set_meta("backswing_active", true)
+			user.set_meta(&"backswing_active", true)
 			
 		if degree == PFMathConstants.DegreeOfSuccess.CRIT_FAIL and weapon.has_trait(&"cobbled"):
 			print("    > [CRITICAL FAILURE] Cobbled weapon misfires and becomes broken!")
@@ -214,7 +214,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			if parts.size() > 1 and parts[1].is_valid_int():
 				parsed_fatal_die = parts[1].to_int()
 		elif ts.begins_with("fatal aim d"):
-			var inv_check = user.get("inventory") as PFInventory
+			var inv_check = user.get(&"inventory") as PFInventory
 			if inv_check and inv_check.two_handed_item == weapon:
 				var parts = ts.split(" d")
 				if parts.size() > 1 and parts[1].is_valid_int():
@@ -235,7 +235,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 				break
 		
 		if two_hand_trait != "":
-			var inv_check = user.get("inventory") as PFInventory
+			var inv_check = user.get(&"inventory") as PFInventory
 			if inv_check and inv_check.two_handed_item == weapon:
 				var parts = two_hand_trait.split(" d")
 				if parts.size() > 1 and parts[1].is_valid_int():
@@ -287,7 +287,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	if degree == PFMathConstants.DegreeOfSuccess.CRIT_SUCCESS:
 		print("    *** CRITICAL HIT! ***")
 		
-		if user.has_method("has_critical_specialization") and user.has_critical_specialization(weapon.group):
+		if user.has_method(&"has_critical_specialization") and user.has_critical_specialization(weapon.group):
 			print("    *** CRITICAL SPECIALIZATION TRIGGERED! ***")
 			_apply_critical_specialization(user, target)
 			
@@ -333,8 +333,8 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		if PFContext.reaction_manager:
 			var event_data = {"damage": crit_damage, "type": final_damage_type, "traits": traits_with_crit, "source_weapon": weapon}
 			event_data = await PFContext.reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.BEFORE_TAKE_DAMAGE, user, event_data)
-			crit_damage = event_data.get("damage", crit_damage)
-			final_damage_type = event_data.get("type", final_damage_type)
+			crit_damage = event_data.get(&"damage", crit_damage)
+			final_damage_type = event_data.get(&"type", final_damage_type)
 			
 		target.take_damage(crit_damage, final_damage_type, traits_with_crit)
 	elif degree == PFMathConstants.DegreeOfSuccess.SUCCESS:
@@ -349,8 +349,8 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		if PFContext.reaction_manager:
 			var event_data = {"damage": base_total, "type": final_damage_type, "traits": traits_with_hit, "source_weapon": weapon}
 			event_data = await PFContext.reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.BEFORE_TAKE_DAMAGE, user, event_data)
-			base_total = event_data.get("damage", base_total)
-			final_damage_type = event_data.get("type", final_damage_type)
+			base_total = event_data.get(&"damage", base_total)
+			final_damage_type = event_data.get(&"type", final_damage_type)
 			
 		target.take_damage(base_total, final_damage_type, traits_with_hit)
 			
@@ -382,44 +382,43 @@ func _apply_critical_specialization(user: PFActor, target: PFActor) -> void:
 		PFEquipmentConstants.WeaponGroup.BOMB:
 			print("    > Bomb Specialization: Splash radius increased to 10 feet!")
 		PFEquipmentConstants.WeaponGroup.BOW:
-			target.conditions.append(PFCondition.create(&"immobilized"))
+			target.apply_condition(PFCondition.create(&"immobilized"))
 			print("    > Bow Specialization: Target is Immobilized!")
 		PFEquipmentConstants.WeaponGroup.BRAWLING:
 			var save_mod = target.get_save_bonus(&"fortitude")
 			var roll = PFDice.roll_d20()
 			var total = roll + save_mod
-			var dc = user.get_class_dc() if user.has_method("get_class_dc") else 10
+			var dc = user.get_class_dc() if user.has_method(&"get_class_dc") else 10
 			var degree = PFDice.determine_success(total, dc, roll)
 			if degree == PFMathConstants.DegreeOfSuccess.FAIL or degree == PFMathConstants.DegreeOfSuccess.CRIT_FAIL:
 				var slowed = PFCondition.create(&"slowed")
 				slowed.value = 1
-				target.conditions.append(slowed)
+				target.apply_condition(slowed)
 				print("    > Brawling Specialization (Rolled %d vs DC %d): Target failed Fort save and is Slowed 1!" % [total, dc])
 			else:
 				print("    > Brawling Specialization (Rolled %d vs DC %d): Target succeeded Fort save." % [total, dc])
 		PFEquipmentConstants.WeaponGroup.CLUB:
 			print("    > Club Specialization: Target is knocked up to 10 feet away!")
 		PFEquipmentConstants.WeaponGroup.CROSSBOW, PFEquipmentConstants.WeaponGroup.DART, PFEquipmentConstants.WeaponGroup.KNIFE:
-			var pd = PFCondition.create(&"persistent_damage")
-			pd.value = weapon.dice_amount
+			var pd = PFCondition.new(&"persistent_damage", weapon.dice_amount)
 			pd.target_stat = "bleed"
-			target.conditions.append(pd)
+			target.apply_condition(pd)
 			print("    > %s Specialization: Target takes %dd6 persistent bleed damage!" % [PFEquipmentConstants.WeaponGroup.keys()[weapon.group].capitalize(), weapon.dice_amount])
 		PFEquipmentConstants.WeaponGroup.FIREARM, PFEquipmentConstants.WeaponGroup.SLING:
 			var save_mod = target.get_save_bonus(&"fortitude")
 			var roll = PFDice.roll_d20()
 			var total = roll + save_mod
-			var dc = user.get_class_dc() if user.has_method("get_class_dc") else 10
+			var dc = user.get_class_dc() if user.has_method(&"get_class_dc") else 10
 			var degree = PFDice.determine_success(total, dc, roll)
 			if degree == PFMathConstants.DegreeOfSuccess.FAIL or degree == PFMathConstants.DegreeOfSuccess.CRIT_FAIL:
 				var stunned = PFCondition.create(&"stunned")
 				stunned.value = 1
-				target.conditions.append(stunned)
+				target.apply_condition(stunned)
 				print("    > %s Specialization (Rolled %d vs DC %d): Target failed Fort save and is Stunned 1!" % [PFEquipmentConstants.WeaponGroup.keys()[weapon.group].capitalize(), total, dc])
 			else:
 				print("    > %s Specialization (Rolled %d vs DC %d): Target succeeded Fort save." % [PFEquipmentConstants.WeaponGroup.keys()[weapon.group].capitalize(), total, dc])
 		PFEquipmentConstants.WeaponGroup.FLAIL, PFEquipmentConstants.WeaponGroup.HAMMER:
-			target.conditions.append(PFCondition.create(&"prone"))
+			target.apply_condition(PFCondition.create(&"prone"))
 			print("    > %s Specialization: Target is knocked Prone!" % PFEquipmentConstants.WeaponGroup.keys()[weapon.group].capitalize())
 		PFEquipmentConstants.WeaponGroup.PICK:
 			var pick_dmg = 2 * weapon.dice_amount
@@ -432,10 +431,10 @@ func _apply_critical_specialization(user: PFActor, target: PFActor) -> void:
 		PFEquipmentConstants.WeaponGroup.SPEAR:
 			var clumsy = PFCondition.create(&"clumsy")
 			clumsy.value = 1
-			target.conditions.append(clumsy)
+			target.apply_condition(clumsy)
 			print("    > Spear Specialization: Target is Clumsy 1 until start of your next turn!")
 		PFEquipmentConstants.WeaponGroup.SWORD:
-			target.conditions.append(PFCondition.create(&"off_guard"))
+			target.apply_condition(PFCondition.create(&"off_guard"))
 			print("    > Sword Specialization: Target is Off-Guard until start of your next turn!")
 		_:
 			print("    > (No critical specialization effect implemented for this group yet).")

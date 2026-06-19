@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+﻿extends GdUnitTestSuite
 
 var attacker: PFActor
 var target: PFActor
@@ -31,7 +31,7 @@ func test_scavenge_forest():
 	var success = await action.execute(attacker)
 	
 	assert_bool(success).is_true()
-	var inv = attacker.get("inventory") as PFInventory
+	var inv = attacker.get(&"inventory") as PFInventory
 	var held = inv.held_main_hand as PFWeapon
 	assert_object(held).is_not_null()
 	assert_str(held.entity_name).is_equal("Improvised Sturdy Branch")
@@ -39,7 +39,7 @@ func test_scavenge_forest():
 
 func test_scavenge_road():
 	# Ensure hands are free again
-	var inv = attacker.get("inventory") as PFInventory
+	var inv = attacker.get(&"inventory") as PFInventory
 	inv.held_main_hand = null
 	
 	var action = PFActionScavenge.new([&"road"])

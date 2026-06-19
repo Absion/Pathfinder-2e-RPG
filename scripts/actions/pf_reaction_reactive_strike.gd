@@ -1,4 +1,4 @@
-# pf_reaction_reactive_strike.gd
+﻿# pf_reaction_reactive_strike.gd
 class_name PFReactionReactiveStrike
 extends RefCounted
 
@@ -7,8 +7,8 @@ static func condition(listener: PFActor, trigger_actor: PFActor, event_data: Dic
 		return false
 		
 	# Determine if listener has a melee weapon
-	var weapon = PFWeapon.new_unarmed()
-	var inv = listener.get("inventory") as PFInventory
+	var weapon = PFWeapon.new("Fist", [&"agile", &"finesse", &"nonlethal", &"unarmed"], 1, 0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.UNARMED, PFEquipmentConstants.WeaponGroup.BRAWLING, 1, 4, PFCombatConstants.DamageType.BLUDGEONING)
+	var inv = listener.get(&"inventory") as PFInventory
 	if inv and inv.held_main_hand and inv.held_main_hand is PFWeapon and inv.held_main_hand.weapon_type == PFEquipmentConstants.WeaponType.MELEE:
 		weapon = inv.held_main_hand
 	
@@ -23,8 +23,8 @@ static func condition(listener: PFActor, trigger_actor: PFActor, event_data: Dic
 				reach = parts[1].to_int()
 				
 	# If the trigger is ON_LEAVE_SQUARE, we check the distance to the square they left
-	if event_data.has("trigger_type") and event_data["trigger_type"] == PFCombatConstants.ReactionTriggers.ON_LEAVE_SQUARE:
-		var from_pos = event_data.get("from_position", trigger_actor.global_position)
+	if event_data.has(&"trigger_type") and event_data["trigger_type"] == PFCombatConstants.ReactionTriggers.ON_LEAVE_SQUARE:
+		var from_pos = event_data.get(&"from_position", trigger_actor.global_position)
 		var dist_ft = listener.global_position.distance_to(from_pos)
 		if dist_ft > reach:
 			return false
@@ -40,8 +40,8 @@ static func execute(listener: PFActor, trigger_actor: PFActor, event_data: Dicti
 	print("    > [REACTION] %s uses Reactive Strike against %s!" % [listener.entity_name, trigger_actor.entity_name])
 	
 	# Reactive Strike is a free Strike action that doesn't increase MAP.
-	var weapon = PFWeapon.new_unarmed()
-	var inv = listener.get("inventory") as PFInventory
+	var weapon = PFWeapon.new("Fist", [&"agile", &"finesse", &"nonlethal", &"unarmed"], 1, 0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.UNARMED, PFEquipmentConstants.WeaponGroup.BRAWLING, 1, 4, PFCombatConstants.DamageType.BLUDGEONING)
+	var inv = listener.get(&"inventory") as PFInventory
 	if inv and inv.held_main_hand and inv.held_main_hand is PFWeapon:
 		weapon = inv.held_main_hand
 		

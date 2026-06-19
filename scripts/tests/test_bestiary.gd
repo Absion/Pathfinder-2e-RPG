@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 class_name TestBestiary
 
@@ -40,7 +40,7 @@ func run_test() -> void:
 	rk_action._grant_false_knowledge(db, dragon.base_id, dragon, current_knowledge)
 	
 	current_knowledge = db.get_player_knowledge(dragon.base_id)
-	assert_true(current_knowledge.get("false_data", "{}") != "{}", "Should have generated false data on crit fail.")
+	assert_true(current_knowledge.get(&"false_data", "{}") != "{}", "Should have generated false data on crit fail.")
 	
 	var false_data = JSON.parse_string(current_knowledge["false_data"])
 	# We expect one of the fields to have been marked as '2' (FALSE)
@@ -70,8 +70,8 @@ func run_test() -> void:
 	var updated_knowledge = db.get_player_knowledge(dragon.base_id)
 	var updated_false_data = JSON.parse_string(updated_knowledge["false_data"])
 	
-	assert_true(updated_knowledge.get("state_weaknesses", 0) == 0, "Weakness state should revert to 0 after realizing it's fake.")
-	assert_false(updated_false_data.has("weaknesses"), "Fake weakness should be removed from false_data.")
+	assert_true(updated_knowledge.get(&"state_weaknesses", 0) == 0, "Weakness state should revert to 0 after realizing it's fake.")
+	assert_false(updated_false_data.has(&"weaknesses"), "Fake weakness should be removed from false_data.")
 	
 	# TEST 3: Passive Discovery
 	print("\nTest 3: Passive Discovery via Combat")
@@ -79,7 +79,7 @@ func run_test() -> void:
 	dragon.health.apply_damage(10, PFCombatConstants.DamageType.COLD)
 	
 	updated_knowledge = db.get_player_knowledge(dragon.base_id)
-	assert_true(updated_knowledge.get("state_weaknesses", 0) == 1, "Weakness state should be 1 (KNOWN) after triggering actual weakness.")
+	assert_true(updated_knowledge.get(&"state_weaknesses", 0) == 1, "Weakness state should be 1 (KNOWN) after triggering actual weakness.")
 	
 	# TEST 4: Success clears false data
 	print("\nTest 4: Success clears remaining false data")
@@ -90,8 +90,8 @@ func run_test() -> void:
 	rk_action._grant_success_knowledge(db, dragon.base_id, updated_knowledge, 1)
 	
 	var final_knowledge = db.get_player_knowledge(dragon.base_id)
-	assert_true(final_knowledge.get("false_data", "{}") == "{}", "Success should clear all false data.")
-	assert_true(final_knowledge.get("state_name", 0) == 1, "Success should guarantee basic info is KNOWN.")
+	assert_true(final_knowledge.get(&"false_data", "{}") == "{}", "Success should clear all false data.")
+	assert_true(final_knowledge.get(&"state_name", 0) == 1, "Success should guarantee basic info is KNOWN.")
 	
 	print("\nAll Bestiary Tests Executed Successfully!")
 

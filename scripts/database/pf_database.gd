@@ -1,4 +1,4 @@
-# pf_database.gd
+﻿# pf_database.gd
 ## A stateless singleton that parses sqlite data into GDScript Objects.
 class_name PFDatabase
 extends Node # Force Reparse
@@ -487,7 +487,13 @@ func _seed_data():
 	db.query("INSERT OR IGNORE INTO traits (id, name, mechanic_hook, hook_value) VALUES 
 		('agile', 'Agile', 'modifies_map', 4),
 		('finesse', 'Finesse', 'allows_dex_to_hit', 0),
-		('versatile_p', 'Versatile P', 'adds_damage_type', 0);")
+		('versatile_p', 'Versatile P', 'adds_damage_type', 0),
+		('versatile p', 'Versatile P', 'adds_damage_type', 0),
+		('steel', 'Steel', '', 0),
+		('nonlethal', 'Nonlethal', '', 0),
+		('injection', 'Injection', '', 0),
+		('reach', 'Reach', '', 0),
+		('two-hand d12', 'Two-Hand d12', '', 0);")
 		
 
 	# Seed Basic Actions
@@ -534,7 +540,8 @@ func _seed_data():
 	db.query("INSERT OR IGNORE INTO conditions (id, name, modifier_type, target_stat, multiplier, script_path) VALUES 
 		('clumsy', 'Clumsy', 'status', 'dex_based', -1, ''),
 		('enfeebled', 'Enfeebled', 'status', 'str_based', -1, ''),
-		('frightened', 'Frightened', 'status', 'all_checks_and_dcs', -1, '');")
+		('frightened', 'Frightened', 'status', 'all_checks_and_dcs', -1, ''),
+		('parry', 'Parry', 'circumstance', 'ac', 1, '');")
 		
 	# Seed Beliefs
 	db.query("INSERT OR IGNORE INTO beliefs (id, name, type, mechanic_hook) VALUES 
@@ -697,15 +704,15 @@ func _seed_data():
 		('glyph', 'Glyph', 'You wield power over written words and symbols.', 'redact', 'ghostly_transcription', '', ''),
 		('healing', 'Healing', 'Your healing magic is particularly potent.', 'healers_blessing', 'rebuke_death', '', ''),
 		('indulgence', 'Indulgence', 'You feast mightily and can shake off the effects of overindulging.', 'overstuff', 'take_its_course', 'frenzied_revelry', ''),
-		('introspection', 'Introspection', 'You guide others in examining their lives, emotions, and motivations to ultimately become a truer version of themselves—a difficult and often painful process.', 'guided_introspection', 'confront_selves', '', ''),
+		('introspection', 'Introspection', 'You guide others in examining their lives, emotions, and motivations to ultimately become a truer version of themselvesâ€”a difficult and often painful process.', 'guided_introspection', 'confront_selves', '', ''),
 		('knowledge', 'Knowledge', 'You receive divine insights.', 'scholarly_recollection', 'know_the_enemy', 'wordsmith', ''),
 		('lightning', 'Lightning', 'You control electricity, thunder, and storms.', 'charged_javelin', 'bottle_the_storm', '', ''),
-		('luck', 'Luck', 'You’re unnaturally lucky and keep out of harm’s way.', 'bit_of_luck', 'lucky_break', '', ''),
+		('luck', 'Luck', 'Youâ€™re unnaturally lucky and keep out of harmâ€™s way.', 'bit_of_luck', 'lucky_break', '', ''),
 		('magic', 'Magic', 'You perform the unexpected and inexplicable.', 'magics_vessel', 'mystic_beacon', '', ''),
 		('metal', 'Metal', 'You manipulate flexible mutable metal.', 'serrate', 'repel_metal', '', ''),
 		('might', 'Might', 'Your physical power is bolstered by divine strength.', 'athletic_rush', 'enduring_might', 'victory_cry', ''),
 		('moon', 'Moon', 'You command powers associated with the moon.', 'moonbeam', 'touch_of_the_moon', '', ''),
-		('naga', 'Naga', 'Like many nagas, you believe you understand your place in the Universe, try to help those who don’t, and dissuade those who would serve to fool others into straying from their purpose.', 'chastising_retort', 'show_the_path', '', ''),
+		('naga', 'Naga', 'Like many nagas, you believe you understand your place in the Universe, try to help those who donâ€™t, and dissuade those who would serve to fool others into straying from their purpose.', 'chastising_retort', 'show_the_path', '', ''),
 		('nature', 'Nature', 'You hold power over animals and plants.', 'vibrant_thorns', 'natures_bounty', '', ''),
 		('nightmares', 'Nightmares', 'You fill minds with horror and dread.', 'waking_nightmare', 'shared_nightmare', '', ''),
 		('nothingness', 'Nothingness', 'You draw power from emptiness.', 'empty_inside', 'door_to_beyond', '', ''),
@@ -1139,12 +1146,12 @@ func get_weapon(id: String) -> PFWeapon:
 	new_weapon.base_damage_type = row["damage_type"]
 	new_weapon.active_damage_type = row["damage_type"]
 	
-	new_weapon.range_increment = row.get("range_increment", 0) if row.has("range_increment") else 0
-	new_weapon.volley_range = row.get("volley_range", 0) if row.has("volley_range") else 0
-	new_weapon.reload_value = row.get("reload_value", 0) if row.has("reload_value") else 0
-	new_weapon.hands_required = row.get("hands_required", 1) if row.has("hands_required") else 1
-	new_weapon.ammunition_type = row.get("ammunition_type", 0) if row.has("ammunition_type") else 0
-	new_weapon.linked_weapon_id = row.get("linked_weapon_id", "") if row.has("linked_weapon_id") else ""
+	new_weapon.range_increment = row.get(&"range_increment", 0) if row.has(&"range_increment") else 0
+	new_weapon.volley_range = row.get(&"volley_range", 0) if row.has(&"volley_range") else 0
+	new_weapon.reload_value = row.get(&"reload_value", 0) if row.has(&"reload_value") else 0
+	new_weapon.hands_required = row.get(&"hands_required", 1) if row.has(&"hands_required") else 1
+	new_weapon.ammunition_type = row.get(&"ammunition_type", 0) if row.has(&"ammunition_type") else 0
+	new_weapon.linked_weapon_id = row.get(&"linked_weapon_id", "") if row.has(&"linked_weapon_id") else ""
 	
 	if new_weapon.linked_weapon_id != "":
 		db.query("SELECT * FROM weapons WHERE id = '" + new_weapon.linked_weapon_id + "'")

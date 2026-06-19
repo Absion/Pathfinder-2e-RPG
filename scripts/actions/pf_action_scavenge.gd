@@ -1,4 +1,4 @@
-# pf_action_scavenge.gd
+﻿# pf_action_scavenge.gd
 ## Allows a character to find and immediately wield an improvised weapon from their environment.
 class_name PFActionScavenge
 extends PFAction
@@ -11,7 +11,7 @@ func _init(p_tags: Array[StringName] = []):
 	super._init("Scavenge Environment", initial_traits, PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
 func execute(user: PFActor, _target: PFActor = null) -> bool:
-	var inv = user.get("inventory") as PFInventory
+	var inv = user.get(&"inventory") as PFInventory
 	if not inv:
 		print("    > [ERROR] %s has no inventory and cannot scavenge!" % user.entity_name)
 		return false

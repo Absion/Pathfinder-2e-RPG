@@ -1,4 +1,4 @@
-# pf_action_interact_inject.gd
+﻿# pf_action_interact_inject.gd
 class_name PFActionInteractInject
 extends PFAction
 
@@ -22,7 +22,7 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 		print("    > [ERROR] The weapon is already loaded with a payload!")
 		return false
 		
-	var inv = user.get("inventory") as PFInventory
+	var inv = user.get(&"inventory") as PFInventory
 	if inv:
 		if inv.held_main_hand != weapon and inv.held_off_hand != weapon and inv.two_handed_item != weapon:
 			print("    > [ERROR] You must be holding the weapon to load it!")

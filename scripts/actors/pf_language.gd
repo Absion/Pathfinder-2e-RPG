@@ -1,4 +1,4 @@
-# pf_language.gd
+﻿# pf_language.gd
 ## Represents a language that an actor can speak or understand.
 class_name PFLanguage
 extends RefCounted
@@ -10,7 +10,7 @@ static func get_rarity(language: StringName) -> PFBiographyConstants.Rarity:
 	if db:
 		var data = db.get_language_data(language)
 		if not data.is_empty():
-			return data.get("rarity", PFBiographyConstants.Rarity.COMMON) as PFBiographyConstants.Rarity
+			return data.get(&"rarity", PFBiographyConstants.Rarity.COMMON) as PFBiographyConstants.Rarity
 			
 	return PFBiographyConstants.Rarity.COMMON
 

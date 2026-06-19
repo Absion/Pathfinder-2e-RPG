@@ -1,4 +1,4 @@
-# pf_combat_context.gd
+﻿# pf_combat_context.gd
 ## Manages the tactical turn-based combat loop and initiative.
 class_name PFCombatContext
 extends PFContext
@@ -47,10 +47,10 @@ func enter_context(args: Dictionary = {}) -> void:
 	build_services()
 	bind_services()
 	
-	if args.has("hero"):
+	if args.has(&"hero"):
 		action_menu.bind_to_actor(args["hero"])
 		
-	if args.has("player_mesh"):
+	if args.has(&"player_mesh"):
 		camera_rig.tracked_target = args["player_mesh"]
 		camera_rig.focus_on_position(args["player_mesh"].global_position, true)
 		

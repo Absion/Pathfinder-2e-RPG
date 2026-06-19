@@ -1,4 +1,4 @@
-# pf_action_fall.gd
+﻿# pf_action_fall.gd
 ## An environmental/forced action representing an actor falling.
 class_name PFActionFall
 extends PFAction
@@ -31,10 +31,10 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 	if PFContext.reaction_manager:
 		event_data = await PFContext.reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.ON_FALL, user, event_data)
 		
-	if event_data.get("fall_halted", false):
-		var fall_dist = event_data.get("distance_fallen_so_far", 0)
+	if event_data.get(&"fall_halted", false):
+		var fall_dist = event_data.get(&"distance_fallen_so_far", 0)
 		print("    > %s's fall was halted after falling %d feet!" % [user.entity_name, fall_dist])
-		var dmg_mult = event_data.get("fall_damage_multiplier", 1.0)
+		var dmg_mult = event_data.get(&"fall_damage_multiplier", 1.0)
 		_apply_fall_damage(user, fall_dist, dmg_mult)
 	else:
 		print("    > %s hits the ground!" % user.entity_name)

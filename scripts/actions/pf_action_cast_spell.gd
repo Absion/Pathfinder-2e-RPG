@@ -1,4 +1,4 @@
-# pf_action_cast_spell.gd
+﻿# pf_action_cast_spell.gd
 class_name PFActionCastSpell
 extends PFAction
 
@@ -29,7 +29,7 @@ func _init(p_spell: PFSpell, p_rank: int = -1):
 	super._init("Cast " + spell.entity_name, initial_traits, action_cost)
 
 func execute(user: PFActor, target: PFActor = null) -> bool:
-	if not user.has_method("get") or not user.get("spellbook"):
+	if not user.has_method(&"get") or not user.get(&"spellbook"):
 		print("    > [ERROR] %s cannot cast spells (no spellbook)." % user.entity_name)
 		return false
 		
@@ -46,7 +46,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		else:
 			active_rank = spell.base_spell_rank
 			
-	var spellbook = user.get("spellbook") as PFSpellbook
+	var spellbook = user.get(&"spellbook") as PFSpellbook
 	
 	# Try to spend resources
 	if not spellbook.cast_spell(spell, active_rank):

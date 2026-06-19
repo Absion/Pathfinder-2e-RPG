@@ -1,4 +1,4 @@
-# pf_action_seek.gd
+﻿# pf_action_seek.gd
 ## Allows the user to roll Perception to find Hidden or Undetected targets.
 class_name PFActionSeek
 extends PFAction
@@ -26,7 +26,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			
 		var state = PFContext.detection_manager.get_detection_state(user, t)
 		if state >= PFCombatConstants.DetectionState.HIDDEN:
-			var user_prof = user.get_skill_rank(&"perception") if user.has_method("get_skill_rank") else PFMathConstants.ProficiencyRank.UNTRAINED
+			var user_prof = user.get_skill_rank(&"perception") if user.has_method(&"get_skill_rank") else PFMathConstants.ProficiencyRank.UNTRAINED
 			
 			if t is PFHazard and user_prof < t.stealth_min_proficiency:
 				print("    > %s lacks the minimum Perception proficiency to notice %s." % [user.entity_name, t.entity_name])

@@ -18,7 +18,7 @@ func _init(p_name: String, p_master: PFActor, p_traits: Array[StringName] = [], 
 	if not p_traits.has(&"minion"):
 		p_traits.append(&"minion")
 		
-	super._init(p_name, p_traits, p_level, p_hp, p_fort, p_ref, p_will, p_str, p_dex, p_con, p_int, p_wis, p_cha, p_speed_land, p_speed_fly, p_speed_swim, p_speed_climb, p_speed_burrow)
+	super._init(&"", p_name, p_traits, p_level, p_hp, p_fort, p_ref, p_will, p_str, p_dex, p_con, p_int, p_wis, p_cha, p_speed_land, p_speed_fly, p_speed_swim, p_speed_climb, p_speed_burrow)
 	master = p_master
 	action_economy.actions_remaining = 0 # Minions do not get actions by default unless commanded
 	

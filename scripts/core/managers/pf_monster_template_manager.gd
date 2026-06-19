@@ -1,4 +1,4 @@
-class_name PFMonsterTemplateManager
+﻿class_name PFMonsterTemplateManager
 extends Object
 
 ## Applies a Pathfinder 2e Monster Template to an NPC.
@@ -21,11 +21,11 @@ static func _apply_elite_adjustment(npc: PFNpc) -> void:
 	npc.level += 1
 	
 	# +2 to AC, Attack, DC, Saves, Perception, Skills
-	npc.monster_stats["ac"] = npc.monster_stats.get("ac", 10) + 2
-	npc.monster_stats["attack"] = npc.monster_stats.get("attack", 0) + 2
+	npc.monster_stats["ac"] = npc.monster_stats.get(&"ac", 10) + 2
+	npc.monster_stats["attack"] = npc.monster_stats.get(&"attack", 0) + 2
 	npc.npc_spell_dc += 2
 	npc.npc_spell_attack += 2
-	npc.monster_stats["perception"] = npc.monster_stats.get("perception", 0) + 2
+	npc.monster_stats["perception"] = npc.monster_stats.get(&"perception", 0) + 2
 	
 	# Saves
 	npc.attributes.fortitude_base += 2
@@ -56,11 +56,11 @@ static func _apply_weak_adjustment(npc: PFNpc) -> void:
 	npc.level -= 1
 	
 	# -2 to AC, Attack, DC, Saves, Perception, Skills
-	npc.monster_stats["ac"] = npc.monster_stats.get("ac", 10) - 2
-	npc.monster_stats["attack"] = npc.monster_stats.get("attack", 0) - 2
+	npc.monster_stats["ac"] = npc.monster_stats.get(&"ac", 10) - 2
+	npc.monster_stats["attack"] = npc.monster_stats.get(&"attack", 0) - 2
 	npc.npc_spell_dc -= 2
 	npc.npc_spell_attack -= 2
-	npc.monster_stats["perception"] = npc.monster_stats.get("perception", 0) - 2
+	npc.monster_stats["perception"] = npc.monster_stats.get(&"perception", 0) - 2
 	
 	# Saves
 	npc.attributes.fortitude_base -= 2

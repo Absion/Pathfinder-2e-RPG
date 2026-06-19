@@ -1,4 +1,4 @@
-# pf_action_generic.gd
+﻿# pf_action_generic.gd
 ## A generic fallback action for Basic Actions that don't have complex
 ## automated mechanics yet, or require GM arbitration (like 'Sense Motive' or 'Interact').
 class_name PFActionGeneric
@@ -10,15 +10,15 @@ func _init(p_action_id: StringName):
 	var db = PFDatabase.get_instance()
 	var data = db.get_action_data(p_action_id) if db else {}
 	
-	var action_name = data.get("name", str(p_action_id))
-	var cost_str = data.get("cost", "1")
+	var action_name = data.get(&"name", str(p_action_id))
+	var cost_str = data.get(&"cost", "1")
 	var action_cost = PFCombatConstants.ActionCost.ONE_ACTION
 	if cost_str == "reaction": action_cost = PFCombatConstants.ActionCost.REACTION
 	elif cost_str == "free": action_cost = PFCombatConstants.ActionCost.FREE
 	elif cost_str == "2": action_cost = PFCombatConstants.ActionCost.TWO_ACTIONS
 	elif cost_str == "3": action_cost = PFCombatConstants.ActionCost.THREE_ACTIONS
 	
-	var raw_traits = data.get("traits", "[]")
+	var raw_traits = data.get(&"traits", "[]")
 	var traits_array: Array[StringName] = []
 	if raw_traits != "" and raw_traits != "[]":
 		var json = JSON.new()

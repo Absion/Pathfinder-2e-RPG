@@ -1,9 +1,8 @@
-# pf_equipment.gd
+﻿# pf_equipment.gd
 ## Represents permanent equipment like Wands, Rings, Boots.
 class_name PFEquipment
 extends PFItem
 
-var requires_investment: bool = false
 var usage_cooldown: String
 var action_script_path: String
 var skill_bonus_data: Dictionary
@@ -21,25 +20,27 @@ func _init(p_id: String):
 		var item_data = data[0]
 		
 		id = p_id
-		entity_name = item_data.get("name", "Unknown Equipment")
-		level = item_data.get("level", 1)
+		entity_name = item_data.get(&"name", "Unknown Equipment")
+		level = item_data.get(&"level", 1)
 		base_level = level
-		set_price_from_cp(item_data.get("price_cp", 0))
+		price_cp = item_data.get(&"price_cp", 0)
 		base_price_cp = price_cp
-		bulk_value = item_data.get("bulk", 1)
+		bulk_value = item_data.get(&"bulk", 1)
 		base_bulk_value = bulk_value
 		
-		var raw_traits = item_data.get("traits", "")
+		var raw_traits = item_data.get(&"traits", "")
 		if raw_traits != "":
 			var trait_strs = raw_traits.split(",")
 			for t in trait_strs:
-				add_trait(StringName(t.strip_edges()))
+				var trait_name = StringName(t.strip_edges())
+				if not traits.has(trait_name):
+					traits.append(trait_name)
 				
-		requires_investment = item_data.get("requires_investment", 0) == 1
-		usage_cooldown = item_data.get("usage_cooldown", "")
-		action_script_path = item_data.get("action_script_path", "")
+		requires_investment = item_data.get(&"requires_investment", 0) == 1
+		usage_cooldown = item_data.get(&"usage_cooldown", "")
+		action_script_path = item_data.get(&"action_script_path", "")
 		
-		var raw_skill_data = item_data.get("skill_bonus_data", "{}")
+		var raw_skill_data = item_data.get(&"skill_bonus_data", "{}")
 		if raw_skill_data and raw_skill_data != "":
 			var json = JSON.new()
 			if json.parse(raw_skill_data) == OK:

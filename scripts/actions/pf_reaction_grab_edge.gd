@@ -1,4 +1,4 @@
-# pf_reaction_grab_edge.gd
+﻿# pf_reaction_grab_edge.gd
 ## Grab an Edge is a reaction triggered when you fall from or past an edge or handhold.
 class_name PFReactionGrabEdge
 extends RefCounted
@@ -12,17 +12,17 @@ static func register(actor: PFActor) -> void:
 
 static func condition(listener: PFActor, _trigger_actor: PFActor, event_data: Dictionary) -> bool:
 	# You can only grab an edge if YOU are the one falling
-	if event_data.get("falling_actor") != listener:
+	if event_data.get(&"falling_actor") != listener:
 		return false
 		
 	# You must have at least one hand free
-	var inv = listener.get("inventory") as PFInventory
+	var inv = listener.get(&"inventory") as PFInventory
 	if inv:
 		if inv.held_main_hand != null and inv.held_off_hand != null:
 			return false
 			
 	# There must be an edge to grab (usually passed in event_data)
-	if not event_data.get("has_edge", false):
+	if not event_data.get(&"has_edge", false):
 		return false
 		
 	return true
@@ -30,7 +30,7 @@ static func condition(listener: PFActor, _trigger_actor: PFActor, event_data: Di
 static func execute(listener: PFActor, _trigger_actor: PFActor, event_data: Dictionary) -> Dictionary:
 	print("    > [REACTION] %s attempts to Grab an Edge!" % listener.entity_name)
 	
-	var edge_dc = event_data.get("edge_dc", 15) # Default DC if not provided
+	var edge_dc = event_data.get(&"edge_dc", 15) # Default DC if not provided
 	
 	var reflex_mod = listener.get_save_bonus(&"reflex")
 	var roll = PFDice.roll(1, 20).total + reflex_mod

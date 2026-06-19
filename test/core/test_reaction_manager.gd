@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+﻿extends GdUnitTestSuite
 
 var reaction_manager: PFReactionManager
 var alice: PFActor
@@ -36,7 +36,7 @@ func test_shield_block_damage_reduction():
 	
 	# Because Alice is technically NOT an AI by default, it will emit a signal and yield!
 	# We want to test the synchronous AI bypass for testing logic.
-	alice.set_meta("is_ai", true)
+	alice.set_meta(&"is_ai", true)
 	
 	# We must await the notify_event
 	var new_data = await reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.BEFORE_TAKE_DAMAGE, bob, event_data)

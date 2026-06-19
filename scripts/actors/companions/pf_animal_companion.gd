@@ -1,4 +1,4 @@
-# pf_animal_companion.gd
+﻿# pf_animal_companion.gd
 # Represents a combat-capable animal minion with derived stats scaling from its master.
 ## Represents an animal companion bound to a player character.
 class_name PFAnimalCompanion
@@ -149,7 +149,7 @@ func calculate_stats() -> void:
 		if parsed_attacks:
 			for attack in parsed_attacks:
 				var traits_sn: Array[StringName] = []
-				if attack.has("traits"):
+				if attack.has(&"traits"):
 					for t in attack["traits"]: traits_sn.append(StringName(t))
 					
 				var wpn = PFWeapon.new(
@@ -170,7 +170,7 @@ func calculate_stats() -> void:
 func support_benefit() -> void:
 	if action_economy.actions_remaining > 0:
 		action_economy.actions_remaining -= 1
-		print("    > %s uses Support Benefit: %s" % [entity_name, base_data.get("support_benefit", "None")])
+		print("    > %s uses Support Benefit: %s" % [entity_name, base_data.get(&"support_benefit", "None")])
 	else:
 		print("    > %s has no actions left to Support." % entity_name)
 
@@ -181,6 +181,6 @@ func advanced_maneuver() -> void:
 		
 	if action_economy.actions_remaining > 0:
 		action_economy.actions_remaining -= 1
-		print("    > %s uses Advanced Maneuver: %s" % [entity_name, base_data.get("advanced_maneuver", "None")])
+		print("    > %s uses Advanced Maneuver: %s" % [entity_name, base_data.get(&"advanced_maneuver", "None")])
 	else:
 		print("    > %s has no actions left for Advanced Maneuver." % entity_name)

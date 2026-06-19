@@ -1,4 +1,4 @@
-# pf_npc.gd
+﻿# pf_npc.gd
 ## An enemy or friendly non-player character, scaling via Game Master Guide monster rules.
 class_name PFNpc
 extends PFActor
@@ -100,11 +100,11 @@ func set_combat_hostile() -> void:
 	set_disposition(Attitude.HOSTILE)
 
 func get_ac() -> int:
-	var base_ac = monster_stats.get("ac", 10)
+	var base_ac = monster_stats.get(&"ac", 10)
 	return base_ac + attributes.ac_modifiers.get_total()
 
 func get_strike_bonus(weapon: PFWeapon) -> int:
-	var base_bonus = monster_stats.get("attack", 0)
+	var base_bonus = monster_stats.get(&"attack", 0)
 	
 	if weapon and weapon.is_broken():
 		base_bonus -= 2
@@ -112,7 +112,7 @@ func get_strike_bonus(weapon: PFWeapon) -> int:
 	return base_bonus + attributes.attack_modifiers.get_total()
 
 func get_class_dc() -> int:
-	return monster_stats.get("dc", 10)
+	return monster_stats.get(&"dc", 10)
 
 func get_spell_dc() -> int:
 	return npc_spell_dc
@@ -135,7 +135,7 @@ func get_skill_dc(skill_name: StringName) -> int:
 	return monster_stats.get(str(skill_name).to_lower() + "_dc", 10)
 
 func get_strike_damage_bonus(weapon: PFWeapon) -> int:
-	var dmg_bonus = monster_stats.get("damage", attributes.str_mod) 
+	var dmg_bonus = monster_stats.get(&"damage", attributes.str_mod) 
 		
 	if weapon and weapon.is_broken():
 		dmg_bonus -= 2
@@ -178,13 +178,13 @@ func get_wielded_shield() -> PFShield:
 	return null
 
 func get_weaknesses() -> Array:
-	return monster_stats.get("weaknesses", [])
+	return monster_stats.get(&"weaknesses", [])
 
 func get_resistances() -> Array:
-	return monster_stats.get("resistances", [])
+	return monster_stats.get(&"resistances", [])
 
 func get_immunities() -> Array:
-	return monster_stats.get("immunities", [])
+	return monster_stats.get(&"immunities", [])
 
 func get_special_abilities() -> Array:
-	return monster_stats.get("special_abilities", [])
+	return monster_stats.get(&"special_abilities", [])

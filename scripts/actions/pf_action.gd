@@ -1,4 +1,4 @@
-# pf_action.gd
+﻿# pf_action.gd
 # Represents any action a character can take. Inherits from PFEntity so it has traits!
 # Now includes 'map_weight' to control exactly how many MAP stacks an action generates.
 ## Base class representing a single discrete action an actor can take in combat.
@@ -27,14 +27,14 @@ func check_trait_triggers(user: PFActor) -> bool:
 	var disrupted = false
 	var event_data = {"disrupted": false}
 	
-	if has_trait(&"manipulate"):
+	if has_trait(&"manipulate") and PFContext.reaction_manager:
 		event_data = await PFContext.reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.ON_MANIPULATE, user, event_data)
-		if event_data.get("disrupted", false):
+		if event_data.get(&"disrupted", false):
 			disrupted = true
 			
-	if has_trait(&"move"):
+	if has_trait(&"move") and PFContext.reaction_manager:
 		event_data = await PFContext.reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.ON_MOVE, user, event_data)
-		if event_data.get("disrupted", false):
+		if event_data.get(&"disrupted", false):
 			disrupted = true
 			
 	return disrupted

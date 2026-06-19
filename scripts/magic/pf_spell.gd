@@ -1,4 +1,4 @@
-# pf_spell.gd
+﻿# pf_spell.gd
 ## Represents a magical spell that can be cast by an actor.
 class_name PFSpell
 extends PFEntity
@@ -38,24 +38,24 @@ func _init(p_id: StringName):
 	traits = spell_traits
 	rarity = PFBiographyConstants.Rarity.COMMON
 	
-	base_spell_rank = s_data.get("base_spell_rank", 1)
-	cast_time = str(s_data.get("cast_time", "2"))
-	range_ft = s_data.get("range_ft", 0)
-	targets = str(s_data.get("targets", ""))
-	saving_throw = str(s_data.get("saving_throw", ""))
-	duration = str(s_data.get("duration", ""))
-	is_cantrip = int(s_data.get("is_cantrip", 0)) == 1
-	description = str(s_data.get("description", ""))
+	base_spell_rank = s_data.get(&"base_spell_rank", 1)
+	cast_time = str(s_data.get(&"cast_time", "2"))
+	range_ft = s_data.get(&"range_ft", 0)
+	targets = str(s_data.get(&"targets", ""))
+	saving_throw = str(s_data.get(&"saving_throw", ""))
+	duration = str(s_data.get(&"duration", ""))
+	is_cantrip = int(s_data.get(&"is_cantrip", 0)) == 1
+	description = str(s_data.get(&"description", ""))
 	
-	scaling_rules = int(s_data.get("scaling_rules", 0))
-	scaling_dice = int(s_data.get("scaling_dice", 0))
-	script_path = str(s_data.get("script_path", ""))
+	scaling_rules = int(s_data.get(&"scaling_rules", 0))
+	scaling_dice = int(s_data.get(&"scaling_dice", 0))
+	script_path = str(s_data.get(&"script_path", ""))
 
 static func create(p_id: StringName) -> PFSpell:
 	var db = PFDatabase.get_instance()
 	var s_data = db.get_spell_data(p_id)
 	
-	if s_data.has("script_path") and s_data["script_path"] != "":
+	if s_data.has(&"script_path") and s_data["script_path"] != "":
 		var custom_script = load(s_data["script_path"])
 		if custom_script:
 			return custom_script.new(p_id)

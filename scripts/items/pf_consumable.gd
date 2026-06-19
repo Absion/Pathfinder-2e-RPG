@@ -1,4 +1,4 @@
-# pf_consumable.gd
+﻿# pf_consumable.gd
 ## Represents an item that is consumed upon use (potions, elixirs, scrolls, ammunition).
 class_name PFConsumable
 extends PFItem
@@ -18,24 +18,24 @@ func _init(p_id: String):
 		var item_data = data[0]
 		
 		id = p_id
-		entity_name = item_data.get("name", "Unknown Consumable")
-		level = item_data.get("level", 1)
+		entity_name = item_data.get(&"name", "Unknown Consumable")
+		level = item_data.get(&"level", 1)
 		base_level = level
-		set_price_from_cp(item_data.get("price_cp", 0))
+		set_price_from_cp(item_data.get(&"price_cp", 0))
 		base_price_cp = price_cp
-		bulk_value = item_data.get("bulk", 1)
+		bulk_value = item_data.get(&"bulk", 1)
 		base_bulk_value = bulk_value
 		
-		var raw_traits = item_data.get("traits", "")
+		var raw_traits = item_data.get(&"traits", "")
 		if raw_traits != "":
 			var trait_strs = raw_traits.split(",")
 			for t in trait_strs:
 				add_trait(StringName(t.strip_edges()))
 				
-		consumable_type = item_data.get("consumable_type", "")
-		charges = item_data.get("charges", 1)
-		max_charges = item_data.get("max_charges", 1)
-		spell_id = item_data.get("spell_id", "")
+		consumable_type = item_data.get(&"consumable_type", "")
+		charges = item_data.get(&"charges", 1)
+		max_charges = item_data.get(&"max_charges", 1)
+		spell_id = item_data.get(&"spell_id", "")
 
 ## Virtual method overridden by specific consumable scripts if needed,
 ## or parsed generically. Returns true if consumed successfully.

@@ -1,4 +1,4 @@
-# pf_condition.gd
+﻿# pf_condition.gd
 ## An active effect or status applied to an actor.
 class_name PFCondition
 extends RefCounted
@@ -22,11 +22,11 @@ func _init(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0):
 	var db_inst = PFDatabase.get_instance()
 	var data = db_inst.get_condition_data(p_id) if db_inst else null
 	if data:
-		condition_name = data.get("name", str(p_id))
-		modifier_type = data.get("modifier_type", "")
-		target_stat = data.get("target_stat", "")
-		multiplier = data.get("multiplier", 0)
-		strategy_script_path = data.get("script_path", "")
+		condition_name = data.get(&"name", str(p_id))
+		modifier_type = data.get(&"modifier_type", "")
+		target_stat = data.get(&"target_stat", "")
+		multiplier = data.get(&"multiplier", 0)
+		strategy_script_path = data.get(&"script_path", "")
 	else:
 		condition_name = str(p_id)
 		modifier_type = ""
@@ -41,7 +41,7 @@ func _init(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0):
 static func create(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0) -> PFCondition:
 	var db_inst = PFDatabase.get_instance()
 	var data = db_inst.get_condition_data(p_id) if db_inst else null
-	if data and data.get("script_path", "") != "":
+	if data and data.get(&"script_path", "") != "":
 		var script = load(data["script_path"])
 		if script:
 			return script.new(p_id, p_initial_value, p_source_dc)

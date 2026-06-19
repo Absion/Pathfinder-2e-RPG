@@ -1,4 +1,4 @@
-# pf_familiar.gd
+﻿# pf_familiar.gd
 # Represents a mystical minion focused on utility rather than combat. Derived stats scale off master's level.
 ## Represents a magical familiar with specific abilities and masters.
 class_name PFFamiliar
@@ -36,7 +36,7 @@ func update_stats_from_master() -> void:
 # ---------------------------------------------------------
 
 func _get_master_spellcasting_mod() -> int:
-	if master.has_method("get_spellcasting_mod"):
+	if master.has_method(&"get_spellcasting_mod"):
 		return master.get_spellcasting_mod()
 	return 0
 

@@ -1,4 +1,4 @@
-class_name TestMonsterGenerator
+﻿class_name TestMonsterGenerator
 extends RefCounted
 
 ## Utility to assert conditions during tests.
@@ -34,31 +34,31 @@ static func test_sniper_generation() -> void:
 	var npc: PFNpc = PFMonsterGenerator.generate_npc(10, &"Sniper")
 	assert_eq(npc.level, 10, "Sniper Level should be 10")
 	# Sniper AC is Moderate.
-	var ac = npc.monster_stats.get("ac", 0)
+	var ac = npc.monster_stats.get(&"ac", 0)
 	print("  Sniper generated AC: %d" % ac)
 
 static func test_elite_template() -> void:
 	print("Running test_elite_template...")
 	var npc: PFNpc = PFMonsterGenerator.generate_npc(2, &"Soldier")
-	var old_ac = npc.monster_stats.get("ac", 10)
+	var old_ac = npc.monster_stats.get(&"ac", 10)
 	var old_hp = npc.max_hp
 	var old_level = npc.level
 	
 	PFMonsterTemplateManager.apply_template(npc, &"Elite", 2) # Apply Elite twice
 	
 	assert_eq(npc.level, old_level + 2, "Level should increase by 2")
-	assert_eq(npc.monster_stats.get("ac", 10), old_ac + 4, "AC should increase by 4 (+2 per application)")
+	assert_eq(npc.monster_stats.get(&"ac", 10), old_ac + 4, "AC should increase by 4 (+2 per application)")
 	assert_eq(npc.max_hp, old_hp + 20, "HP should increase by 20 (+10 per application for low levels)")
 
 static func test_weak_template() -> void:
 	print("Running test_weak_template...")
 	var npc: PFNpc = PFMonsterGenerator.generate_npc(6, &"Spellcaster")
-	var old_ac = npc.monster_stats.get("ac", 10)
+	var old_ac = npc.monster_stats.get(&"ac", 10)
 	var old_hp = npc.max_hp
 	var old_level = npc.level
 	
 	PFMonsterTemplateManager.apply_template(npc, &"Weak", 1)
 	
 	assert_eq(npc.level, old_level - 1, "Level should decrease by 1")
-	assert_eq(npc.monster_stats.get("ac", 10), old_ac - 2, "AC should decrease by 2")
+	assert_eq(npc.monster_stats.get(&"ac", 10), old_ac - 2, "AC should decrease by 2")
 	assert_eq(npc.max_hp, max(1, old_hp - 15), "HP should decrease by 15 for level 6")

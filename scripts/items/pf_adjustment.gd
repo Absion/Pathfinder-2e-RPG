@@ -1,4 +1,4 @@
-# pf_adjustment.gd
+﻿# pf_adjustment.gd
 ## A modification that alters an item. An item can typically only have one adjustment.
 class_name PFAdjustment
 extends PFItem
@@ -80,11 +80,11 @@ func _is_valid_host(item: PFItem) -> bool:
 			return true
 			
 	# Also check item type categories roughly
-	if valid_hosts.has("weapon") and item is PFWeapon:
+	if valid_hosts.has(&"weapon") and item is PFWeapon:
 		return true
-	if valid_hosts.has("shield") and item is PFShield:
+	if valid_hosts.has(&"shield") and item is PFShield:
 		return true
-	if valid_hosts.has("armor") and item is PFArmor:
+	if valid_hosts.has(&"armor") and item is PFArmor:
 		return true
 		
 	return false

@@ -1,4 +1,4 @@
-# pf_health_component.gd
+﻿# pf_health_component.gd
 ## Tracks hit points, temporary hit points, and dying rules.
 class_name PFHealthComponent
 extends PFComponent
@@ -106,15 +106,15 @@ func apply_damage(amount: int, type: PFCombatConstants.DamageType = PFCombatCons
 				
 				# Weakness Check
 				if triggered_weakness:
-					if knowledge.get("state_weaknesses", 0) != 1: # 1 is KNOWN
+					if knowledge.get(&"state_weaknesses", 0) != 1: # 1 is KNOWN
 						db.update_player_knowledge(parent.base_id, {"state_weaknesses": 1})
 						print("    > [Bestiary Discovery] You discovered %s is weak to %s!" % [parent.entity_name, type_str])
 				else:
-					var false_data_str = knowledge.get("false_data", "{}")
+					var false_data_str = knowledge.get(&"false_data", "{}")
 					var false_data = JSON.parse_string(false_data_str) if false_data_str else {}
-					if false_data.has("weaknesses"):
+					if false_data.has(&"weaknesses"):
 						for w in false_data["weaknesses"]:
-							if w.has("type") and w["type"] == type_str:
+							if w.has(&"type") and w["type"] == type_str:
 								print("    > [Bestiary Discovery] You realize the supposed weakness to %s was false!" % type_str)
 								false_data.erase("weaknesses")
 								db.update_player_knowledge(parent.base_id, {

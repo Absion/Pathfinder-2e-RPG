@@ -1,4 +1,4 @@
-# pf_actor.gd
+﻿# pf_actor.gd
 # Represents any living, undead, or construct entity in the game: Players, NPCs, and Monsters.
 ## The core base class for any targetable and interactive entity in the game world.
 #
@@ -69,8 +69,8 @@ func _on_rested_for_night() -> void:
 	if has_condition("drained"): reduce_condition("drained", 1)
 	if has_condition("fatigued"): remove_condition("fatigued")
 	
-	if "spellbook" in self and self.get("spellbook") != null:
-		self.get("spellbook").restore_daily_slots()
+	if "spellbook" in self and self.get(&"spellbook") != null:
+		self.get(&"spellbook").restore_daily_slots()
 		print("    > %s recovers all daily spell slots." % entity_name)
 		
 	# Sleeping in Armor Rule (Pathfinder 2e Remaster)
@@ -195,21 +195,21 @@ func get_actor_bulk() -> int:
 	if "size_id" in self:
 		var db_inst = PFDatabase.get_instance()
 		if db_inst:
-			var size_data = db_inst.get_size_data(self.get("size_id"))
-			var eff_size = size_data.get("effective_size", 1) if size_data else 1
+			var size_data = db_inst.get_size_data(self.get(&"size_id"))
+			var eff_size = size_data.get(&"effective_size", 1) if size_data else 1
 			if eff_size == 0: base_bulk = 30
 			elif eff_size == 2: base_bulk = 120
 			elif eff_size >= 3: base_bulk = 240
 			
 	var inventory_bulk = 0
-	if "inventory" in self and self.get("inventory") != null:
-		inventory_bulk = self.get("inventory").get_total_bulk()
+	if "inventory" in self and self.get(&"inventory") != null:
+		inventory_bulk = self.get(&"inventory").get_total_bulk()
 		
 	return base_bulk + inventory_bulk
 
 func get_worn_armor() -> PFArmor:
-	if "inventory" in self and self.get("inventory") != null:
-		var armors = self.get("inventory").worn_items.filter(func(i): return i is PFArmor)
+	if "inventory" in self and self.get(&"inventory") != null:
+		var armors = self.get(&"inventory").worn_items.filter(func(i): return i is PFArmor)
 		if armors.size() > 0:
 			return armors[0]
 	return null

@@ -1,4 +1,4 @@
-# pf_attachment.gd
+﻿# pf_attachment.gd
 ## A modular component that can be attached to weapons, armor, or shields.
 class_name PFAttachment
 extends PFItem
@@ -65,11 +65,11 @@ func _is_valid_host(item: PFItem) -> bool:
 			return true
 			
 	# Also check item type categories roughly if needed
-	if valid_hosts.has("weapon") and item is PFWeapon:
+	if valid_hosts.has(&"weapon") and item is PFWeapon:
 		return true
-	if valid_hosts.has("shield") and item is PFShield:
+	if valid_hosts.has(&"shield") and item is PFShield:
 		return true
-	if valid_hosts.has("armor") and item is PFArmor:
+	if valid_hosts.has(&"armor") and item is PFArmor:
 		return true
 		
 	return false

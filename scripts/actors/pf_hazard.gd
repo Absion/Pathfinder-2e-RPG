@@ -1,4 +1,4 @@
-# pf_hazard.gd
+﻿# pf_hazard.gd
 ## Represents a Trap, Environmental Hazard, or Haunt.
 class_name PFHazard
 extends PFActor
@@ -65,7 +65,7 @@ func attempt_disable(skill_used: StringName, degree_of_success: int) -> bool:
 		return false
 		
 	for method in disable_methods:
-		if method.get("skill", &"") == skill_used:
+		if method.get(&"skill", &"") == skill_used:
 			# Matched a valid disable skill!
 			if degree_of_success == PFCombatConstants.DegreeOfSuccess.CRITICAL_SUCCESS:
 				method["successes_achieved"] += 2
@@ -76,7 +76,7 @@ func attempt_disable(skill_used: StringName, degree_of_success: int) -> bool:
 				trigger()
 				return false
 				
-			var needed = method.get("successes_needed", 1)
+			var needed = method.get(&"successes_needed", 1)
 			if method["successes_achieved"] >= needed:
 				is_disabled = true
 				hazard_disabled.emit(self)

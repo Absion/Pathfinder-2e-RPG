@@ -1,4 +1,4 @@
-# pf_reaction_manager.gd
+﻿# pf_reaction_manager.gd
 ## Manages global reaction triggers and asynchronous UI prompting for reactions.
 class_name PFReactionManager
 extends Node
@@ -67,7 +67,7 @@ func notify_event(trigger_type: StringName, trigger_actor: PFActor, event_data: 
 		var will_use = false
 		
 		# If AI, standard logic applies (always use for now, or roll chance)
-		if auto_resolve_prompts or reg.listener.get_meta("is_ai", false) or reg.listener is PFNpc:
+		if auto_resolve_prompts or reg.listener.get_meta(&"is_ai", false) or reg.listener is PFNpc:
 			will_use = true
 		else:
 			# If Player, pause and prompt UI

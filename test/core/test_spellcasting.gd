@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+﻿extends GdUnitTestSuite
 
 var db: PFDatabase
 var caster: PFActor
@@ -46,7 +46,7 @@ func before_test() -> void:
 	caster.actor_class = mock_class
 	
 	var sb = PFSpellbook.new(caster)
-	caster.set("spellbook", sb)
+	caster.set(&"spellbook", sb)
 	sb.max_focus_points = 2
 	sb.focus_points = 2
 	sb.current_slots[1] = 2
@@ -61,16 +61,16 @@ func test_spell_attack_cantrip() -> void:
 	
 	# Equip a spellbook with spell attack bonus
 	# Force an attack roll that always hits
-	var sb = caster.get("spellbook") as PFSpellbook
+	var sb = caster.get(&"spellbook") as PFSpellbook
 	
 	# Caster spell attack vs Target AC
 	# Give caster +50 to spell attacks to force a critical hit
-	caster.attributes.item_bonus_to_attack = 50
+	caster.attributes.attack_modifiers.add_modifier(PFModifier.new(50, PFMathConstants.ModifierType.ITEM, "test_boost"))
 	
 	var action = PFActionCastSpell.new(spell)
 	
 	var initial_hp = target.health.current_hp
-	assert_bool(await action.execute(caster, target)).is_true()
+	assert_bool(action.execute(caster, target)).is_true()
 	
 	# As a level 5 caster, cantrip heightens to Rank 3. Base rank 1. Difference = 2 ranks.
 	# Scaling is +1 dice per 1 rank. So +2 dice. Total = 4 dice.
@@ -90,16 +90,18 @@ func test_saving_throw_spell() -> void:
 	spell.die_faces = 6
 	spell.damage_type = PFCombatConstants.DamageType.FIRE
 	
-	var sb = caster.get("spellbook") as PFSpellbook
+	var sb = caster.get(&"spellbook") as PFSpellbook
 	
 	# Force the target to critically fail the save
 	# Caster spell DC = 10, Target save bonus = -50
-	target.attributes.item_penalty_to_save = 50
+	target.attributes.fort_save.add_modifier(PFModifier.new(-50, PFMathConstants.ModifierType.ITEM, "test_penalty"))
+	target.attributes.ref_save.add_modifier(PFModifier.new(-50, PFMathConstants.ModifierType.ITEM, "test_penalty"))
+	target.attributes.will_save.add_modifier(PFModifier.new(-50, PFMathConstants.ModifierType.ITEM, "test_penalty"))
 	
 	# Test casting it at Rank 4! (Heightened)
 	var action = PFActionCastSpell.new(spell, 4)
 	var initial_hp = target.health.current_hp
-	assert_bool(await action.execute(caster, target)).is_true()
+	assert_bool(action.execute(caster, target)).is_true()
 	
 	# Fireball is base Rank 3, cast at Rank 4. Heightened (+1) adds 2d6 damage.
 	# Total dice = 8d6.
@@ -114,20 +116,20 @@ func test_saving_throw_spell() -> void:
 
 func test_focus_points() -> void:
 	var spell = PFSpell.new("mock_lay_on_hands")
-	var sb = caster.get("spellbook") as PFSpellbook
+	var sb = caster.get(&"spellbook") as PFSpellbook
 	
 	assert_int(sb.focus_points).is_equal(2)
 	
 	var action = PFActionCastSpell.new(spell)
-	assert_bool(await action.execute(caster, caster)).is_true()
+	assert_bool(action.execute(caster, caster)).is_true()
 	
 	assert_int(sb.focus_points).is_equal(1)
 	
-	assert_bool(await action.execute(caster, caster)).is_true()
+	assert_bool(action.execute(caster, caster)).is_true()
 	assert_int(sb.focus_points).is_equal(0)
 	
 	# Trying to cast again should fail
-	assert_bool(await action.execute(caster, caster)).is_false()
+	assert_bool(action.execute(caster, caster)).is_false()
 	
 	# Refocus
 	sb.refocus()

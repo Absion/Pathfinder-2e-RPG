@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+﻿extends GdUnitTestSuite
 
 var attacker: PFActor
 var target: PFActor
@@ -12,7 +12,7 @@ func before_test():
 	add_child(target)
 	
 	# Stub method for has_critical_specialization
-	attacker.set_meta("has_crit_spec", true)
+	attacker.set_meta(&"has_crit_spec", true)
 
 func _has_crit_spec(_group) -> bool:
 	return true

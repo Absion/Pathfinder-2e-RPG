@@ -1,4 +1,4 @@
-# test_attachments.gd
+﻿# test_attachments.gd
 class_name TestAttachments
 extends GdUnitTestSuite
 
@@ -27,7 +27,7 @@ func test_attaching_scope_to_crossbow() -> void:
 	scope.valid_hosts = ["crossbow", "firearm"] as Array[String]
 	scope.granted_traits = [&"deadly_d6", &"fatal_aim_d10"] as Array[StringName]
 	
-	var inv = attacker.get("inventory") as PFInventory
+	var inv = attacker.get(&"inventory") as PFInventory
 	inv.add_item(crossbow)
 	inv.add_item(scope)
 	
@@ -59,7 +59,7 @@ func test_attaching_bayonet_weapon() -> void:
 	bayonet.valid_hosts = ["crossbow", "firearm"] as Array[String]
 	bayonet.granted_weapon = bayonet_weapon
 	
-	var inv = attacker.get("inventory") as PFInventory
+	var inv = attacker.get(&"inventory") as PFInventory
 	inv.add_item(crossbow)
 	inv.add_item(bayonet)
 	

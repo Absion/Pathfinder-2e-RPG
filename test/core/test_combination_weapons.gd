@@ -1,4 +1,4 @@
-# test_combination_weapons.gd
+﻿# test_combination_weapons.gd
 class_name TestCombinationWeapons
 extends GdUnitTestSuite
 
@@ -35,7 +35,7 @@ func test_combination_toggle() -> void:
 	assert_int(gunblade.hands_required).is_equal(1)
 	
 	# Equip it
-	var inv = attacker.get("inventory") as PFInventory
+	var inv = attacker.get(&"inventory") as PFInventory
 	inv.add_item(gunblade)
 	inv.equip_weapon(gunblade, 1, true)
 	

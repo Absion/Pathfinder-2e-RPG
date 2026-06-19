@@ -1,4 +1,4 @@
-# pf_inventory.gd
+﻿# pf_inventory.gd
 ## Component that safely manages an actor's equipped items and total bulk.
 class_name PFInventory
 extends RefCounted
@@ -58,10 +58,10 @@ func equip_item(item: PFItem) -> void:
 	if item is PFArmor:
 		var db_inst = PFDatabase.get_instance()
 		var owner_size_data = db_inst.get_size_data(owner.size_id) if (db_inst and "size_id" in owner) else {}
-		var a_size = (owner_size_data.get("effective_size", 1) as int) if not owner_size_data.is_empty() else 1
+		var a_size = (owner_size_data.get(&"effective_size", 1) as int) if not owner_size_data.is_empty() else 1
 		
 		var item_size_data = db_inst.get_size_data(item.size_id) if db_inst else {}
-		var i_size = (item_size_data.get("effective_size", 1) as int) if not item_size_data.is_empty() else 1
+		var i_size = (item_size_data.get(&"effective_size", 1) as int) if not item_size_data.is_empty() else 1
 		
 		if a_size != i_size:
 			print("    > [ERROR] %s cannot wear %s. Armor must be the exact size!" % [owner.entity_name, item.entity_name])
@@ -161,10 +161,10 @@ func wield_item(item: PFItem, main_hand: bool = true) -> void:
 	if item is PFWeapon:
 		var db_inst = PFDatabase.get_instance()
 		var owner_size_data = db_inst.get_size_data(owner.size_id) if (db_inst and "size_id" in owner) else {}
-		var a_size = (owner_size_data.get("effective_size", 1) as int) if not owner_size_data.is_empty() else 1
+		var a_size = (owner_size_data.get(&"effective_size", 1) as int) if not owner_size_data.is_empty() else 1
 		
 		var item_size_data = db_inst.get_size_data(item.size_id) if db_inst else {}
-		var i_size = (item_size_data.get("effective_size", 1) as int) if not item_size_data.is_empty() else 1
+		var i_size = (item_size_data.get(&"effective_size", 1) as int) if not item_size_data.is_empty() else 1
 		var diff = i_size - a_size
 		
 		if abs(diff) > 1:
@@ -297,10 +297,10 @@ static func format_copper_to_string(total_cp: int) -> String:
 func get_perceived_bulk(item: PFItem) -> int:
 	var db_inst = PFDatabase.get_instance()
 	var owner_size_data = db_inst.get_size_data(owner.size_id) if (db_inst and "size_id" in owner) else {}
-	var a_size = (owner_size_data.get("effective_size", 1) as int) if not owner_size_data.is_empty() else 1
+	var a_size = (owner_size_data.get(&"effective_size", 1) as int) if not owner_size_data.is_empty() else 1
 	
 	var item_size_data = db_inst.get_size_data(item.size_id) if db_inst else {}
-	var i_size = (item_size_data.get("effective_size", 1) as int) if not item_size_data.is_empty() else 1
+	var i_size = (item_size_data.get(&"effective_size", 1) as int) if not item_size_data.is_empty() else 1
 	
 	if a_size == i_size:
 		return item.bulk_value
@@ -343,7 +343,7 @@ func _emit_inventory_update() -> void:
 func _calculate_container_contents(container: PFItem) -> int:
 	if not "stored_items" in container: return 0
 	var total = 0
-	for item in container.get("stored_items"):
+	for item in container.get(&"stored_items"):
 		total += get_perceived_bulk(item)
 	return total
 

@@ -1,4 +1,4 @@
-# pf_proficiency_sheet.gd
+﻿# pf_proficiency_sheet.gd
 # A component attached to an actor that manages their specific proficiencies.
 ## Stores and calculates all proficiency ranks for a player's skills and saves.
 class_name PFProficiencySheet
@@ -43,7 +43,7 @@ func add_lore_skill(lore_name: StringName, rank: PFMathConstants.ProficiencyRank
 	var is_standard = false
 	if db:
 		var data = db.get_skill_data(lore_name)
-		if not data.is_empty() and data.get("is_lore", 0) == 1:
+		if not data.is_empty() and data.get(&"is_lore", 0) == 1:
 			is_standard = true
 			
 	if is_standard or str(lore_name).to_lower().ends_with("lore"):

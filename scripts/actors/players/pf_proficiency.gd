@@ -1,4 +1,4 @@
-# pf_proficiency.gd
+﻿# pf_proficiency.gd
 ## Helper class representing a proficiency rank from Untrained to Legendary.
 class_name PFProficiency
 extends RefCounted
@@ -15,7 +15,7 @@ static func get_skill_ability(skill: StringName) -> StringName:
 	var db = PFDatabase.get_instance()
 	if db:
 		var data = db.get_skill_data(skill)
-		if not data.is_empty() and data.has("key_ability"):
+		if not data.is_empty() and data.has(&"key_ability"):
 			return StringName(data["key_ability"])
 			
 	# Fallback for dynamic Lores not explicitly in DB

@@ -1,4 +1,4 @@
-# pf_level_up_service.gd
+﻿# pf_level_up_service.gd
 ## A Sandbox Builder for managing a character's pending level up transaction without mutating the character until confirmed.
 class_name PFLevelUpService
 extends RefCounted
@@ -13,14 +13,14 @@ var selected_skills: Array[StringName] = []
 func begin_level_up(actor: PFPlayerCharacter, blueprint: Dictionary) -> void:
 	_actor = actor
 	_blueprint = blueprint
-	preview_hp = _actor.health.max_hp + blueprint.get("hp_gain", 0)
+	preview_hp = _actor.health.max_hp + blueprint.get(&"hp_gain", 0)
 	selected_feats.clear()
 	selected_skills.clear()
 
 func get_preview_stats() -> Dictionary:
 	var stats = {
 		"hp": preview_hp,
-		"level": _blueprint.get("new_level", _actor.level)
+		"level": _blueprint.get(&"new_level", _actor.level)
 	}
 	return stats
 
@@ -42,7 +42,7 @@ func get_available_feats(slot_type: StringName) -> Array[Dictionary]:
 			continue
 			
 		var required_level = row["level"] as int
-		if required_level > _blueprint.get("new_level", _actor.level):
+		if required_level > _blueprint.get(&"new_level", _actor.level):
 			continue
 			
 		# Check prerequisites
@@ -73,21 +73,21 @@ func _meets_prerequisites(prereqs_json: String) -> bool:
 	var prereq = JSON.parse_string(prereqs_json)
 	if not prereq: return true
 	
-	if prereq.has("ancestry"):
+	if prereq.has(&"ancestry"):
 		if not _actor.ancestry or str(_actor.ancestry.id) != prereq["ancestry"]:
 			return false
 			
-	if prereq.has("ethnicity"):
+	if prereq.has(&"ethnicity"):
 		if str(_actor.ethnicity) != prereq["ethnicity"]:
 			return false
 			
-	if prereq.has("min_stats"):
+	if prereq.has(&"min_stats"):
 		for stat in prereq["min_stats"]:
 			var required_val = prereq["min_stats"][stat] as int
 			if _actor.get_ability_modifier(StringName(stat).to_upper()) < required_val:
 				return false
 				
-	if prereq.has("min_proficiency"):
+	if prereq.has(&"min_proficiency"):
 		for skill in prereq["min_proficiency"]:
 			var req_rank = prereq["min_proficiency"][skill] as int
 			var current_rank = _actor.sheet.get_skill_rank(StringName(skill)) as int
@@ -97,7 +97,7 @@ func _meets_prerequisites(prereqs_json: String) -> bool:
 			if current_rank < req_rank:
 				return false
 				
-	if prereq.has("requires_feat"):
+	if prereq.has(&"requires_feat"):
 		var feat_id = prereq["requires_feat"]
 		var has_feat = false
 		for f in _actor.feats:
@@ -109,7 +109,7 @@ func _meets_prerequisites(prereqs_json: String) -> bool:
 	return true
 
 func select_feat(slot_index: int, feat_id: StringName) -> bool:
-	if slot_index >= _blueprint.get("feat_slots", []).size(): return false
+	if slot_index >= _blueprint.get(&"feat_slots", []).size(): return false
 	
 	var feat = PFFeat.new(feat_id)
 	if feat.entity_name == "Unknown Feat": return false
@@ -118,7 +118,7 @@ func select_feat(slot_index: int, feat_id: StringName) -> bool:
 	
 	# If the feat grants HP (e.g. Toughness), update preview
 	if feat_id == &"toughness":
-		preview_hp += _blueprint.get("new_level", _actor.level)
+		preview_hp += _blueprint.get(&"new_level", _actor.level)
 		
 	return true
 
@@ -126,17 +126,17 @@ func undo_feat(slot_index: int) -> void:
 	if selected_feats.has(slot_index):
 		var feat = selected_feats[slot_index]
 		if feat.id == &"toughness":
-			preview_hp -= _blueprint.get("new_level", _actor.level)
+			preview_hp -= _blueprint.get(&"new_level", _actor.level)
 		selected_feats.erase(slot_index)
 
 func select_skill(skill_name: StringName) -> bool:
-	var max_increases = _blueprint.get("skill_increases", 0)
+	var max_increases = _blueprint.get(&"skill_increases", 0)
 	if selected_skills.size() >= max_increases:
 		return false
 		
 	var current_rank = _actor.sheet.get_skill_rank(skill_name)
 	# Pre-validate if they can actually upgrade it based on level limits
-	var next_level = _blueprint.get("new_level", _actor.level)
+	var next_level = _blueprint.get(&"new_level", _actor.level)
 	if current_rank == PFMathConstants.ProficiencyRank.TRAINED and next_level < 2: return false
 	if current_rank == PFMathConstants.ProficiencyRank.EXPERT and next_level < 7: return false
 	if current_rank == PFMathConstants.ProficiencyRank.MASTER and next_level < 15: return false
@@ -153,10 +153,10 @@ func commit_transaction() -> void:
 	var history_entry = {
 		"feat_slots": {},
 		"skill_increases": selected_skills.duplicate(),
-		"granted_features": _blueprint.get("granted_features", [])
+		"granted_features": _blueprint.get(&"granted_features", [])
 	}
 	
-	var slots = _blueprint.get("feat_slots", [])
+	var slots = _blueprint.get(&"feat_slots", [])
 	for i in range(slots.size()):
 		var slot_type = slots[i]
 		if selected_feats.has(i):
@@ -167,10 +167,10 @@ func commit_transaction() -> void:
 	for skill in selected_skills:
 		_actor.sheet.upgrade_skill(skill, _actor.level)
 		
-	for feature_id in _blueprint.get("granted_features", []):
+	for feature_id in _blueprint.get(&"granted_features", []):
 		PFLevelUpManager.apply_class_feature(_actor, feature_id)
 		
-	if not _actor.get("progression_history"):
-		_actor.set("progression_history", {})
+	if not _actor.get(&"progression_history"):
+		_actor.set(&"progression_history", {})
 		
 	_actor.progression_history[_actor.level] = history_entry

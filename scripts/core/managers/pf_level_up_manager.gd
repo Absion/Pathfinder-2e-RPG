@@ -1,4 +1,4 @@
-# pf_level_up_manager.gd
+﻿# pf_level_up_manager.gd
 ## Generates a "blueprint" of pending choices and fixed bonuses when an actor levels up.
 class_name PFLevelUpManager
 extends RefCounted
@@ -39,7 +39,7 @@ static func generate_level_up_blueprint(actor: PFPlayerCharacter) -> Dictionary:
 		
 		if not prog_data.is_empty():
 			# Fixed features
-			var features_json = str(prog_data.get("granted_features", "[]"))
+			var features_json = str(prog_data.get(&"granted_features", "[]"))
 			if features_json != "" and features_json != "[]":
 				var feature_list = JSON.parse_string(features_json)
 				if feature_list and typeof(feature_list) == TYPE_ARRAY:
@@ -47,7 +47,7 @@ static func generate_level_up_blueprint(actor: PFPlayerCharacter) -> Dictionary:
 						blueprint["granted_features"].append(StringName(feature_id))
 						
 			# Feat slots
-			var feats_json = str(prog_data.get("granted_feat_slots", "[]"))
+			var feats_json = str(prog_data.get(&"granted_feat_slots", "[]"))
 			if feats_json != "" and feats_json != "[]":
 				var feat_slots = JSON.parse_string(feats_json)
 				if feat_slots and typeof(feat_slots) == TYPE_ARRAY:

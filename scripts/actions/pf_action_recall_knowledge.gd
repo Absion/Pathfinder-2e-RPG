@@ -1,4 +1,4 @@
-# pf_action_recall_knowledge.gd
+﻿# pf_action_recall_knowledge.gd
 ## Allows a character to roll a secret skill check to learn information about a target.
 class_name PFActionRecallKnowledge
 extends PFAction
@@ -38,7 +38,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	var roll = PFDice.roll(1, 20).total + modifier
 	
 	var dc = PFGameMath.get_dc_by_level(target.level)
-	var rarity = target.get("rarity") if target.get("rarity") else &"common"
+	var rarity = target.get(&"rarity") if target.get(&"rarity") else &"common"
 	match rarity:
 		&"uncommon": dc += 2
 		&"rare": dc += 5
@@ -73,7 +73,7 @@ func _grant_success_knowledge(db: PFDatabase, monster_id: String, current_knowle
 	var updates = {}
 	
 	# Clear false data if it exists
-	if current_knowledge.get("false_data", "{}") != "{}":
+	if current_knowledge.get(&"false_data", "{}") != "{}":
 		updates["false_data"] = "{}"
 		
 	# On any success, they always learn the basics if they didn't know them
@@ -98,7 +98,7 @@ func _grant_success_knowledge(db: PFDatabase, monster_id: String, current_knowle
 		
 	if updates.size() > 0:
 		db.update_player_knowledge(monster_id, updates)
-		print("    > [Bestiary] Unlocked %d new fields for %s." % [updates.size() - (1 if updates.has("false_data") else 0), monster_id])
+		print("    > [Bestiary] Unlocked %d new fields for %s." % [updates.size() - (1 if updates.has(&"false_data") else 0), monster_id])
 	else:
 		print("    > [Bestiary] You already know everything about %s!" % monster_id)
 
@@ -116,7 +116,7 @@ func _grant_false_knowledge(db: PFDatabase, monster_id: String, target: PFNpc, c
 	unknown_fields.shuffle()
 	var target_field = unknown_fields[0]
 	
-	var false_data_str = current_knowledge.get("false_data", "{}")
+	var false_data_str = current_knowledge.get(&"false_data", "{}")
 	var false_data = JSON.parse_string(false_data_str) if false_data_str else {}
 	
 	_generate_false_data_for_field(target, target_field, false_data)
@@ -159,7 +159,7 @@ func _get_random_unmatched_damage_type(actual_list: Array) -> String:
 	
 	var actual_types = []
 	for item in actual_list:
-		if typeof(item) == TYPE_DICTIONARY and item.has("type"):
+		if typeof(item) == TYPE_DICTIONARY and item.has(&"type"):
 			actual_types.append(str(item.type).to_upper())
 			
 	for k in keys:
@@ -173,17 +173,17 @@ func _determine_skill_for_target(target: PFActor) -> StringName:
 	for t in traits:
 		string_traits.append(str(t).to_lower())
 		
-	if string_traits.has("animal") or string_traits.has("fungus") or string_traits.has("plant") or string_traits.has("fey") or string_traits.has("beast"):
+	if string_traits.has(&"animal") or string_traits.has(&"fungus") or string_traits.has(&"plant") or string_traits.has(&"fey") or string_traits.has(&"beast"):
 		return &"nature"
-	if string_traits.has("dragon") or string_traits.has("elemental") or string_traits.has("monitor"):
+	if string_traits.has(&"dragon") or string_traits.has(&"elemental") or string_traits.has(&"monitor"):
 		return &"arcana"
-	if string_traits.has("undead") or string_traits.has("fiend") or string_traits.has("celestial"):
+	if string_traits.has(&"undead") or string_traits.has(&"fiend") or string_traits.has(&"celestial"):
 		return &"religion"
-	if string_traits.has("aberration") or string_traits.has("spirit") or string_traits.has("ooze"):
+	if string_traits.has(&"aberration") or string_traits.has(&"spirit") or string_traits.has(&"ooze"):
 		return &"occultism"
-	if string_traits.has("humanoid"):
+	if string_traits.has(&"humanoid"):
 		return &"society"
-	if string_traits.has("construct"):
+	if string_traits.has(&"construct"):
 		return &"crafting"
 		
 	# Fallback

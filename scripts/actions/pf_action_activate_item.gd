@@ -1,4 +1,4 @@
-# pf_action_activate_item.gd
+﻿# pf_action_activate_item.gd
 ## Action to activate a permanent item (wands, staves, rings).
 class_name PFActionActivateItem
 extends PFAction
@@ -34,7 +34,7 @@ func execute(user: PFActor, target: PFActor = null) -> Variant:
 		if custom_script:
 			# If the script has an execute method, we call it.
 			var inst = custom_script.new()
-			if inst.has_method("execute_effect"):
+			if inst.has_method(&"execute_effect"):
 				inst.execute_effect(user, target, item)
 			else:
 				print("    > [WARNING] %s has no execute_effect method!" % item.action_script_path)

@@ -1,4 +1,4 @@
-# pf_action_aid.gd
+﻿# pf_action_aid.gd
 class_name PFActionAid
 extends PFAction
 
@@ -26,7 +26,7 @@ func execute(user: PFActor, target: PFActor = null) -> Variant:
 		# Simplification: In a full implementation, we would roll a skill check DC 15 to determine the bonus
 		# For now, we will simulate a success (+1 circumstance bonus). A critical success could be +2, +3, or +4.
 		# Apply a one-time bonus to the ally's roll or AC
-		if event_data.has("roll_bonus"):
+		if event_data.has(&"roll_bonus"):
 			event_data["roll_bonus"] += 1
 			
 		# Aid reaction is spent, unregister it

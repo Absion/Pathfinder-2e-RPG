@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+﻿extends GdUnitTestSuite
 
 var turn_manager: PFTurnManager
 var reaction_manager: PFReactionManager
@@ -25,8 +25,8 @@ func before_test():
 	
 	actor_a = PFPlayerCharacter.new("Alice", [], 1, 20, 0, 0, 0)
 	actor_b = PFPlayerCharacter.new("Bob", [], 1, 20, 0, 0, 0)
-	actor_a.set_meta("is_ai", true) # auto resolve reactions
-	actor_b.set_meta("is_ai", true) # auto resolve reactions
+	actor_a.set_meta(&"is_ai", true) # auto resolve reactions
+	actor_b.set_meta(&"is_ai", true) # auto resolve reactions
 	
 	add_child(actor_a)
 	add_child(actor_b)

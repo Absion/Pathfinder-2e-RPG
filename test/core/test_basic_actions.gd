@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+﻿extends GdUnitTestSuite
 
 var turn_manager: PFTurnManager
 var reaction_manager: PFReactionManager
@@ -26,8 +26,8 @@ func before_test():
 	
 	actor_a = PFPlayerCharacter.new("Alice", [], 1, 20, 0, 0, 0)
 	actor_b = PFPlayerCharacter.new("Bob", [], 1, 20, 0, 0, 0)
-	actor_a.set_meta("is_ai", true)
-	actor_b.set_meta("is_ai", true)
+	actor_a.set_meta(&"is_ai", true)
+	actor_b.set_meta(&"is_ai", true)
 	
 	add_child(actor_a)
 	add_child(actor_b)
@@ -88,7 +88,7 @@ func test_aid_action_registers_reaction():
 	event_data = await PFContext.reaction_manager.notify_event(PFCombatConstants.ReactionTriggers.ON_ALLY_ACTION, actor_b, event_data)
 	
 	# Roll bonus should be increased by 1
-	assert_int(event_data.get("roll_bonus", 0)).is_equal(1)
+	assert_int(event_data.get(&"roll_bonus", 0)).is_equal(1)
 
 func test_ready_action_executes_stored_action():
 	var strike_weapon = PFWeapon.new("Sword", [], 1, 1.0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.SIMPLE, PFEquipmentConstants.WeaponGroup.SWORD, 1, 8, PFCombatConstants.DamageType.SLASHING)
@@ -112,4 +112,4 @@ func test_ready_action_executes_stored_action():
 	
 	# The strike should have happened. Let's just verify it didn't crash.
 	# We can't easily check Bob's HP here because Strike might miss, but the event should resolve.
-	assert_bool(event_data.has("disrupted")).is_true()
+	assert_bool(event_data.has(&"disrupted")).is_true()

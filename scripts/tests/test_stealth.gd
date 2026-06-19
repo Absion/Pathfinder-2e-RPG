@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 class_name TestStealth
 
@@ -42,7 +42,7 @@ func run_test() -> void:
 	
 	# 2. Hide with Cover
 	print("\nTest 2: Hide with Cover")
-	rogue.set_meta("mock_cover_vs_Guard", PFCombatConstants.CoverType.STANDARD)
+	rogue.set_meta(&"mock_cover_vs_Guard", PFCombatConstants.CoverType.STANDARD)
 	action_hide.execute(rogue)
 	# Assuming stealth roll succeeds (Rogue +8 Stealth vs Guard DC 15)
 	# We can't guarantee dice roll, but 80% chance. Let's force a high roll for the test.
@@ -51,14 +51,14 @@ func run_test() -> void:
 	
 	# 3. Sneak and end without Cover
 	print("\nTest 3: Sneak without Cover at end of move")
-	rogue.set_meta("mock_cover_vs_Guard", PFCombatConstants.CoverType.NONE) # Left cover
+	rogue.set_meta(&"mock_cover_vs_Guard", PFCombatConstants.CoverType.NONE) # Left cover
 	action_sneak.execute(rogue)
 	assert_eq(PFContext.detection_manager.get_detection_state(guard, rogue), PFCombatConstants.DetectionState.OBSERVED, "Rogue should become observed if ending sneak without cover.")
 	
 	# 4. Hide with Cover, but Guard has Precise Scent
 	print("\nTest 4: Hide vs Precise Scent")
 	senses.grant_sense(PFBiographyConstants.SenseType.SCENT, PFBiographyConstants.SenseAcuity.PRECISE, 30)
-	rogue.set_meta("mock_cover_vs_Guard", PFCombatConstants.CoverType.STANDARD)
+	rogue.set_meta(&"mock_cover_vs_Guard", PFCombatConstants.CoverType.STANDARD)
 	action_hide.execute(rogue)
 	assert_eq(PFContext.detection_manager.get_detection_state(guard, rogue), PFCombatConstants.DetectionState.OBSERVED, "Rogue should be observed due to precise scent, bypassing cover.")
 	

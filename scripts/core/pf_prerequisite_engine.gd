@@ -1,4 +1,4 @@
-# pf_prerequisite_engine.gd
+﻿# pf_prerequisite_engine.gd
 ## A static engine for evaluating prerequisite JSON rules against an actor.
 class_name PFPrerequisiteEngine
 extends RefCounted
@@ -15,39 +15,39 @@ static func evaluate(prereqs_json: String, actor: PFPlayerCharacter, feat_traits
 		return _check_dedication_lock(actor, feat_traits, ignore_dedication_lock)
 		
 	# 1. Level Check
-	if reqs.has("level"):
+	if reqs.has(&"level"):
 		if actor.level < reqs["level"]:
 			return false
 			
 	# 2. Ancestry Check
-	if reqs.has("ancestry"):
+	if reqs.has(&"ancestry"):
 		if not actor.ancestry or str(actor.ancestry.id) != reqs["ancestry"]:
 			return false
 			
 	# 3. Heritage Check
-	if reqs.has("heritage"):
+	if reqs.has(&"heritage"):
 		if not actor.heritage or str(actor.heritage.id) != reqs["heritage"]:
 			return false
 			
 	# 3b. Ethnicity Check
-	if reqs.has("ethnicity"):
+	if reqs.has(&"ethnicity"):
 		if str(actor.ethnicity) != reqs["ethnicity"]:
 			return false
 			
 	# 3c. Class Check
-	if reqs.has("requires_class"):
+	if reqs.has(&"requires_class"):
 		if not actor.actor_class or str(actor.actor_class.entity_name).to_lower() != reqs["requires_class"].to_lower():
 			return false
 			
 	# 4. Specific Feat Requirement Check
-	if reqs.has("requires_feat"):
+	if reqs.has(&"requires_feat"):
 		var req_feat = StringName(reqs["requires_feat"])
 		if req_feat != &"none" and req_feat != &"":
 			if not actor.has_feat(req_feat):
 				return false
 				
 	# 5. Minimum Stats Check
-	if reqs.has("min_stats"):
+	if reqs.has(&"min_stats"):
 		var stats = reqs["min_stats"]
 		if typeof(stats) == TYPE_DICTIONARY:
 			for stat_name in stats.keys():
@@ -64,7 +64,7 @@ static func evaluate(prereqs_json: String, actor: PFPlayerCharacter, feat_traits
 					return false
 					
 	# 6. Minimum Proficiency Check
-	if reqs.has("min_proficiency"):
+	if reqs.has(&"min_proficiency"):
 		var profs = reqs["min_proficiency"]
 		if typeof(profs) == TYPE_DICTIONARY:
 			for skill_name in profs.keys():
@@ -74,7 +74,7 @@ static func evaluate(prereqs_json: String, actor: PFPlayerCharacter, feat_traits
 					return false
 
 	# 7. Region Check (placeholder until Region logic is fully attached to actor)
-	if reqs.has("region"):
+	if reqs.has(&"region"):
 		# Assuming we add region to background or biography later
 		pass
 		

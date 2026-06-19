@@ -1,4 +1,4 @@
-# pf_detection_manager.gd
+﻿# pf_detection_manager.gd
 ## Manages the relational detection states (Observed, Hidden, Undetected) between all actors.
 ## Inherently asymmetrical: Actor A can be Hidden to Actor B, but Observed by Actor C.
 class_name PFDetectionManager
@@ -74,14 +74,14 @@ func roll_flat_check_for_targeting(observer: PFActor, target: PFActor) -> bool:
 func get_cover(observer: PFActor, target: PFActor) -> PFCombatConstants.CoverType:
 	# Default to no cover. Tests can override or mock this.
 	# We can check a mock dictionary for testing
-	if target.has_meta("mock_cover_vs_" + observer.name):
-		return target.get_meta("mock_cover_vs_" + observer.name) as PFCombatConstants.CoverType
+	if target.has_meta(&"mock_cover_vs_" + observer.name):
+		return target.get_meta(&"mock_cover_vs_" + observer.name) as PFCombatConstants.CoverType
 	return PFCombatConstants.CoverType.NONE
 
 ## Calculates if the target is concealed from the observer (e.g. by fog, dim light).
 func is_concealed(observer: PFActor, target: PFActor) -> bool:
-	if target.has_meta("mock_concealed_vs_" + observer.name):
-		return target.get_meta("mock_concealed_vs_" + observer.name) as bool
+	if target.has_meta(&"mock_concealed_vs_" + observer.name):
+		return target.get_meta(&"mock_concealed_vs_" + observer.name) as bool
 	return false
 
 ## Evaluates if the observer's precise senses automatically detect the target, bypassing visual cover.
@@ -97,7 +97,7 @@ func detects_with_precise_sense(observer: PFActor, target: PFActor) -> bool:
 				
 			# If it's a non-visual precise sense (e.g., Scent, Tremorsense)
 			# For the backend testing, we return true if they have it and the target hasn't masked it.
-			if target.has_meta("masked_sense_" + str(sense.type)):
+			if target.has_meta(&"masked_sense_" + str(sense.type)):
 				continue
 				
 			print("    > [Senses] %s detects %s using precise %s!" % [observer.entity_name, target.entity_name, PFBiographyConstants.SenseType.keys()[sense.type]])

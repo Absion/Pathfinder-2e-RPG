@@ -1,4 +1,4 @@
-# pf_turn_manager.gd
+﻿# pf_turn_manager.gd
 ## Manages combat initiative, turn order, and round tracking.
 class_name PFTurnManager
 extends Node
@@ -97,7 +97,7 @@ func next_turn() -> void:
 	
 	# End current turn
 	print("--- %s ends their turn. ---" % current_actor.entity_name)
-	if current_actor.has_method("end_turn"):
+	if current_actor.has_method(&"end_turn"):
 		current_actor.end_turn()
 	turn_ended.emit(current_actor)
 	
@@ -118,7 +118,7 @@ func _start_current_turn() -> void:
 	print("--- %s starts their turn. ---" % current_actor.entity_name)
 	
 	# Fire actor's internal start turn hooks (conditions, action refresh)
-	if current_actor.has_method("start_turn"):
+	if current_actor.has_method(&"start_turn"):
 		current_actor.start_turn()
 		
 	turn_started.emit(current_actor)

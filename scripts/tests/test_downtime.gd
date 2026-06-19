@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 class_name TestDowntime
 
@@ -32,13 +32,13 @@ func run_test() -> void:
 	smith.attributes.int = 18
 	var success = downtime_mgr.begin_crafting(smith, &"steel_shield", 2)
 	assert_true(success, "Should successfully start crafting.")
-	assert_true(smith.get_meta("is_busy"), "Smith should be busy.")
+	assert_true(smith.get_meta(&"is_busy"), "Smith should be busy.")
 	
 	print("\nTest 2: Earn Income")
 	bard.attributes.cha = 18
 	success = downtime_mgr.begin_earn_income(bard, &"performance", 3, 5) # 5 days
 	assert_true(success, "Should successfully start earning income.")
-	assert_true(bard.get_meta("is_busy"), "Bard should be busy.")
+	assert_true(bard.get_meta(&"is_busy"), "Bard should be busy.")
 	
 	# Try starting another task while busy
 	var failed_start = downtime_mgr.begin_retraining(bard, &"fascinating_performance", &"versatile_performance", 7)
@@ -50,8 +50,8 @@ func run_test() -> void:
 	# Let's forcefully advance 4 more days so both finish
 	time_mgr.advance_days(4)
 	
-	assert_false(smith.get_meta("is_busy"), "Smith should be done crafting.")
-	assert_false(bard.get_meta("is_busy"), "Bard should be done earning income.")
+	assert_false(smith.get_meta(&"is_busy"), "Smith should be done crafting.")
+	assert_false(bard.get_meta(&"is_busy"), "Bard should be done earning income.")
 	
 	print("\nAll Downtime Tests executed!")
 

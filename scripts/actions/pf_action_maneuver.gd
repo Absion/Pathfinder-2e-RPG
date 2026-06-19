@@ -1,4 +1,4 @@
-# pf_action_maneuver.gd
+﻿# pf_action_maneuver.gd
 ## Base class for athletic maneuvers like Grapple, Shove, Trip, and Disarm
 class_name PFActionManeuver
 extends PFAction
@@ -46,11 +46,11 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		return false
 
 	var base_bonus = 0
-	if user.has_method("get_maneuver_bonus"):
+	if user.has_method(&"get_maneuver_bonus"):
 		base_bonus = user.get_maneuver_bonus(StringName(maneuver_trait), weapon)
 	else:
 		# Fallback if method doesn't exist
-		var inv = user.get("inventory") as PFInventory
+		var inv = user.get(&"inventory") as PFInventory
 		var free_hands = 2
 		if inv:
 			if inv.held_main_hand: free_hands -= 1
@@ -61,7 +61,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			print("    > [ERROR] You need at least one free hand to %s!" % maneuver_trait)
 			return false
 			
-		base_bonus = user.get_skill_bonus(&"athletics") if user.has_method("get_skill_bonus") else 0
+		base_bonus = user.get_skill_bonus(&"athletics") if user.has_method(&"get_skill_bonus") else 0
 
 	var map_penalty = mini(user.action_economy.attack_stacks, 2) * -5
 	var total_bonus = base_bonus + map_penalty

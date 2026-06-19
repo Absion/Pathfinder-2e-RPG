@@ -1,4 +1,4 @@
-# pf_action_disable_device.gd
+﻿# pf_action_disable_device.gd
 ## Allows a character to attempt to disable a hazard using a specific skill.
 class_name PFActionDisableDevice
 extends PFAction
@@ -26,8 +26,8 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	# Find the DC for the selected skill
 	var target_dc = -1
 	for method in hazard.disable_methods:
-		if method.get("skill", &"") == selected_skill:
-			target_dc = method.get("dc", 10)
+		if method.get(&"skill", &"") == selected_skill:
+			target_dc = method.get(&"dc", 10)
 			break
 			
 	if target_dc == -1:
