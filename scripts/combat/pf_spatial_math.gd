@@ -160,3 +160,137 @@ static func _get_actor_effective_size(actor: PFActor) -> int:
 		&"huge": return 3
 		&"gargantuan": return 4
 	return 1
+
+# --- VOLUMETRIC AOE MATH & LINE OF EFFECT ---
+
+static func _check_line_of_effect(space_state: PhysicsDirectSpaceState3D, origin: Vector3, target: PFActor) -> bool:
+	if not space_state: return false
+	# Raycast from AoE origin to target center
+	var target_pos = target.position + Vector3(0, 1.0, 0)
+	# Layer 1 = Environment
+	var query = PhysicsRayQueryParameters3D.create(origin, target_pos, 1)
+	var result = space_state.intersect_ray(query)
+	# If we hit environment before reaching target, LoE is blocked
+	return not result
+
+static func _filter_by_loe(space_state: PhysicsDirectSpaceState3D, origin: Vector3, raw_results: Array[Dictionary], ignores_cover: bool) -> Array[PFActor]:
+	var hit_actors: Array[PFActor] = []
+	for res in raw_results:
+		var actor = res.collider as PFActor
+		if actor and not hit_actors.has(actor):
+			if ignores_cover or _check_line_of_effect(space_state, origin, actor):
+				hit_actors.append(actor)
+	return hit_actors
+
+static func get_burst_targets(space_state: PhysicsDirectSpaceState3D, origin: Vector3, radius_feet: float, ignores_cover: bool = false) -> Array[PFActor]:
+	if not space_state: return []
+	var radius_meters = radius_feet / 5.0 # 5 feet = 1 meter/unit
+	
+	var shape = SphereShape3D.new()
+	shape.radius = radius_meters
+	
+	var query = PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.transform = Transform3D(Basis(), origin)
+	query.collision_mask = 2 # Layer 2 = Actors
+	
+	var raw_results = space_state.intersect_shape(query, 100)
+	return _filter_by_loe(space_state, origin, raw_results, ignores_cover)
+
+static func get_splash_targets(space_state: PhysicsDirectSpaceState3D, target_pos: Vector3, splash_radius: float = 5.0, ignores_cover: bool = false) -> Array[PFActor]:
+	return get_burst_targets(space_state, target_pos, splash_radius, ignores_cover)
+
+static func get_emanation_targets(space_state: PhysicsDirectSpaceState3D, actor: PFActor, radius_feet: float, ignores_cover: bool = false) -> Array[PFActor]:
+	if not space_state: return []
+	var radius_meters = radius_feet / 5.0
+	var actor_size = _get_actor_effective_size(actor)
+	
+	# Medium/Small = 1x1 (1 unit), Large = 2x2 (2 units), etc.
+	# We want a box that is the actor's size + radius on all sides
+	var base_width = 1.0 if actor_size <= 1 else float(actor_size)
+	var box_width = base_width + (radius_meters * 2.0)
+	var box_height = 2.0 + (radius_meters * 2.0) # Assume base actor is ~2 units tall
+	
+	var shape = BoxShape3D.new()
+	shape.size = Vector3(box_width, box_height, box_width)
+	
+	var query = PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.transform = Transform3D(Basis(), actor.position + Vector3(0, 1.0, 0)) # Center of actor
+	query.collision_mask = 2
+	
+	var raw_results = space_state.intersect_shape(query, 100)
+	
+	var hit_actors: Array[PFActor] = []
+	var origin = actor.position + Vector3(0, 1.0, 0)
+	for res in raw_results:
+		var target_actor = res.collider as PFActor
+		if target_actor and target_actor != actor and not hit_actors.has(target_actor):
+			if ignores_cover or _check_line_of_effect(space_state, origin, target_actor):
+				hit_actors.append(target_actor)
+				
+	return hit_actors
+
+static func get_cone_targets(space_state: PhysicsDirectSpaceState3D, origin: Vector3, direction: Vector3, length_feet: float, ignores_cover: bool = false) -> Array[PFActor]:
+	if not space_state: return []
+	var length_meters = length_feet / 5.0
+	
+	# Construct a ConvexPolygonShape3D for a pyramid/cone
+	var shape = ConvexPolygonShape3D.new()
+	# Standard PF2e cone: spreads out 1 unit per 1 unit of length
+	var spread = length_meters
+	
+	# Base point
+	var p0 = Vector3(0, 0, 0)
+	# 4 corners of the far plane (looking down -Z)
+	var p1 = Vector3(-spread/2.0, -spread/2.0, -length_meters)
+	var p2 = Vector3(spread/2.0, -spread/2.0, -length_meters)
+	var p3 = Vector3(spread/2.0, spread/2.0, -length_meters)
+	var p4 = Vector3(-spread/2.0, spread/2.0, -length_meters)
+	
+	shape.points = PackedVector3Array([p0, p1, p2, p3, p4])
+	
+	var query = PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	
+	var transform = Transform3D()
+	# Rotate to face direction
+	if direction.length_squared() > 0.001:
+		var normalized_dir = direction.normalized()
+		var up = Vector3.UP
+		if abs(normalized_dir.y) > 0.99:
+			up = Vector3.RIGHT
+		transform.basis = Basis.looking_at(normalized_dir, up)
+	transform.origin = origin
+	query.transform = transform
+	query.collision_mask = 2
+	
+	var raw_results = space_state.intersect_shape(query, 100)
+	return _filter_by_loe(space_state, origin, raw_results, ignores_cover)
+
+static func get_line_targets(space_state: PhysicsDirectSpaceState3D, origin: Vector3, direction: Vector3, length_feet: float, ignores_cover: bool = false) -> Array[PFActor]:
+	if not space_state: return []
+	var length_meters = length_feet / 5.0
+	
+	var shape = BoxShape3D.new()
+	# 5-foot wide, 5-foot tall, length long (1x1xL meters)
+	shape.size = Vector3(1.0, 1.0, length_meters)
+	
+	var query = PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	
+	var transform = Transform3D()
+	if direction.length_squared() > 0.001:
+		var normalized_dir = direction.normalized()
+		var up = Vector3.UP
+		if abs(normalized_dir.y) > 0.99:
+			up = Vector3.RIGHT
+		transform.basis = Basis.looking_at(normalized_dir, up)
+	
+	# The BoxShape's origin is its center, so we move it forward by half its length along the -Z axis
+	transform.origin = origin + (transform.basis.z * (-length_meters / 2.0))
+	query.transform = transform
+	query.collision_mask = 2
+	
+	var raw_results = space_state.intersect_shape(query, 100)
+	return _filter_by_loe(space_state, origin, raw_results, ignores_cover)

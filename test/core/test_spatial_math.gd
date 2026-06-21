@@ -65,3 +65,25 @@ func test_deny_advantage_exception():
 	# If attacker is Level 6 (Higher than Rogue), Deny Advantage fails to protect the Rogue
 	attacker.level = 6
 	assert_bool(PFSpatialMath.is_flanking(attacker, rogue, ally)).is_true()
+
+func test_aoe_functions_exist():
+	# Since full 3D Physics testing requires active World3D spaces and CollisionObjects,
+	# we will verify that the methods exist and correctly return empty arrays when passed null.
+	var origin = Vector3(0, 0, 0)
+	var dir = Vector3(0, 0, -1)
+	
+	var burst = PFSpatialMath.get_burst_targets(null, origin, 20.0)
+	assert_array(burst).is_empty()
+	
+	var cone = PFSpatialMath.get_cone_targets(null, origin, dir, 30.0)
+	assert_array(cone).is_empty()
+	
+	var line = PFSpatialMath.get_line_targets(null, origin, dir, 30.0)
+	assert_array(line).is_empty()
+	
+	var target = auto_free(PFPlayerCharacter.new("Target", [], 1, 10, 0, 0, 0))
+	var emanation = PFSpatialMath.get_emanation_targets(null, target, 15.0)
+	assert_array(emanation).is_empty()
+	
+	var splash = PFSpatialMath.get_splash_targets(null, origin)
+	assert_array(splash).is_empty()
