@@ -1,4 +1,4 @@
-﻿# pf_item.gd
+# pf_item.gd
 ## Base class for all physical items in the game world.
 class_name PFItem
 extends PFEntity # Force Reparse
@@ -33,6 +33,8 @@ var broken_threshold: int
 
 # --- MAGIC PROPERTIES ---
 var requires_investment: bool = false # NEW
+var is_specific_magic: bool = false
+var granted_actions: Array[StringName] = []
 
 # Updated Constructor
 func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int = 1, p_price_gp: float = 0.0, 
@@ -130,7 +132,9 @@ func set_price_from_gp(gp_float: float) -> void:
 	price_cp = int(round(gp_float * 100.0))
 
 func get_price_string() -> String:
+	@warning_ignore("integer_division")
 	var gp = price_cp / 100
+	@warning_ignore("integer_division")
 	var sp = (price_cp % 100) / 10
 	var cp = price_cp % 10
 	var parts = []

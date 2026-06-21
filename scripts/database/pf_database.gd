@@ -1,4 +1,4 @@
-﻿# pf_database.gd
+# pf_database.gd
 ## A stateless singleton that parses sqlite data into GDScript Objects.
 class_name PFDatabase
 extends Node # Force Reparse
@@ -260,6 +260,7 @@ func _initialize_schema_if_needed():
 		level INTEGER,
 		granted_features TEXT,
 		granted_feat_slots TEXT,
+		granted_spells TEXT,
 		PRIMARY KEY (class_id, level)
 	);")
 	
@@ -287,7 +288,9 @@ func _initialize_schema_if_needed():
 		reload_value INTEGER DEFAULT 0,
 		hands_required INTEGER DEFAULT 1,
 		ammunition_type INTEGER DEFAULT 0,
-		linked_weapon_id TEXT DEFAULT ''
+		linked_weapon_id TEXT DEFAULT '',
+		is_specific_magic INTEGER DEFAULT 0,
+		granted_actions TEXT DEFAULT ''
 	);")
 	
 	# Attachments
@@ -314,6 +317,30 @@ func _initialize_schema_if_needed():
 		valid_hosts TEXT DEFAULT ''
 	);")
 	
+	# Armors
+	db.query("CREATE TABLE IF NOT EXISTS armors (
+		id TEXT PRIMARY KEY,
+		name TEXT,
+		traits TEXT,
+		level INTEGER,
+		price_cp INTEGER,
+		material INTEGER,
+		hardness INTEGER,
+		max_hp INTEGER,
+		broken_threshold INTEGER,
+		grade INTEGER,
+		bulk INTEGER,
+		category INTEGER,
+		group_type INTEGER,
+		ac_bonus INTEGER,
+		dex_cap INTEGER,
+		check_penalty INTEGER,
+		speed_penalty INTEGER,
+		strength_req INTEGER,
+		is_specific_magic INTEGER DEFAULT 0,
+		granted_actions TEXT DEFAULT ''
+	);")
+	
 	# Shields
 	db.query("CREATE TABLE IF NOT EXISTS shields (
 		id TEXT PRIMARY KEY,
@@ -326,7 +353,9 @@ func _initialize_schema_if_needed():
 		speed_penalty INTEGER,
 		hardness INTEGER,
 		max_hp INTEGER,
-		broken_threshold INTEGER
+		broken_threshold INTEGER,
+		is_specific_magic INTEGER DEFAULT 0,
+		granted_actions TEXT DEFAULT ''
 	);")
 	
 	# Ancestries
@@ -1152,6 +1181,11 @@ func get_weapon(id: String) -> PFWeapon:
 	new_weapon.hands_required = row.get(&"hands_required", 1) if row.has(&"hands_required") else 1
 	new_weapon.ammunition_type = row.get(&"ammunition_type", 0) if row.has(&"ammunition_type") else 0
 	new_weapon.linked_weapon_id = row.get(&"linked_weapon_id", "") if row.has(&"linked_weapon_id") else ""
+	new_weapon.is_specific_magic = row.get(&"is_specific_magic", 0) == 1 if row.has(&"is_specific_magic") else false
+	if row.has(&"granted_actions") and row["granted_actions"] != "":
+		var actions_split = row["granted_actions"].split(",")
+		for a in actions_split:
+			new_weapon.granted_actions.append(StringName(a.strip_edges()))
 	
 	if new_weapon.linked_weapon_id != "":
 		db.query("SELECT * FROM weapons WHERE id = '" + new_weapon.linked_weapon_id + "'")
@@ -1159,6 +1193,56 @@ func get_weapon(id: String) -> PFWeapon:
 			new_weapon.combination_data = db.query_result[0]
 	
 	return new_weapon
+
+func get_armor(id: String) -> PFArmor:
+	db.query("SELECT * FROM armors WHERE id = '" + id + "'")
+	if db.query_result.size() == 0:
+		push_error("PFDatabase: Armor not found -> " + id)
+		return null
+		
+	var row = db.query_result[0]
+	var new_armor = PFArmor.new()
+	
+	new_armor.entity_name = row["name"]
+	new_armor.base_name = row["name"]
+	
+	var traits_array: Array[StringName] = []
+	if row["traits"] != "":
+		var split = row["traits"].split(",")
+		for t in split:
+			traits_array.append(StringName(t.strip_edges()))
+	new_armor.traits = traits_array
+	
+	new_armor.level = row["level"]
+	new_armor.base_level = row["level"]
+	new_armor.price_cp = row["price_cp"]
+	new_armor.base_price_cp = row["price_cp"]
+	
+	new_armor.item_material = row["material"]
+	new_armor.hardness = row["hardness"]
+	new_armor.max_hp = row["max_hp"]
+	new_armor.current_hp = row["max_hp"]
+	new_armor.broken_threshold = row["broken_threshold"]
+	new_armor.grade = row["grade"]
+	new_armor.bulk_value = row["bulk"]
+	new_armor.base_bulk_value = row["bulk"]
+	
+	new_armor.category = row["category"]
+	new_armor.group = row["group_type"]
+	new_armor.base_ac_bonus = row["ac_bonus"]
+	new_armor.ac_bonus = row["ac_bonus"]
+	new_armor.dex_cap = row["dex_cap"]
+	new_armor.check_penalty = row["check_penalty"]
+	new_armor.speed_penalty = row["speed_penalty"]
+	new_armor.strength_req = row["strength_req"]
+	
+	new_armor.is_specific_magic = row.get(&"is_specific_magic", 0) == 1 if row.has(&"is_specific_magic") else false
+	if row.has(&"granted_actions") and row["granted_actions"] != "":
+		var actions_split = row["granted_actions"].split(",")
+		for a in actions_split:
+			new_armor.granted_actions.append(StringName(a.strip_edges()))
+	
+	return new_armor
 
 func get_shield(id: String) -> PFShield:
 	db.query("SELECT * FROM shields WHERE id = '" + id + "'")
@@ -1197,6 +1281,11 @@ func get_shield(id: String) -> PFShield:
 	new_shield.current_hp = row["max_hp"]
 	new_shield.base_broken_threshold = row["broken_threshold"]
 	new_shield.broken_threshold = row["broken_threshold"]
+	new_shield.is_specific_magic = row.get(&"is_specific_magic", 0) == 1 if row.has(&"is_specific_magic") else false
+	if row.has(&"granted_actions") and row["granted_actions"] != "":
+		var actions_split = row["granted_actions"].split(",")
+		for a in actions_split:
+			new_shield.granted_actions.append(StringName(a.strip_edges()))
 	
 	return new_shield
 

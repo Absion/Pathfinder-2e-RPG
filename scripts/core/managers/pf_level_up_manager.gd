@@ -1,4 +1,4 @@
-﻿# pf_level_up_manager.gd
+# pf_level_up_manager.gd
 ## Generates a "blueprint" of pending choices and fixed bonuses when an actor levels up.
 class_name PFLevelUpManager
 extends RefCounted
@@ -54,6 +54,17 @@ static func generate_level_up_blueprint(actor: PFPlayerCharacter) -> Dictionary:
 					for slot in feat_slots:
 						blueprint["feat_slots"].append(StringName(slot))
 						
+			# Spells
+			var spells_json = str(prog_data.get(&"granted_spells", "{}"))
+			if spells_json != "" and spells_json != "{}" and spells_json != "null":
+				var spells_data = JSON.parse_string(spells_json)
+				if spells_data and typeof(spells_data) == TYPE_DICTIONARY:
+					if spells_data.has("spells_learned"):
+						blueprint["spells_learned"] = int(spells_data["spells_learned"])
+					if spells_data.has("repertoire_slots_added"):
+						blueprint["repertoire_slots_added"] = spells_data["repertoire_slots_added"]
+					if spells_data.has("signature_spells_gained"):
+						blueprint["signature_spells_gained"] = spells_data["signature_spells_gained"]
 	# Add standard skill increase every even level
 	if next_level % 2 == 0:
 		blueprint["skill_increases"] = 1
@@ -64,7 +75,7 @@ static func generate_level_up_blueprint(actor: PFPlayerCharacter) -> Dictionary:
 		
 	return blueprint
 
-static func apply_class_feature(actor: PFPlayerCharacter, feature_id: StringName) -> void:
+static func apply_class_feature(_actor: PFPlayerCharacter, feature_id: StringName) -> void:
 	var db = PFDatabase.get_instance()
 	var feature_data = db.get_class_feature_data(feature_id)
 	if feature_data.is_empty(): return

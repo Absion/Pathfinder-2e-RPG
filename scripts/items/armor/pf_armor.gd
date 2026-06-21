@@ -71,6 +71,10 @@ func apply_material_stats() -> void:
 		base_bulk_value = bulk_value
 
 func add_property_rune(rune: PFEquipmentConstants.PropertyRune) -> bool:
+	if self.is_specific_magic:
+		print("    > [ERROR] Cannot alter property runes on a specific magic item!")
+		return false
+		
 	if property_runes.size() >= potency_bonus:
 		print("    > [ERROR] Cannot add property rune! Armor can only hold as many property runes as its potency bonus (Current limit: %d)." % potency_bonus)
 		return false

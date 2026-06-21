@@ -1,4 +1,4 @@
-﻿# pf_turn_manager.gd
+# pf_turn_manager.gd
 ## Manages combat initiative, turn order, and round tracking.
 class_name PFTurnManager
 extends Node
@@ -127,6 +127,19 @@ func get_current_actor() -> PFActor:
 	if not in_encounter or current_turn_index < 0 or current_turn_index >= combatants.size():
 		return null
 	return combatants[current_turn_index].actor
+
+func get_allies(actor: PFActor) -> Array[PFActor]:
+	var is_enemy_flag = false
+	for c in combatants:
+		if c.actor == actor:
+			is_enemy_flag = c.is_enemy
+			break
+			
+	var allies: Array[PFActor] = []
+	for c in combatants:
+		if c.actor != actor and c.is_enemy == is_enemy_flag:
+			allies.append(c.actor)
+	return allies
 
 # --- DELAY LOGIC ---
 

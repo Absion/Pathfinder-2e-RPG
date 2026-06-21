@@ -23,8 +23,13 @@ func test_level_up_manager():
 	# Verify Wizard HP applied correctly (Level 1)
 	assert_int(hero.health.max_hp).is_equal(26) # 20 (base) + 6 (wizard hp)
 	
+	# Mock DB with a spell progression
+	db.query("INSERT INTO class_progressions (class_id, level, granted_features, granted_feat_slots, granted_spells) VALUES ('wizard', 2, '[]', '[\"class\", \"skill\"]', '{\"spells_learned\": 2}')")
+	
 	# Simulate Level Up
-	var pending_choices = PFLevelUpManager.level_up(hero)
+	var pending_choices = PFLevelUpManager.generate_level_up_blueprint(hero)
+	hero.level += 1
+	hero.health.max_hp += pending_choices["hp_gain"]
 	
 	# Verify Level bumped
 	assert_int(hero.level).is_equal(2)
@@ -34,6 +39,7 @@ func test_level_up_manager():
 	
 	# Verify Choices from class progression
 	assert_array(pending_choices["feat_slots"]).contains(["class", "skill"])
+	assert_int(pending_choices["spells_learned"]).is_equal(2)
 
 func test_experience_tracker():
 	var hero = auto_free(PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2))

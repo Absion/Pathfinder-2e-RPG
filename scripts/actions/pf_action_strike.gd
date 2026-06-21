@@ -1,4 +1,4 @@
-﻿# pf_action_strike.gd
+# pf_action_strike.gd
 # The core attack action for the engine.
 ## Standard offensive attack action using an equipped weapon or unarmed attack.
 class_name PFActionStrike
@@ -137,6 +137,42 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			base_map = -trait_data.get(&"hook_value", 4)
 			
 	var map_penalty = mini(user.action_economy.attack_stacks, 2) * base_map
+	# --- SPATIAL MATH (FLANKING & COVER) ---
+	var injected_off_guard: PFCondition = null
+	var injected_cover: PFCondition = null
+	
+	if weapon.weapon_type == PFEquipmentConstants.WeaponType.MELEE or weapon.has_trait(&"unarmed"):
+		var is_flanking_target = false
+		if PFContext.active_turn_manager:
+			var allies = PFContext.active_turn_manager.get_allies(user)
+			for ally in allies:
+				if PFSpatialMath.is_flanking(user, target, ally):
+					is_flanking_target = true
+					break
+		
+		if is_flanking_target:
+			injected_off_guard = PFCondition.create("off-guard")
+			if injected_off_guard:
+				target.apply_condition(injected_off_guard)
+				print("    > Tactical Advantage: Flanking! Target is Off-Guard.")
+	
+	if weapon.weapon_type == PFEquipmentConstants.WeaponType.RANGED or weapon.has_trait(&"thrown"):
+		var space_state = user.get_world_3d().direct_space_state if user.is_inside_tree() else null
+		if space_state:
+			var cover_level = PFSpatialMath.get_cover_level(user, target, space_state)
+			if cover_level == PFCombatConstants.CoverType.LESSER:
+				injected_cover = PFCondition.create("lesser_cover")
+				print("    > Tactical Disadvantage: Lesser Cover grants +1 AC.")
+			elif cover_level == PFCombatConstants.CoverType.STANDARD:
+				injected_cover = PFCondition.create("standard_cover")
+				print("    > Tactical Disadvantage: Standard Cover grants +2 AC.")
+			elif cover_level == PFCombatConstants.CoverType.GREATER:
+				injected_cover = PFCondition.create("greater_cover")
+				print("    > Tactical Disadvantage: Greater Cover grants +4 AC.")
+				
+			if injected_cover:
+				target.apply_condition(injected_cover)
+
 	var total_attack_bonus = base_attack_bonus + map_penalty 
 	
 	# ---------------------------------------------------------
@@ -147,6 +183,13 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	var roll_total = nat_roll + total_attack_bonus
 	var target_ac = target.get_ac()
 	var degree = PFDice.determine_success(roll_total, target_ac, nat_roll)
+	
+	# Clean up temporary spatial conditions immediately after calculating success
+	if injected_off_guard:
+		target.remove_condition(&"off-guard")
+	if injected_cover:
+		target.remove_condition(StringName(injected_cover.entity_name))
+
 	
 	var roll_string = ""
 	if nat_roll == 20:

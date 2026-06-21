@@ -73,6 +73,11 @@ var current_slots: Dictionary = {}
 func _init(p_owner: PFActor):
 	owner = p_owner
 
+func get_caster_type() -> PFMagicConstants.CasterType:
+	if owner.actor_class:
+		return owner.actor_class.caster_type
+	return PFMagicConstants.CasterType.NONE
+
 # --- PROGRESSION CALCULATION ---
 
 func get_max_slots(rank: int) -> int:
@@ -105,22 +110,58 @@ func add_extra_slot(rank: int, amount: int = 1) -> void:
 func learn_spell(spell: PFSpell) -> void:
 	if not known_spells.has(spell):
 		known_spells.append(spell)
-		print("%s learned %s" % [owner.entity_name, spell.entity_name])
+		print("    > %s learned %s" % [owner.entity_name, spell.entity_name])
 
-func add_to_repertoire(spell: PFSpell, rank: int) -> void:
+func add_to_repertoire(spell: PFSpell, rank: int) -> bool:
+	if get_caster_type() != PFMagicConstants.CasterType.SPONTANEOUS:
+		print("    > [ERROR] Only spontaneous casters have a repertoire.")
+		return false
+	if not known_spells.has(spell):
+		print("    > [ERROR] Cannot add %s to repertoire. Spell is not known!" % spell.entity_name)
+		return false
 	if not repertoire.has(rank):
 		repertoire[rank] = []
 	if not repertoire[rank].has(spell):
 		repertoire[rank].append(spell)
+		print("    > Added %s to Rank %d repertoire." % [spell.entity_name, rank])
+		return true
+	return false
 		
-func set_signature_spell(spell: PFSpell) -> void:
-	if not signature_spells.has(spell):
-		signature_spells.append(spell)
+func set_signature_spell(spell: PFSpell) -> bool:
+	if get_caster_type() != PFMagicConstants.CasterType.SPONTANEOUS:
+		print("    > [ERROR] Only spontaneous casters can have signature spells.")
+		return false
+	# Ensure they don't already have a signature spell for this base rank
+	for sig_spell in signature_spells:
+		if sig_spell.base_spell_rank == spell.base_spell_rank:
+			print("    > [ERROR] Already have a signature spell for Rank %d (%s)!" % [spell.base_spell_rank, sig_spell.entity_name])
+			return false
+	signature_spells.append(spell)
+	print("    > %s set as Signature Spell for Rank %d." % [spell.entity_name, spell.base_spell_rank])
+	return true
 
-func prepare_spell(spell: PFSpell, rank: int) -> void:
+func prepare_spell(spell: PFSpell, rank: int) -> bool:
+	if get_caster_type() != PFMagicConstants.CasterType.PREPARED:
+		print("    > [ERROR] Only prepared casters can prepare spells.")
+		return false
+	if not known_spells.has(spell):
+		var can_bypass = false
+		if owner is PFPlayerCharacter and owner.actor_class:
+			var tradition = owner.actor_class.spell_tradition
+			if tradition == PFMagicConstants.MagicTradition.DIVINE or tradition == PFMagicConstants.MagicTradition.PRIMAL:
+				if spell.rarity == PFBiographyConstants.Rarity.COMMON:
+					can_bypass = true
+		if not can_bypass:
+			print("    > [ERROR] Cannot prepare %s. Spell is not known!" % spell.entity_name)
+			return false
 	if not prepared_spells.has(rank):
 		prepared_spells[rank] = []
+	if prepared_spells[rank].size() >= get_max_slots(rank):
+		print("    > [ERROR] Cannot prepare %s. No Rank %d slots available!" % [spell.entity_name, rank])
+		return false
 	prepared_spells[rank].append(spell)
+	print("    > %s prepared %s at Rank %d." % [owner.entity_name, spell.entity_name, rank])
+	return true
 
 func add_innate_spell(spell: PFSpell) -> void:
 	var rank = spell.base_spell_rank
@@ -133,10 +174,13 @@ func add_innate_spell(spell: PFSpell) -> void:
 
 func restore_daily_slots() -> void:
 	current_slots.clear()
-	for rank in range(1, 11):
-		var max_s = get_max_slots(rank)
-		if max_s > 0:
-			current_slots[rank] = max_s
+	if get_caster_type() == PFMagicConstants.CasterType.SPONTANEOUS:
+		for rank in range(1, 11):
+			var max_s = get_max_slots(rank)
+			if max_s > 0:
+				current_slots[rank] = max_s
+	elif get_caster_type() == PFMagicConstants.CasterType.PREPARED:
+		prepared_spells.clear() # Must prepare again!
 	
 	focus_points = max_focus_points
 
@@ -151,7 +195,6 @@ func spend_focus_point() -> bool:
 	return false
 
 func refocus() -> void:
-	# TODO: Hook this into the exploration/rest systems later
 	if focus_points < max_focus_points:
 		focus_points += 1
 		print("%s refocused and regained a Focus Point. (%d/%d)" % [owner.entity_name, focus_points, max_focus_points])
@@ -181,8 +224,37 @@ func cast_spell(spell: PFSpell, rank_cast_at: int = -1) -> bool:
 		
 	var actual_rank = rank_cast_at if rank_cast_at > 0 else spell.base_spell_rank
 	
-	if expend_slot(actual_rank):
-		print("%s successfully casts %s at Rank %d!" % [owner.entity_name, spell.entity_name, actual_rank])
+	# INNATE SPELLS
+	if innate_spells.has(actual_rank) and spell in innate_spells[actual_rank]:
+		print("%s successfully casts the innate spell %s at Rank %d!" % [owner.entity_name, spell.entity_name, actual_rank])
 		return true
 	
+	var caster_type = get_caster_type()
+	
+	if caster_type == PFMagicConstants.CasterType.PREPARED:
+		if prepared_spells.has(actual_rank) and prepared_spells[actual_rank].has(spell):
+			prepared_spells[actual_rank].erase(spell)
+			print("%s successfully casts %s at Rank %d! (Slot expended)" % [owner.entity_name, spell.entity_name, actual_rank])
+			return true
+		else:
+			print("    > [ERROR] %s does not have %s prepared at Rank %d!" % [owner.entity_name, spell.entity_name, actual_rank])
+			return false
+			
+	elif caster_type == PFMagicConstants.CasterType.SPONTANEOUS:
+		var can_cast = false
+		if repertoire.has(actual_rank) and repertoire[actual_rank].has(spell):
+			can_cast = true
+		elif signature_spells.has(spell):
+			can_cast = true
+			
+		if can_cast:
+			if expend_slot(actual_rank):
+				print("%s successfully casts %s at Rank %d!" % [owner.entity_name, spell.entity_name, actual_rank])
+				return true
+			return false
+		else:
+			print("    > [ERROR] %s does not have %s in their Rank %d repertoire (and it is not a signature spell)!" % [owner.entity_name, spell.entity_name, actual_rank])
+			return false
+
+	print("    > [ERROR] %s cannot cast spells of this type." % owner.entity_name)
 	return false

@@ -1,4 +1,4 @@
-﻿# pf_actor.gd
+# pf_actor.gd
 # Represents any living, undead, or construct entity in the game: Players, NPCs, and Monsters.
 ## The core base class for any targetable and interactive entity in the game world.
 #
@@ -35,6 +35,7 @@ var is_dead: bool = false
 
 # --- PASSIVES & FLAGS ---
 var has_armor_specialization: bool = false
+var passive_features: Array[StringName] = []
 
 func _init(p_name: String, p_traits: Array[StringName], p_level: int, p_hp: int):
 	
@@ -100,6 +101,18 @@ func grant_reaction(reaction_class_name: String) -> void:
 func remove_reaction(reaction_id: StringName) -> void:
 	if PFContext.reaction_manager:
 		PFContext.reaction_manager.unregister_listener(self, reaction_id)
+
+# --- PASSIVES & CAPABILITIES ---
+
+func has_passive_feature(feature_id: StringName) -> bool:
+	return passive_features.has(feature_id)
+
+func can_be_flanked_by(attacker: PFActor) -> bool:
+	# Rogue's Deny Advantage rule
+	if has_passive_feature(&"deny_advantage"):
+		if attacker.level <= self.level:
+			return false
+	return true
 
 # ---------------------------------------------------------
 # ---------------------------------------------------------

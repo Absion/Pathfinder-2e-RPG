@@ -1,4 +1,4 @@
-﻿# test_weapon_logic.gd
+# test_weapon_logic.gd
 class_name TestWeaponLogic
 extends GdUnitTestSuite
 
@@ -111,7 +111,7 @@ func test_injection_payload() -> void:
 	
 	# Load it
 	var inject_action = PFActionInteractInject.new(weapon, poison)
-	assert_bool(await inject_action.execute(attacker)).is_true()
+	assert_bool(inject_action.execute(attacker)).is_true()
 	
 	# Payload should be loaded, inventory should not have poison
 	assert_object(weapon.injection_payload).is_equal(poison)
@@ -124,3 +124,24 @@ func test_injection_payload() -> void:
 	
 	# Payload should be consumed/cleared
 	assert_object(weapon.injection_payload).is_null()
+
+func test_specific_magic_weapon_runes():
+	# Create a standard weapon and a specific magic weapon
+	var std_weapon = PFWeapon.new("Standard Sword")
+	var spec_weapon = PFWeapon.new("Flame Tongue")
+	spec_weapon.is_specific_magic = true
+	
+	# Apply fundamental runes
+	std_weapon.apply_fundamental_runes(PFEquipmentConstants.PotencyRune.PLUS_ONE, PFEquipmentConstants.StrikingRune.NONE)
+	spec_weapon.apply_fundamental_runes(PFEquipmentConstants.PotencyRune.PLUS_ONE, PFEquipmentConstants.StrikingRune.NONE)
+	
+	# Standard weapon should accept a property rune
+	assert_bool(std_weapon.add_property_rune(PFEquipmentConstants.PropertyRune.FLAMING)).is_true()
+	
+	# Specific magic weapon should reject the property rune
+	assert_bool(spec_weapon.add_property_rune(PFEquipmentConstants.PropertyRune.FLAMING)).is_false()
+	
+	# Verify specific magic weapon CAN still upgrade fundamental runes
+	spec_weapon.apply_fundamental_runes(PFEquipmentConstants.PotencyRune.PLUS_TWO, PFEquipmentConstants.StrikingRune.STRIKING)
+	assert_int(spec_weapon.potency_bonus).is_equal(2)
+	assert_int(spec_weapon.dice_amount).is_equal(2)

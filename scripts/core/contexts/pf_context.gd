@@ -14,6 +14,7 @@ static var root_node: Node
 static var detection_manager: PFDetectionManager
 static var reaction_manager: PFReactionManager
 static var environment_manager: PFEnvironmentManager
+static var active_turn_manager: PFTurnManager
 
 ## Initializes shared static services that persist across both Combat and Overworld contexts
 static func init_shared_services() -> void:

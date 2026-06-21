@@ -1,4 +1,4 @@
-﻿# pf_combat_context.gd
+# pf_combat_context.gd
 ## Manages the tactical turn-based combat loop and initiative.
 class_name PFCombatContext
 extends PFContext
@@ -24,6 +24,7 @@ func build_services() -> void:
 	turn_manager = PFTurnManager.new()
 	turn_manager.name = "TurnManager"
 	add_child(turn_manager)
+	PFContext.active_turn_manager = turn_manager
 	
 	# Create a CanvasLayer strictly for combat UI
 	ui_layer = CanvasLayer.new()
@@ -58,6 +59,7 @@ func enter_context(args: Dictionary = {}) -> void:
 
 func exit_context() -> void:
 	print("Exiting Combat Context...")
+	PFContext.active_turn_manager = null
 	# Clean up logic
 	for child in get_children():
 		child.queue_free()
