@@ -42,9 +42,12 @@ classDiagram
         +PFHealthComponent health
         +PFActionComponent action_economy
         +Array conditions
+        +Dictionary immunities
         +get_ac() int
         +get_strike_bonus(PFWeapon) int
         +get_spell_dc() int
+        +add_immunity(StringName, int)
+        +has_immunity(StringName) bool
     }
     PFActor *-- PFEntity : composes
     

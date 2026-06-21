@@ -10,8 +10,8 @@ These features make positioning on the grid matter.
 
 ## Phase 2: Action Diversity
 These features give martial characters and skill-monkeys their tactical depth.
-- [ ] **Athletics Maneuvers**: Implement `PFAction` subclasses for *Grapple*, *Trip*, *Shove*, and *Disarm*, hooking them into the UI and checking against Fortitude/Reflex DCs.
-- [ ] **Social Combat Actions**: Implement *Demoralize*, *Feint*, *Bon Mot*, and *Create a Diversion* (rolling Intimidation/Deception against Will/Perception DCs).
+- [x] **Athletics Maneuvers**: Implement `PFAction` subclasses for *Grapple*, *Trip*, *Shove*, and *Disarm*, hooking them into the UI and checking against Fortitude/Reflex DCs.
+- [x] **Social Combat Actions**: Implement *Demoralize*, *Feint*, *Bon Mot*, *Create a Diversion*, and *Battle Medicine* (rolling Intimidation/Deception/Medicine against Will/Perception/Flat DCs).
 
 ## Phase 3: The Stealth Subsystem
 This phase relies entirely on Phase 1's Cover mechanics.

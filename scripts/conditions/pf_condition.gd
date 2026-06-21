@@ -1,4 +1,4 @@
-﻿# pf_condition.gd
+# pf_condition.gd
 ## An active effect or status applied to an actor.
 class_name PFCondition
 extends RefCounted
@@ -20,7 +20,9 @@ var source_dc: int = 0
 func _init(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0):
 	condition_id = p_id
 	var db_inst = PFDatabase.get_instance()
-	var data = db_inst.get_condition_data(p_id) if db_inst else null
+	var data: Dictionary = {}
+	if db_inst:
+		data = db_inst.get_condition_data(p_id)
 	if data:
 		condition_name = data.get(&"name", str(p_id))
 		modifier_type = data.get(&"modifier_type", "")
@@ -40,7 +42,9 @@ func _init(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0):
 # NEW: Factory method for instantiating the correct condition subclass
 static func create(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0) -> PFCondition:
 	var db_inst = PFDatabase.get_instance()
-	var data = db_inst.get_condition_data(p_id) if db_inst else null
+	var data: Dictionary = {}
+	if db_inst:
+		data = db_inst.get_condition_data(p_id)
 	if data and data.get(&"script_path", "") != "":
 		var script = load(data["script_path"])
 		if script:
@@ -48,17 +52,17 @@ static func create(p_id: StringName, p_initial_value: int = 1, p_source_dc: int 
 	return PFCondition.new(p_id, p_initial_value, p_source_dc)
 
 # NEW: Called right before it is added to the actor. Return false to reject the condition.
-func on_apply(owner: PFActor) -> bool:
+func on_apply(_owner: PFActor) -> bool:
 	return true
 
 # NEW: Called when the condition is removed from the actor. Use this to remove linked sub-conditions.
-func on_remove(owner: PFActor) -> void:
+func on_remove(_owner: PFActor) -> void:
 	pass
 
-func on_turn_start(owner: PFActor) -> void:
+func on_turn_start(_owner: PFActor) -> void:
 	pass
 
-func on_turn_end(owner: PFActor) -> void:
+func on_turn_end(_owner: PFActor) -> void:
 	pass
 
 func get_modifier(context: StringName) -> int:

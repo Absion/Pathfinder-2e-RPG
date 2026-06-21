@@ -30,6 +30,7 @@ var action_economy: PFActionComponent
 # --- ARCHITECTURE ---
 var has_spirit: bool = true
 var conditions: Array[PFCondition] = []
+var immunities: Dictionary = {}
 var has_raised_shield: bool = false
 var is_dead: bool = false
 
@@ -138,6 +139,13 @@ func apply_condition(new_condition: PFCondition) -> void:
 	# get_condition_modifier will calculate the strongest ones.
 	conditions.append(new_condition)
 	print("%s is now %s %d!" % [entity_name, new_condition.condition_name, new_condition.value])
+
+func add_immunity(immunity_id: StringName, duration_turns: int = -1) -> void:
+	immunities[immunity_id] = duration_turns
+
+func has_immunity(immunity_id: StringName) -> bool:
+	return immunities.has(immunity_id)
+
 
 func remove_condition(condition_id: String) -> void:
 	for i in range(conditions.size() - 1, -1, -1):
