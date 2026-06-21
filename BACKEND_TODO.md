@@ -6,7 +6,7 @@ This document outlines the remaining Pathfinder 2e rules and logic systems requi
 These features make positioning on the grid matter.
 - [x] **Flanking System**: Raycasting math to determine if an enemy is flanked by two allies, automatically applying the *Off-Guard* condition.
 - [x] **Cover System**: 3D raycasting collisions to determine *Lesser*, *Standard*, and *Greater* cover, automatically applying circumstance bonuses to AC and Reflex saves.
-- [ ] **AoE Grids & Splash Damage**: Logic to calculate Cones, Bursts, Emanations, and Lines on the grid for spells and alchemical bombs.
+- [x] **AoE Grids & Splash Damage**: Logic to calculate Cones, Bursts, Emanations, and Lines on the grid for spells and alchemical bombs.
 
 ## Phase 2: Action Diversity
 These features give martial characters and skill-monkeys their tactical depth.

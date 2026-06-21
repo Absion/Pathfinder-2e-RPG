@@ -302,6 +302,10 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	var damage_result = PFDice.roll(weapon.dice_amount, current_die_faces)
 	var damage_stat = user.get_strike_damage_bonus(weapon)
 	
+	var has_splash = weapon.has_trait(&"splash")
+	if has_splash:
+		damage_stat = 0 # Splash weapons don't add Strength modifier to damage roll
+	
 	if is_mounted and weapon.has_trait(&"jousting"):
 		damage_stat += weapon.dice_amount
 		print("    > Jousting Trait triggers! +%d damage." % weapon.dice_amount)
@@ -323,6 +327,20 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	
 	var base_total = damage_result.total + damage_stat
 	var dice_str = str(damage_result.faces)
+
+	var splash_dmg = 0
+	if has_splash:
+		for t in weapon.traits:
+			var ts = String(t)
+			if ts.begins_with("splash "):
+				var parts = ts.split(" ")
+				if parts.size() > 1 and parts[1].is_valid_int():
+					splash_dmg = parts[1].to_int()
+		if splash_dmg == 0:
+			splash_dmg = weapon.dice_amount # Default
+
+	if has_splash and degree != PFMathConstants.DegreeOfSuccess.CRIT_FAIL:
+		print("    > Splash trait! %d splash damage added to target." % splash_dmg)
 
 	# ---------------------------------------------------------
 	# 4. APPLY MULTIPLIERS & EXTRA DICE
@@ -366,6 +384,9 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			crit_damage += fusion_dmg
 			print("    > Critical Fusion Trait triggers: +%d precision damage added!" % fusion_dmg)
 			
+		if has_splash:
+			crit_damage += splash_dmg # Splash damage is NOT multiplied on a critical hit
+			
 		var traits_with_crit = weapon.traits.duplicate()
 		if not traits_with_crit.has(&"critical"):
 			traits_with_crit.append(&"critical")
@@ -395,22 +416,31 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			base_total = event_data.get(&"damage", base_total)
 			final_damage_type = event_data.get(&"type", final_damage_type)
 			
+		if has_splash:
+			base_total += splash_dmg
+			
 		target.take_damage(base_total, final_damage_type, traits_with_hit)
-			
-	if weapon.has_trait(&"splash") and degree != PFMathConstants.DegreeOfSuccess.CRIT_FAIL:
-		var splash_dmg = 0
-		for t in weapon.traits:
-			var ts = String(t)
-			if ts.begins_with("splash "):
-				var parts = ts.split(" ")
-				if parts.size() > 1 and parts[1].is_valid_int():
-					splash_dmg = parts[1].to_int()
-		if splash_dmg == 0:
-			splash_dmg = weapon.dice_amount # Default
-			
-		print("    > Splash trait triggers! Target takes %d splash damage." % splash_dmg)
-		target.take_damage(splash_dmg, final_damage_type, weapon.traits)
 		
+	elif degree == PFMathConstants.DegreeOfSuccess.FAIL:
+		if has_splash:
+			# On a failure, the splash weapon still deals splash damage to the primary target
+			target.take_damage(splash_dmg, final_damage_type, weapon.traits)
+			
+	# Splash AoE effect to OTHER creatures (Only on Success or Critical Success)
+	if has_splash and (degree == PFMathConstants.DegreeOfSuccess.SUCCESS or degree == PFMathConstants.DegreeOfSuccess.CRIT_SUCCESS):
+		var splash_radius = 5.0
+		# Bomb Specialization increases splash radius to 10 feet
+		if user.has_method(&"has_critical_specialization") and user.has_critical_specialization(weapon.group) and weapon.group == PFEquipmentConstants.WeaponGroup.BOMB:
+			splash_radius = 10.0
+			
+		var space_state = target.get_world_3d().direct_space_state if target.is_inside_tree() else null
+		if space_state:
+			var splash_targets = PFSpatialMath.get_splash_targets(space_state, target.position, splash_radius)
+			for splash_target in splash_targets:
+				if splash_target != target:
+					print("    > Splash hits %s for %d splash damage!" % [splash_target.entity_name, splash_dmg])
+					splash_target.take_damage(splash_dmg, final_damage_type, weapon.traits)
+			
 	if weapon.has_trait(&"injection") and weapon.injection_payload != null:
 		print("    > Injection Trait triggers! Delivering payload: %s" % weapon.injection_payload.entity_name)
 		# TODO: We would apply the poison/potion effect to the target here
