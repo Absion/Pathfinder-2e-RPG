@@ -27,3 +27,9 @@ enum EnvironmentDamageSeverity {
 	MAJOR,
 	MASSIVE
 }
+
+enum LightLevel {
+	BRIGHT_LIGHT,
+	DIM_LIGHT,
+	DARKNESS
+}

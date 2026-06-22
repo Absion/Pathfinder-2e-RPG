@@ -112,7 +112,7 @@ func test_dying_rules_nonlethal():
 	assert_bool(hero.has_condition("unconscious")).is_true()
 
 func test_npc_dying_rules():
-	var goblin = auto_free(PFNpc.new("Goblin", [&"goblinoid", &"humanoid"], -1, 6, 2, 4, 1, 0, 3, 1, -1, 0, -1))
+	var goblin = auto_free(PFNpc.new(&"goblin", "Goblin", [&"goblinoid", &"humanoid"], -1, 6, 2, 4, 1, 0, 3, 1, -1, 0, -1))
 	goblin.health.current_hp = 6
 	
 	# Lethal damage instantly kills NPCs

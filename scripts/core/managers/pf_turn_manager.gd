@@ -141,6 +141,19 @@ func get_allies(actor: PFActor) -> Array[PFActor]:
 			allies.append(c.actor)
 	return allies
 
+func get_enemies(actor: PFActor) -> Array[PFActor]:
+	var is_enemy_flag = false
+	for c in combatants:
+		if c.actor == actor:
+			is_enemy_flag = c.is_enemy
+			break
+			
+	var enemies: Array[PFActor] = []
+	for c in combatants:
+		if c.is_enemy != is_enemy_flag:
+			enemies.append(c.actor)
+	return enemies
+
 # --- DELAY LOGIC ---
 
 func delay_current_turn() -> bool:

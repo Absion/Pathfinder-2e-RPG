@@ -35,7 +35,7 @@ func test_aquatic_combat() -> void:
 	var env_mgr = PFEnvironmentManager.get_instance()
 	env_mgr.is_underwater = true
 	
-	var pc = PFPlayerCharacter.new("Fighter", 1)
+	var pc = PFPlayerCharacter.new("Fighter", [&"humanoid"], 1, 20, 5, 5, 5)
 	PFContext.active_party.append(pc)
 	
 	# Create a slashing weapon
@@ -43,13 +43,20 @@ func test_aquatic_combat() -> void:
 	pc.inventory.held_main_hand = sword
 	sword.is_wielded = true
 	
-	var target = PFNpc.new("Target", 1)
+	var target = PFNpc.new(&"target", "Target", [&"humanoid"], 1, 20, 5, 5, 5, 0, 0, 0, 0, 0, 0)
 	
 	var strike = PFActionStrike.new(sword)
 	strike.execute(pc, target)
 	
 	# Check Cast Spell underwater
-	var fireball = PFSpell.new("Fireball", [&"fire"], 3, "2 actions", 120, "burst", "Reflex")
+	var fireball = PFSpell.new()
+	fireball.entity_name = "Fireball"
+	fireball.traits = [&"fire"]
+	fireball.level = 3
+	fireball.actions = "2 actions"
+	fireball.range_ft = 120
+	fireball.area = "burst"
+	fireball.saving_throw_type = "Reflex"
 	var cast_fireball = PFActionCastSpell.new(fireball)
 	pc.spellbook = PFSpellbook.new() # mock
 	

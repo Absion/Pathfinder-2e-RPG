@@ -39,7 +39,7 @@ func test_player_character_fortitude_save():
 	assert_int(fort).is_equal(7)
 
 func test_npc_reflex_save():
-	var npc = auto_free(PFNpc.new("Goblin", [], 1, 6, 4, 7, 1, 0, 0, 0, 0, 0, 0))
+	var npc = auto_free(PFNpc.new(&"goblin", "Goblin", [], 1, 6, 4, 7, 1, 0, 0, 0, 0, 0, 0))
 	add_child(npc)
 	
 	# NPCs should use their static base saves (from initialization / statblock)

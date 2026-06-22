@@ -15,13 +15,13 @@ func run_test() -> void:
 	PFContext.init_shared_services()
 	
 	# Create a Rogue PC
-	var rogue = PFPlayerCharacter.new("Rogue", [&"humanoid"], 3, 30)
+	var rogue = PFPlayerCharacter.new("Rogue", [&"humanoid"], 3, 30, 5, 5, 5)
 	rogue.attributes.dex = 18
 	rogue.sheet.set_skill_rank(&"thievery", PFMathConstants.ProficiencyRank.EXPERT)
 	rogue.sheet.set_skill_rank(&"perception", PFMathConstants.ProficiencyRank.EXPERT)
 	
 	# Create a Fighter PC (Low skills)
-	var fighter = PFPlayerCharacter.new("Fighter", [&"humanoid"], 3, 40)
+	var fighter = PFPlayerCharacter.new("Fighter", [&"humanoid"], 3, 40, 5, 5, 5)
 	fighter.sheet.set_skill_rank(&"thievery", PFMathConstants.ProficiencyRank.UNTRAINED)
 	fighter.sheet.set_skill_rank(&"perception", PFMathConstants.ProficiencyRank.TRAINED)
 	

@@ -8,6 +8,7 @@ static var _instance: PFEnvironmentManager
 
 var current_temperature: PFEnvironmentConstants.Temperature = PFEnvironmentConstants.Temperature.NORMAL
 var current_terrain: PFEnvironmentConstants.TerrainType = PFEnvironmentConstants.TerrainType.NORMAL
+var current_light_level: PFEnvironmentConstants.LightLevel = PFEnvironmentConstants.LightLevel.BRIGHT_LIGHT
 var is_underwater: bool = false
 var environment_level: int = 1 # Used for scaling passive hazards like Extreme Heat damage.
 

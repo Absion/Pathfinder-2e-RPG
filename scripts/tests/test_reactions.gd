@@ -18,7 +18,7 @@ func run_test() -> void:
 	
 	# 2. Setup Actors
 	var pc = PFPlayerCharacter.new("Alice", [&"humanoid"], 1, 20, 0, 0, 0)
-	var enemy = PFNpc.new("Goblin", [], 1, 10, 0, 0, 0)
+	var enemy = PFNpc.new(&"goblin", "Goblin", [], 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 	
 	pc.action_economy.reactions_remaining = 1
 	enemy.action_economy.reactions_remaining = 1

@@ -31,7 +31,8 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 		return false
 		
 	# You can use unarmed attack modifier, Acrobatics, or Athletics.
-	var unarmed_mod = user.get_strike_bonus(PFWeapon.new_unarmed())
+	var fist = PFWeapon.new("Fist", [&"unarmed", &"agile", &"finesse", &"nonlethal"], 1, 0.0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.UNARMED, PFEquipmentConstants.WeaponGroup.BRAWLING, 1, 4, PFCombatConstants.DamageType.BLUDGEONING)
+	var unarmed_mod = user.get_strike_bonus(fist)
 	var acro_mod = user.get_skill_bonus(&"acrobatics")
 	var ath_mod = user.get_skill_bonus(&"athletics")
 	

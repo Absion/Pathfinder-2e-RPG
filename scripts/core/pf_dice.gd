@@ -11,10 +11,12 @@ enum Degree { CRIT_FAIL = 0, FAIL = 1, SUCCESS = 2, CRIT_SUCCESS = 3 }
 class RollResult extends RefCounted:
 	var total: int
 	var faces: Array[int]
+	var is_secret: bool
 	
-	func _init(p_total: int, p_faces: Array[int]):
+	func _init(p_total: int, p_faces: Array[int], p_is_secret: bool = false):
 		total = p_total
 		faces = p_faces
+		is_secret = p_is_secret
 
 # Rolls a given amount of dice and returns our rich RollResult object.
 static func roll(amount: int, sides: int) -> RollResult:

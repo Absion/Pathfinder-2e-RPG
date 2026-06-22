@@ -14,7 +14,7 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 		return false
 		
 	# In Pathfinder 2e, you can't delay if you've already used actions, and your turn immediately ends.
-	if PFContext.turn_manager:
-		return PFContext.turn_manager.delay_current_turn()
+	if PFContext.active_turn_manager:
+		return PFContext.active_turn_manager.delay_current_turn()
 		
 	return false

@@ -9,6 +9,15 @@ func _init() -> void:
 	run_test()
 	quit()
 
+func assert_eq(a: Variant, b: Variant, msg: String = "") -> void:
+	if a != b: push_error("ASSERT EQ FAILED: %s (Expected %s, Got %s)" % [msg, str(b), str(a)])
+
+func assert_true(a: bool, msg: String = "") -> void:
+	if not a: push_error("ASSERT TRUE FAILED: %s" % msg)
+
+func assert_false(a: bool, msg: String = "") -> void:
+	if a: push_error("ASSERT FALSE FAILED: %s" % msg)
+
 func run_test() -> void:
 	print("\n--- Running Bulk System Tests ---")
 	

@@ -2,7 +2,7 @@ class_name PFMonsterGenerator
 extends Object
 
 ## Generates a random NPC based on a given level and roadmap.
-static func generate_npc(level: int, roadmap_name: StringName = &"Brute") -> PFNpc:
+static func generate_npc(level: int, roadmap_name: String = "Brute") -> PFNpc:
 	# 1. Fetch tables and roadmap
 	if not PFMonsterTables.ABILITY_MODIFIERS.has(level):
 		push_error("Level %d out of bounds for monster generation!" % level)
@@ -11,46 +11,46 @@ static func generate_npc(level: int, roadmap_name: StringName = &"Brute") -> PFN
 	var roadmap: Dictionary = PFMonsterRoadmaps.get_roadmap(roadmap_name)
 	
 	# 2. Extract values based on roadmap brackets
-	var hp_bracket = roadmap.get(&"hp", &"MODERATE")
+	var hp_bracket = roadmap.get("hp", &"MODERATE")
 	var hp = _get_random_value(PFMonsterTables.HIT_POINTS[level][hp_bracket])
 	
-	var ac_bracket = roadmap.get(&"ac", &"MODERATE")
+	var ac_bracket = roadmap.get("ac", &"MODERATE")
 	var ac = _get_random_value(PFMonsterTables.ARMOR_CLASS[level][ac_bracket])
 	
-	var fort_bracket = roadmap.get(&"fort", &"MODERATE")
+	var fort_bracket = roadmap.get("fort", &"MODERATE")
 	var fort = _get_random_value(PFMonsterTables.PERCEPTION_AND_SAVES[level][fort_bracket])
 	
-	var ref_bracket = roadmap.get(&"ref", &"MODERATE")
+	var ref_bracket = roadmap.get("ref", &"MODERATE")
 	var ref = _get_random_value(PFMonsterTables.PERCEPTION_AND_SAVES[level][ref_bracket])
 	
-	var wil_bracket = roadmap.get(&"wil", &"MODERATE")
+	var wil_bracket = roadmap.get("wil", &"MODERATE")
 	var wil = _get_random_value(PFMonsterTables.PERCEPTION_AND_SAVES[level][wil_bracket])
 	
-	var per_bracket = roadmap.get(&"per", &"MODERATE")
+	var per_bracket = roadmap.get("per", &"MODERATE")
 	var per = _get_random_value(PFMonsterTables.PERCEPTION_AND_SAVES[level][per_bracket])
 	
-	var str_bracket = roadmap.get(&"str", &"MODERATE")
+	var str_bracket = roadmap.get("str", &"MODERATE")
 	var str_val = _get_random_value(PFMonsterTables.ABILITY_MODIFIERS[level][str_bracket])
 	
-	var dex_bracket = roadmap.get(&"dex", &"MODERATE")
+	var dex_bracket = roadmap.get("dex", &"MODERATE")
 	var dex_val = _get_random_value(PFMonsterTables.ABILITY_MODIFIERS[level][dex_bracket])
 	
-	var con_bracket = roadmap.get(&"con", &"MODERATE")
+	var con_bracket = roadmap.get("con", &"MODERATE")
 	var con_val = _get_random_value(PFMonsterTables.ABILITY_MODIFIERS[level][con_bracket])
 	
-	var int_bracket = roadmap.get(&"int", &"MODERATE")
+	var int_bracket = roadmap.get("int", &"MODERATE")
 	var int_val = _get_random_value(PFMonsterTables.ABILITY_MODIFIERS[level][int_bracket])
 	
-	var wis_bracket = roadmap.get(&"wis", &"MODERATE")
+	var wis_bracket = roadmap.get("wis", &"MODERATE")
 	var wis_val = _get_random_value(PFMonsterTables.ABILITY_MODIFIERS[level][wis_bracket])
 	
-	var cha_bracket = roadmap.get(&"cha", &"MODERATE")
+	var cha_bracket = roadmap.get("cha", &"MODERATE")
 	var cha_val = _get_random_value(PFMonsterTables.ABILITY_MODIFIERS[level][cha_bracket])
 	
 	# Speeds
 	var land_speed = 25
 	var fly_speed = 0
-	var abilities = roadmap.get(&"abilities", [])
+	var abilities = roadmap.get("abilities", [])
 	if &"fast_land_speed" in abilities:
 		land_speed = 35
 	if &"fly_speed" in abilities:
@@ -59,14 +59,14 @@ static func generate_npc(level: int, roadmap_name: StringName = &"Brute") -> PFN
 	var traits: Array[StringName] = []
 	if &"undead" in abilities:
 		traits.append(&"undead")
-	if &"animal" in abilities or roadmap_name.ends_with("Beast"):
+	if "animal" in abilities or roadmap_name.ends_with("Beast"):
 		traits.append(&"animal")
 	else:
 		traits.append(&"humanoid")
 		
 	# Create NPC
-	var npc_name = "Generated %s (Level %d)" % [roadmap_name, level]
-	var base_id = &"generated_npc"
+	var base_id = roadmap_name.to_lower().replace(" ", "_")
+	var npc_name = roadmap_name + " NPC"
 	
 	var npc = PFNpc.new(base_id, npc_name, traits, level,
 		hp, fort, ref, wil,
@@ -79,10 +79,10 @@ static func generate_npc(level: int, roadmap_name: StringName = &"Brute") -> PFN
 	npc.monster_stats["perception"] = per
 	
 	# Strike logic
-	var strike_bonus_bracket = roadmap.get(&"strikeBonus", &"MODERATE")
+	var strike_bonus_bracket = roadmap.get("strikeBonus", "MODERATE")
 	var strike_bonus = _get_random_value(PFMonsterTables.STRIKE_BONUS[level][strike_bonus_bracket])
 	
-	var strike_damage_bracket = roadmap.get(&"strikeDamage", &"MODERATE")
+	var strike_damage_bracket = roadmap.get("strikeDamage", "MODERATE")
 	var strike_damage_expr = PFMonsterTables.STRIKE_DAMAGE[level][strike_damage_bracket]
 	
 	# Parse damage expression (e.g., "2d6+5")
@@ -98,27 +98,24 @@ static func generate_npc(level: int, roadmap_name: StringName = &"Brute") -> PFN
 		if sub_parts.size() > 1:
 			damage_flat = sub_parts[1].to_int()
 			
-	var generated_weapon = PFWeapon.new()
-	generated_weapon.entity_name = "%s Attack" % roadmap_name
-	generated_weapon.weapon_type = PFWeapon.WeaponType.UNARMED
-	generated_weapon.damage_dice = damage_dice
-	generated_weapon.damage_die_type = damage_sides
-	generated_weapon.base_damage = damage_flat
-	generated_weapon.damage_type = PFGameMath.DamageType.BLUDGEONING
+	var base_weapon = PFWeapon.new()
+	base_weapon.weapon_type = PFEquipmentConstants.WeaponType.UNARMED
+	base_weapon.damage_dice = damage_dice
+	base_weapon.damage_sides = damage_sides
+	base_weapon.damage_flat = damage_flat
+	base_weapon.item_name = "Strike"
+	
+	npc.inventory.add_item(base_weapon)
 	
 	# Store the explicit attack bonus we want this weapon to use.
-	# We can use metadata on the weapon or adjust it. 
-	# For an NPC, we might just use the monster_stats override.
 	npc.monster_stats["attack"] = strike_bonus
-	
-	npc.inventory.equip_weapon(generated_weapon)
 	
 	if &"sneak_attack" in abilities:
 		npc.monster_stats["sneak_attack_dice"] = max(1, ceili(float(level) / 3.0))
 		
 	# Spellcasting
-	if roadmap.get(&"spellcasting", "") != "":
-		var spell_dc_bracket = roadmap.get(&"spellcasting")
+	if roadmap.get("spellcasting", "") != "":
+		var spell_dc_bracket = roadmap.get("spellcasting")
 		var spell_dc = _get_random_value(PFMonsterTables.SPELLCASTING[level][spell_dc_bracket])
 		npc.npc_spell_dc = spell_dc
 		npc.npc_spell_attack = spell_dc - 10 # PF2e spell attack is DC - 10 typically
