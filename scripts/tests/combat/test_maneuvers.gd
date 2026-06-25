@@ -5,10 +5,10 @@ var defender: PFActor
 var trip_weapon: PFWeapon
 
 func before_each():
-	attacker = PFPlayerCharacter.new("Attacker", [&"humanoid"], 1, 20, 0, 0, 0)
-	defender = PFPlayerCharacter.new("Defender", [&"humanoid"], 1, 20, 0, 0, 0)
-	add_child(attacker)
-	add_child(defender)
+	attacker = autofree(PFPlayerCharacter.new("Attacker", [&"humanoid"], 1, 20, 0, 0, 0))
+	defender = autofree(PFPlayerCharacter.new("Defender", [&"humanoid"], 1, 20, 0, 0, 0))
+	add_child_autofree(attacker)
+	add_child_autofree(defender)
 	
 	trip_weapon = PFWeapon.new("Whip", [&"trip", &"reach", &"finesse", &"nonlethal"], 1, 0.1, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.MARTIAL, PFEquipmentConstants.WeaponGroup.FLAIL, 1, 4, PFCombatConstants.DamageType.SLASHING)
 	

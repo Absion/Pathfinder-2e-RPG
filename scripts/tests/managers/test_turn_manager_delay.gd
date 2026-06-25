@@ -6,16 +6,16 @@ var actor_b: PFActor
 var actor_c: PFActor
 
 func before_each():
-	turn_manager = PFTurnManager.new()
-	add_child(turn_manager)
+	turn_manager = autofree(PFTurnManager.new())
+	add_child_autofree(turn_manager)
 	
-	actor_a = PFActor.new("Alice", [], 1, 20)
-	actor_b = PFActor.new("Bob", [], 1, 20)
-	actor_c = PFActor.new("Charlie", [], 1, 20)
+	actor_a = autofree(PFActor.new("Alice", [], 1, 20))
+	actor_b = autofree(PFActor.new("Bob", [], 1, 20))
+	actor_c = autofree(PFActor.new("Charlie", [], 1, 20))
 	
-	add_child(actor_a)
-	add_child(actor_b)
-	add_child(actor_c)
+	add_child_autofree(actor_a)
+	add_child_autofree(actor_b)
+	add_child_autofree(actor_c)
 	
 	turn_manager.add_combatant(actor_a)
 	turn_manager.add_combatant(actor_b)

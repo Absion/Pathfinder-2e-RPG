@@ -18,10 +18,10 @@ func before_all() -> void:
 
 func before_each() -> void:
 	PFContext.detection_manager = null
-	attacker = PFPlayerCharacter.new("Attacker", [], 1, 50, 0, 0, 0)
-	defender = PFPlayerCharacter.new("Defender", [], 1, 50, 0, 0, 0)
-	add_child(attacker)
-	add_child(defender)
+	attacker = autofree(PFPlayerCharacter.new("Attacker", [], 1, 50, 0, 0, 0))
+	defender = autofree(PFPlayerCharacter.new("Defender", [], 1, 50, 0, 0, 0))
+	add_child_autofree(attacker)
+	add_child_autofree(defender)
 
 func test_improvised_weapon_creation_and_penalty() -> void:
 	var inv = attacker.get(&"inventory") as PFInventory

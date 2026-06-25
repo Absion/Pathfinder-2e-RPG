@@ -8,7 +8,7 @@ func get_test_name() -> String:
 func test_main() -> void:
 	print("\n--- Running Consumables Tests ---")
 	
-	var pc = PFPlayerCharacter.new("Test Actor", [&"humanoid"], 1, 10, 0, 0, 0)
+	var pc = autofree(PFPlayerCharacter.new("Test Actor", [&"humanoid"], 1, 10, 0, 0, 0))
 	
 	# Test Consumable
 	var potion = PFConsumable.new("potion_of_healing")

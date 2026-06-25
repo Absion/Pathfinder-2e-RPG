@@ -6,7 +6,7 @@ func before_all():
 	var db = PFDatabase.get_instance()
 	if db == null:
 		db = PFDatabase.new()
-		add_child(db)
+		add_child_autofree(db)
 
 func test_damage_by_level() -> void:
 	print("\n--- Test: Damage by Level Table ---")
@@ -27,14 +27,14 @@ func test_damage_by_level() -> void:
 func test_aquatic_combat() -> void:
 	print("\n--- Test: Aquatic Combat ---")
 	
-	var pc = PFPlayerCharacter.new("Fighter", [&"humanoid"], 1, 10, 0, 0, 0)
-	var target = PFPlayerCharacter.new("Target", [&"humanoid"], 1, 10, 0, 0, 0)
-	add_child(pc)
-	add_child(target)
+	var pc = autofree(PFPlayerCharacter.new("Fighter", [&"humanoid"], 1, 10, 0, 0, 0))
+	var target = autofree(PFPlayerCharacter.new("Target", [&"humanoid"], 1, 10, 0, 0, 0))
+	add_child_autofree(pc)
+	add_child_autofree(target)
 	
 	var env_mgr = PFEnvironmentManager.get_instance()
 	if not env_mgr:
-		env_mgr = PFEnvironmentManager.new()
+		env_mgr = autofree(PFEnvironmentManager.new())
 	env_mgr.is_underwater = true
 	
 	var sword = PFWeapon.new("longsword")
@@ -73,7 +73,7 @@ func test_extreme_weather() -> void:
 	print("\n--- Test: Extreme Weather Periodic Damage ---")
 	
 	var env_mgr = PFEnvironmentManager.get_instance()
-	var time_mgr = PFTimeManager.new()
+	var time_mgr = autofree(PFTimeManager.new())
 	Engine.get_main_loop().root.add_child(time_mgr)
 	time_mgr._ready() # Force ready
 	env_mgr._ready() # Re-bind signals to the new mock TimeManager
@@ -89,3 +89,6 @@ func test_extreme_weather() -> void:
 	
 	assert_true(true, "Completed extreme weather test")
 	print("    > Extreme Weather Tests: PASS")
+
+func after_all():
+	PFContext.cleanup_shared_services()

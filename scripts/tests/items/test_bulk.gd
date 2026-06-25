@@ -9,7 +9,7 @@ func test_main() -> void:
 	print("\n--- Running Bulk System Tests ---")
 	
 	# Setup mock actor
-	var pc = PFPlayerCharacter.new("Test Actor", [&"humanoid"], 1, 10, 0, 0, 0)
+	var pc = autofree(PFPlayerCharacter.new("Test Actor", [&"humanoid"], 1, 10, 0, 0, 0))
 	# Max bulk before encumbered is 5 + STR mod.
 	# Let's say STR mod is 0, so limit is 5.
 	var limit = pc.inventory.get_encumbered_limit()
@@ -56,16 +56,16 @@ func test_creature_size_bulk() -> void:
 	var db = PFDatabase.get_instance()
 	if db == null:
 		db = PFDatabase.new()
-		add_child(db)
+		add_child_autofree(db)
 		db._ready()
 		
-	var pc_medium = PFPlayerCharacter.new("Medium Actor", [&"humanoid"], 1, 10, 0, 0, 0)
+	var pc_medium = autofree(PFPlayerCharacter.new("Medium Actor", [&"humanoid"], 1, 10, 0, 0, 0))
 	pc_medium.size_id = &"medium"
 	
-	var pc_large = PFPlayerCharacter.new("Large Actor", [&"humanoid"], 1, 10, 0, 0, 0)
+	var pc_large = autofree(PFPlayerCharacter.new("Large Actor", [&"humanoid"], 1, 10, 0, 0, 0))
 	pc_large.size_id = &"large"
 	
-	var pc_tiny = PFPlayerCharacter.new("Tiny Actor", [&"humanoid"], 1, 10, 0, 0, 0)
+	var pc_tiny = autofree(PFPlayerCharacter.new("Tiny Actor", [&"humanoid"], 1, 10, 0, 0, 0))
 	pc_tiny.size_id = &"tiny"
 	
 	var item_medium = PFItem.new()

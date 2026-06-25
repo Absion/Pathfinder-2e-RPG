@@ -16,20 +16,20 @@ func before_all() -> void:
 		db = PFDatabase.get_instance()
 
 func before_each():
-	turn_manager = PFTurnManager.new()
-	add_child(turn_manager)
+	turn_manager = autofree(PFTurnManager.new())
+	add_child_autofree(turn_manager)
 	
-	reaction_manager = PFReactionManager.new()
-	add_child(reaction_manager)
+	reaction_manager = autofree(PFReactionManager.new())
+	add_child_autofree(reaction_manager)
 	PFContext.reaction_manager = reaction_manager
 	
-	actor_a = PFPlayerCharacter.new("Alice", [], 1, 20, 0, 0, 0)
-	actor_b = PFPlayerCharacter.new("Bob", [], 1, 20, 0, 0, 0)
+	actor_a = autofree(PFPlayerCharacter.new("Alice", [], 1, 20, 0, 0, 0))
+	actor_b = autofree(PFPlayerCharacter.new("Bob", [], 1, 20, 0, 0, 0))
 	actor_a.set_meta(&"is_ai", true) # auto resolve reactions
 	actor_b.set_meta(&"is_ai", true) # auto resolve reactions
 	
-	add_child(actor_a)
-	add_child(actor_b)
+	add_child_autofree(actor_a)
+	add_child_autofree(actor_b)
 	
 	turn_manager.add_combatant(actor_a)
 	turn_manager.add_combatant(actor_b)

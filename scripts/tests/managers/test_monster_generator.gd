@@ -4,7 +4,7 @@ extends GutTest
 
 func test_brute_generation() -> void:
 	print("Running test_brute_generation...")
-	var npc: PFNpc = PFMonsterGenerator.generate_npc(5, &"Brute")
+	var npc: PFNpc = autofree(PFMonsterGenerator.generate_npc(5, &"Brute"))
 	assert_eq(npc.level, 5, "Brute Level should be 5")
 	# Brute AC is Low. Level 5 Low AC should be roughly 19 (PFMonsterTables.ARMOR_CLASS[5]["LOW"])
 	var expected_ac = PFMonsterGenerator._get_random_value(PFMonsterTables.ARMOR_CLASS[5][&"LOW"]) if PFMonsterTables.ARMOR_CLASS.has(5) else 19
@@ -17,7 +17,7 @@ func test_brute_generation() -> void:
 
 func test_sniper_generation() -> void:
 	print("Running test_sniper_generation...")
-	var npc: PFNpc = PFMonsterGenerator.generate_npc(10, &"Sniper")
+	var npc: PFNpc = autofree(PFMonsterGenerator.generate_npc(10, &"Sniper"))
 	assert_eq(npc.level, 10, "Sniper Level should be 10")
 	# Sniper AC is Moderate.
 	var ac = npc.monster_stats.get(&"ac", 0)
@@ -25,7 +25,7 @@ func test_sniper_generation() -> void:
 
 func test_elite_template() -> void:
 	print("Running test_elite_template...")
-	var npc: PFNpc = PFMonsterGenerator.generate_npc(2, &"Soldier")
+	var npc: PFNpc = autofree(PFMonsterGenerator.generate_npc(2, &"Soldier"))
 	var old_ac = npc.monster_stats.get(&"ac", 10)
 	var old_hp = npc.health.max_hp
 	var old_level = npc.level
@@ -38,7 +38,7 @@ func test_elite_template() -> void:
 
 func test_weak_template() -> void:
 	print("Running test_weak_template...")
-	var npc: PFNpc = PFMonsterGenerator.generate_npc(6, &"Spellcaster")
+	var npc: PFNpc = autofree(PFMonsterGenerator.generate_npc(6, &"Spellcaster"))
 	var old_ac = npc.monster_stats.get(&"ac", 10)
 	var old_hp = npc.health.max_hp
 	var old_level = npc.level

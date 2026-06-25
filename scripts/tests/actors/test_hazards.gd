@@ -11,7 +11,7 @@ func test_hazards() -> void:
 	PFContext.init_shared_services()
 	
 	# Create a Rogue PC
-	var rogue = PFPlayerCharacter.new("Rogue", [&"humanoid"], 3, 30, 5, 5, 5)
+	var rogue = autofree(PFPlayerCharacter.new("Rogue", [&"humanoid"], 3, 30, 5, 5, 5))
 	rogue.attributes.apply_free_boost(&"dex")
 	rogue.attributes.apply_free_boost(&"dex")
 	rogue.attributes.apply_free_boost(&"dex")
@@ -20,12 +20,12 @@ func test_hazards() -> void:
 	rogue.sheet.set_skill_rank(&"perception", PFMathConstants.ProficiencyRank.EXPERT)
 	
 	# Create a Fighter PC (Low skills)
-	var fighter = PFPlayerCharacter.new("Fighter", [&"humanoid"], 3, 40, 5, 5, 5)
+	var fighter = autofree(PFPlayerCharacter.new("Fighter", [&"humanoid"], 3, 40, 5, 5, 5))
 	fighter.sheet.set_skill_rank(&"thievery", PFMathConstants.ProficiencyRank.UNTRAINED)
 	fighter.sheet.set_skill_rank(&"perception", PFMathConstants.ProficiencyRank.TRAINED)
 	
 	# Create a Hazard: Scythe Blades
-	var trap = PFHazard.new("Scythe Blades", [&"mechanical", &"trap"], 4, 20, 10)
+	var trap = autofree(PFHazard.new("Scythe Blades", [&"mechanical", &"trap"], 4, 20, 10))
 	trap.stealth_dc = 22
 	trap.stealth_min_proficiency = PFMathConstants.ProficiencyRank.EXPERT
 	trap.disable_methods = [
@@ -83,3 +83,6 @@ func test_hazards() -> void:
 	assert_true(trap.is_disabled, "Trap should now be disabled!")
 	
 	print("\nAll Hazard Tests Executed Successfully!")
+
+func after_all():
+	PFContext.cleanup_shared_services()

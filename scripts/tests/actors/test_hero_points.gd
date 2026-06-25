@@ -4,7 +4,7 @@ extends GutTest
 
 func test_hero_points():
 	# Player starts with 1 hero point
-	var player = PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0)
+	var player = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
 	assert_eq(player.hero_points, 1)
 	
 	# Can spend one
@@ -29,7 +29,7 @@ func test_hero_points():
 
 func test_heroic_recovery():
 
-	var player = PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0)
+	var player = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
 	
 	player.take_damage(25) # Drop below 0 HP
 	player.apply_condition(PFCondition.create("dying", 1))
@@ -45,7 +45,7 @@ func test_heroic_recovery():
 	assert_eq(player.health.current_hp, 0)
 
 func test_heroic_reroll():
-	var player = PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0)
+	var player = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
 	
 	# Start with 1 hero point, should successfully reroll
 	var reroll = player.heroic_reroll()

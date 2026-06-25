@@ -17,7 +17,7 @@ func after_all():
 		pass # db.queue_free()
 
 func test_condition_stacking():
-	var hero = PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
 	
 	var fright1 = PFCondition.create(&"frightened", 1)
 	hero.apply_condition(fright1)
@@ -34,14 +34,14 @@ func test_condition_stacking():
 	assert_eq(hero.get_condition("frightened").value, 3)
 
 func test_flat_modifiers():
-	var hero = PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
 	var off_guard = PFCondition.create(&"off_guard")
 	hero.apply_condition(off_guard)
 	
 	assert_eq(hero.get_condition_modifier(&"ac"), -2)
 
 func test_action_economy_slowed_and_stunned():
-	var hero = PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
 	
 	var slowed = PFCondition.create(&"slowed", 2)
 	hero.apply_condition(slowed)
@@ -70,7 +70,7 @@ func test_action_economy_slowed_and_stunned():
 	assert_eq(hero.action_economy.actions_remaining, 4)
 
 func test_subconditions():
-	var hero = PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
 	var grabbed = PFCondition.create(&"grabbed")
 	hero.apply_condition(grabbed)
 	
@@ -82,7 +82,7 @@ func test_subconditions():
 	assert_false(hero.has_condition("immobilized"))
 
 func test_dying_rules_player():
-	var hero = PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
 	hero.health.current_hp = 10
 	
 	# Lethal damage
@@ -102,7 +102,7 @@ func test_dying_rules_player():
 	assert_eq(hero.get_condition("dying").value, 2)
 
 func test_dying_rules_nonlethal():
-	var hero = PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
 	hero.health.current_hp = 10
 	
 	# Nonlethal damage
@@ -112,7 +112,7 @@ func test_dying_rules_nonlethal():
 	assert_true(hero.has_condition("unconscious"))
 
 func test_npc_dying_rules():
-	var goblin = PFNpc.new(&"goblin", "Goblin", [&"goblinoid", &"humanoid"], -1, 6, 2, 4, 1, 0, 3, 1, -1, 0, -1)
+	var goblin = autofree(PFNpc.new(&"goblin", "Goblin", [&"goblinoid", &"humanoid"], -1, 6, 2, 4, 1, 0, 3, 1, -1, 0, -1))
 	goblin.health.current_hp = 6
 	
 	# Lethal damage instantly kills NPCs

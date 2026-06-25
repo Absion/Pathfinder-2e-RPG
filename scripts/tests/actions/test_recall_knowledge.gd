@@ -10,7 +10,7 @@ func test_main() -> void:
 	
 	PFContext.init_shared_services()
 	
-	var wizard = PFPlayerCharacter.new("Wizard", [&"humanoid"], 5, 0, 0, 0, 0)
+	var wizard = autofree(PFPlayerCharacter.new("Wizard", [&"humanoid"], 5, 0, 0, 0, 0))
 	wizard.attributes.apply_ancestry_boost(&"int")
 	wizard.attributes.apply_background_boost(&"int")
 	wizard.attributes.apply_class_boost(&"int")
@@ -19,12 +19,12 @@ func test_main() -> void:
 	wizard.sheet.set_skill_rank(&"religion", PFMathConstants.ProficiencyRank.TRAINED) # +4 + 5 + 2 = 11
 	
 	# Undead skeleton, Level 2
-	var skeleton = PFPlayerCharacter.new("Skeleton", [&"undead", &"mindless"], 2, 0, 0, 0, 0)
+	var skeleton = autofree(PFPlayerCharacter.new("Skeleton", [&"undead", &"mindless"], 2, 0, 0, 0, 0))
 	skeleton.health.max_hp = 20
 	skeleton.health.current_hp = 20
 	
 	# Dragon, Level 5
-	var dragon = PFPlayerCharacter.new("Young Dragon", [&"dragon", &"fire"], 5, 0, 0, 0, 0)
+	var dragon = autofree(PFPlayerCharacter.new("Young Dragon", [&"dragon", &"fire"], 5, 0, 0, 0, 0))
 	
 	var _action = PFActionRecallKnowledge.new()
 	
@@ -39,3 +39,6 @@ func test_main() -> void:
 	
 	print("\nAll Recall Knowledge tests executed (Check logs for expected output)!")
 	assert_true(true, "Completed recall knowledge tests")
+
+func after_all():
+	PFContext.cleanup_shared_services()

@@ -29,11 +29,11 @@ func before_all() -> void:
 	}
 
 func before_each() -> void:
-	caster = PFPlayerCharacter.new("Caster", [], 5, 50, 0, 0, 0) # Level 5 character
-	target = PFPlayerCharacter.new("Target", [], 5, 50, 0, 0, 0)
+	caster = autofree(PFPlayerCharacter.new("Caster", [], 5, 50, 0, 0, 0)) # Level 5 character
+	target = autofree(PFPlayerCharacter.new("Target", [], 5, 50, 0, 0, 0))
 	
-	add_child(caster)
-	add_child(target)
+	add_child_autofree(caster)
+	add_child_autofree(target)
 	
 	# Mock spellcaster class
 	var mock_class = PFClass.new()
@@ -133,3 +133,6 @@ func test_focus_points() -> void:
 	# Refocus
 	sb.refocus()
 	assert_eq(sb.focus_points, 1)
+
+func after_all():
+	PFContext.cleanup_shared_services()

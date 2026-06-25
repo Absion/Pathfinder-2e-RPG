@@ -1,9 +1,9 @@
 extends GutTest
 
 func test_flanking_standard():
-	var target = PFPlayerCharacter.new("Target", [], 1, 10, 0, 0, 0)
-	var attacker = PFPlayerCharacter.new("Attacker", [], 1, 10, 0, 0, 0)
-	var ally = PFPlayerCharacter.new("Ally", [], 1, 10, 0, 0, 0)
+	var target = autofree(PFPlayerCharacter.new("Target", [], 1, 10, 0, 0, 0))
+	var attacker = autofree(PFPlayerCharacter.new("Attacker", [], 1, 10, 0, 0, 0))
+	var ally = autofree(PFPlayerCharacter.new("Ally", [], 1, 10, 0, 0, 0))
 	
 	# Place target in center
 	target.position = Vector3(0, 0, 0)
@@ -24,9 +24,9 @@ func test_flanking_standard():
 	assert_false(PFSpatialMath.is_flanking(attacker, target, ally))
 	
 func test_gang_up_exception():
-	var target = PFPlayerCharacter.new("Target", [], 1, 10, 0, 0, 0)
-	var rogue = PFPlayerCharacter.new("Rogue", [], 1, 10, 0, 0, 0)
-	var ally = PFPlayerCharacter.new("Ally", [], 1, 10, 0, 0, 0)
+	var target = autofree(PFPlayerCharacter.new("Target", [], 1, 10, 0, 0, 0))
+	var rogue = autofree(PFPlayerCharacter.new("Rogue", [], 1, 10, 0, 0, 0))
+	var ally = autofree(PFPlayerCharacter.new("Ally", [], 1, 10, 0, 0, 0))
 	
 	target.position = Vector3(0, 0, 0)
 	
@@ -45,9 +45,9 @@ func test_gang_up_exception():
 	
 func test_deny_advantage_exception():
 	# Level 5 Rogue vs Level 5 Attacker
-	var rogue = PFPlayerCharacter.new("Rogue", [], 5, 50, 0, 0, 0)
-	var attacker = PFPlayerCharacter.new("Goblin", [], 5, 30, 0, 0, 0)
-	var ally = PFPlayerCharacter.new("Hobgoblin", [], 5, 30, 0, 0, 0)
+	var rogue = autofree(PFPlayerCharacter.new("Rogue", [], 5, 50, 0, 0, 0))
+	var attacker = autofree(PFPlayerCharacter.new("Goblin", [], 5, 30, 0, 0, 0))
+	var ally = autofree(PFPlayerCharacter.new("Hobgoblin", [], 5, 30, 0, 0, 0))
 	
 	rogue.position = Vector3(0, 0, 0)
 	attacker.position = Vector3(-1, 0, 0)
@@ -81,7 +81,7 @@ func test_aoe_functions_exist():
 	var line = PFSpatialMath.get_line_targets(null, origin, dir, 30.0)
 	assert_true(line.is_empty())
 	
-	var target = PFPlayerCharacter.new("Target", [], 1, 10, 0, 0, 0)
+	var target = autofree(PFPlayerCharacter.new("Target", [], 1, 10, 0, 0, 0))
 	var emanation = PFSpatialMath.get_emanation_targets(null, target, 15.0)
 	assert_true(emanation.is_empty())
 	

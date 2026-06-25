@@ -4,13 +4,13 @@ func test_execution():
 	print("\n--- INITIALIZING STEALTH TEST ---")
 	
 	PFContext.init_shared_services()
-	var turn_manager = PFTurnManager.new()
+	var turn_manager = autofree(PFTurnManager.new())
 	PFContext.active_turn_manager = turn_manager
 	
 	# Create Actors
-	var rogue = PFNpc.new("rogue_1", "Rogue", [&"humanoid"], 1, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-	var guard = PFNpc.new("guard_1", "Guard", [&"humanoid"], 1, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-	var goblin = PFNpc.new("goblin_1", "Goblin", [&"humanoid"], 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+	var rogue = autofree(PFNpc.new("rogue_1", "Rogue", [&"humanoid"], 1, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+	var guard = autofree(PFNpc.new("guard_1", "Guard", [&"humanoid"], 1, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+	var goblin = autofree(PFNpc.new("goblin_1", "Goblin", [&"humanoid"], 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 	
 	# Configure Senses
 	var guard_senses = PFSensesComponent.new()
@@ -88,3 +88,6 @@ func test_execution():
 	print("\n--- TEST COMPLETE ---")
 	
 	assert_true(true, "Completed stealth tests")
+
+func after_all():
+	PFContext.cleanup_shared_services()

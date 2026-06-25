@@ -17,7 +17,7 @@ func after_all():
 		pass # db.queue_free()
 
 func test_abc_boosts():
-	var hero = PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2))
 	assert_eq(hero.attributes.str_mod, 0)
 	
 	# Apply ABC Boosts manually to test flow
@@ -35,7 +35,7 @@ func test_abc_boosts():
 	# Note: Actually, there is no get_pending_ancestry_free_boosts method, so we skip that assertion.
 	
 func test_level_5_partial_boosts():
-	var hero = PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2))
 	
 	# Manually boost STR to +4
 	for i in range(4):

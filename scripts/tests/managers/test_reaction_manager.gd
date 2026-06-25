@@ -6,14 +6,14 @@ var bob: PFActor
 var shield: PFShield
 
 func before_each():
-	reaction_manager = PFReactionManager.new()
-	add_child(reaction_manager)
+	reaction_manager = autofree(PFReactionManager.new())
+	add_child_autofree(reaction_manager)
 	
-	alice = PFActor.new("Alice", [], 1, 20)
-	bob = PFActor.new("Bob", [], 1, 20)
+	alice = autofree(PFActor.new("Alice", [], 1, 20))
+	bob = autofree(PFActor.new("Bob", [], 1, 20))
 	
-	add_child(alice)
-	add_child(bob)
+	add_child_autofree(alice)
+	add_child_autofree(bob)
 	
 	shield = PFShield.new("Test Shield", 1, 0.0, 2, 5, 20, 10) # AC 2, Hardness 5, HP 20, BT 10
 	var raised = PFConditionRaisedShield.new(shield)

@@ -14,7 +14,7 @@ func test_bestiary() -> void:
 	# Clear db for this specific test
 	db.query("DELETE FROM player_knowledge;")
 	
-	var wizard = PFPlayerCharacter.new("Wizard", [&"humanoid"], 5, 0, 0, 0, 0)
+	var wizard = autofree(PFPlayerCharacter.new("Wizard", [&"humanoid"], 5, 0, 0, 0, 0))
 	wizard.attributes.apply_ancestry_boost(&"int")
 	wizard.attributes.apply_background_boost(&"int")
 	wizard.attributes.apply_class_boost(&"int")
@@ -22,9 +22,9 @@ func test_bestiary() -> void:
 	wizard.sheet.set_skill_rank(&"arcana", PFMathConstants.ProficiencyRank.EXPERT)
 	
 	# Dragon, Level 5
-	var dragon = PFNpc.new(&"young_red_dragon", "Young Red Dragon", [&"dragon", &"fire"], 5, 
+	var dragon = autofree(PFNpc.new(&"young_red_dragon", "Young Red Dragon", [&"dragon", &"fire"], 5, 
 		75, 12, 10, 11, 
-		4, 2, 3, 1, 2, 2)
+		4, 2, 3, 1, 2, 2))
 	dragon.monster_stats["weaknesses"] = [{"type": "cold", "value": 5}]
 	dragon.monster_stats["immunities"] = [{"type": "fire"}]
 	dragon.health.weaknesses = {PFCombatConstants.DamageType.COLD: 5}
@@ -93,3 +93,6 @@ func test_bestiary() -> void:
 	assert_true(final_knowledge.get(&"state_name", 0) == 1, "Success should guarantee basic info is KNOWN.")
 	
 	print("\nAll Bestiary Tests Executed Successfully!")
+
+func after_all():
+	PFContext.cleanup_shared_services()

@@ -5,12 +5,12 @@ func before_all():
 	var db = PFDatabase.get_instance()
 	if db == null:
 		db = PFDatabase.new()
-		add_child(db)
+		add_child_autofree(db)
 
 func test_ancestry_weapon_familiarity():
 	# Create an elf character
-	var elf = PFPlayerCharacter.new("Legolas", [&"humanoid", &"elf"], 1, 20, 0, 0, 0)
-	add_child(elf)
+	var elf = autofree(PFPlayerCharacter.new("Legolas", [&"humanoid", &"elf"], 1, 20, 0, 0, 0))
+	add_child_autofree(elf)
 	
 	# Give them the familiar feat
 	var feat = PFFeat.new(&"elf_weapon_familiarity")
@@ -50,3 +50,6 @@ func test_ancestry_weapon_familiarity():
 	# Test the Elven Branched Spear (Martial -> Simple). Should use Simple proficiency -> Trained (+2 + Level = +3).
 	var ebs_bonus = elf.get_strike_bonus(elven_branched_spear)
 	assert_eq(ebs_bonus, 3) # +2 Trained + 1 Level = 3
+
+func after_all():
+	PFContext.cleanup_shared_services()

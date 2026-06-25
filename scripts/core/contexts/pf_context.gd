@@ -21,19 +21,49 @@ static var active_turn_manager: PFTurnManager
 static func init_shared_services() -> void:
 	if detection_manager == null:
 		detection_manager = PFDetectionManager.new()
-		Engine.get_main_loop().root.add_child.call_deferred(detection_manager)
+		Engine.get_main_loop().root.add_child(detection_manager)
 		
 	if reaction_manager == null:
 		reaction_manager = PFReactionManager.new()
-		Engine.get_main_loop().root.add_child.call_deferred(reaction_manager)
+		Engine.get_main_loop().root.add_child(reaction_manager)
 		
 	if environment_manager == null:
 		environment_manager = PFEnvironmentManager.new()
-		Engine.get_main_loop().root.add_child.call_deferred(environment_manager)
+		Engine.get_main_loop().root.add_child(environment_manager)
 		
 	if counteract_manager == null:
 		counteract_manager = PFCounteractManager.new()
-		Engine.get_main_loop().root.add_child.call_deferred(counteract_manager)
+		Engine.get_main_loop().root.add_child(counteract_manager)
+
+## Cleans up shared services to prevent state leakage between tests.
+static func cleanup_shared_services() -> void:
+	if is_instance_valid(detection_manager):
+		if detection_manager.is_inside_tree():
+			detection_manager.get_parent().remove_child(detection_manager)
+		detection_manager.free()
+	detection_manager = null
+	
+	if is_instance_valid(reaction_manager):
+		if reaction_manager.is_inside_tree():
+			reaction_manager.get_parent().remove_child(reaction_manager)
+		reaction_manager.free()
+	reaction_manager = null
+	
+	if is_instance_valid(environment_manager):
+		if environment_manager.is_inside_tree():
+			environment_manager.get_parent().remove_child(environment_manager)
+		environment_manager.free()
+	environment_manager = null
+	
+	if is_instance_valid(counteract_manager):
+		if counteract_manager.is_inside_tree():
+			counteract_manager.get_parent().remove_child(counteract_manager)
+		counteract_manager.free()
+	counteract_manager = null
+	
+	active_party.clear()
+	reserve_party.clear()
+	active_turn_manager = null
 
 ## Ask the TimeManager to rest the entire party.
 static func request_rest(hours: int = 8) -> void:

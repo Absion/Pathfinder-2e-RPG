@@ -16,8 +16,8 @@ func after_all():
 	# don't close here if we are reusing it across tests
 	pass
 func test_player_character_fortitude_save():
-	var pc = PFPlayerCharacter.new("Saver", [], 1, 15, 0, 0, 0)
-	add_child(pc)
+	var pc = autofree(PFPlayerCharacter.new("Saver", [], 1, 15, 0, 0, 0))
+	add_child_autofree(pc)
 	
 	# Let's set Constitution modifier to +3
 	pc.attributes.apply_free_boost(&"con")
@@ -38,8 +38,8 @@ func test_player_character_fortitude_save():
 	assert_eq(fort, 7)
 
 func test_npc_reflex_save():
-	var npc = PFNpc.new(&"goblin", "Goblin", [], 1, 6, 4, 7, 1, 0, 0, 0, 0, 0, 0)
-	add_child(npc)
+	var npc = autofree(PFNpc.new(&"goblin", "Goblin", [], 1, 6, 4, 7, 1, 0, 0, 0, 0, 0, 0))
+	add_child_autofree(npc)
 	
 	# NPCs should use their static base saves (from initialization / statblock)
 	# The Goblin was initialized with Reflex = 7
@@ -52,8 +52,8 @@ func test_npc_reflex_save():
 	assert_eq(ref, 5)
 
 func test_spell_dc_calculation():
-	var pc = PFPlayerCharacter.new("Wizard", [], 3, 20, 0, 0, 0)
-	add_child(pc)
+	var pc = autofree(PFPlayerCharacter.new("Wizard", [], 3, 20, 0, 0, 0))
+	add_child_autofree(pc)
 	
 	pc.actor_class = PFClass.new()
 	pc.actor_class.is_spellcaster = true

@@ -23,7 +23,7 @@ func test_level_up() -> void:
 	human_ancestry.hp = 8
 	human_ancestry.size_id = &"medium"
 	
-	var pc = PFPlayerCharacter.new("Fighter Bob", [&"humanoid", &"human"], 1, 0, 0, 0, 0)
+	var pc = autofree(PFPlayerCharacter.new("Fighter Bob", [&"humanoid", &"human"], 1, 0, 0, 0, 0))
 	pc.attributes.apply_free_boost(&"str")
 	pc.attributes.apply_free_boost(&"str")
 	pc.attributes.apply_free_boost(&"str")
@@ -108,3 +108,5 @@ func test_level_up() -> void:
 	
 	print("\nAll Level Up Service Tests Passed!")
 	
+func after_all():
+	PFContext.cleanup_shared_services()

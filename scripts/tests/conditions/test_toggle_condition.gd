@@ -7,7 +7,7 @@ func test_action_toggle_condition():
 		db.name = "PFDatabase"
 		get_tree().root.add_child(db)
 		
-	var hero = PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
 	var drop_prone_action = PFActionToggleCondition.new(&"drop_prone")
 	
 	# Initial state

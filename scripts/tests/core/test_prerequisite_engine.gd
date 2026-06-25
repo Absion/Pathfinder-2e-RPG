@@ -17,7 +17,7 @@ func after_all():
 		pass # db.queue_free()
 
 func test_ethnicity_requirements():
-	var hero = PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2))
 	var shadow_data = db.get_feat_data(&"nidalese_shadowcaster")
 	
 	var shadow_traits_raw = JSON.parse_string(shadow_data["traits"]) as Array
@@ -35,7 +35,7 @@ func test_ethnicity_requirements():
 	assert_true(PFPrerequisiteEngine.evaluate(shadow_data["prerequisites"], hero, shadow_traits))
 	
 func test_archetype_dedication_lock():
-	var hero = PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2))
 	var assassin_data = db.get_feat_data(&"assassin_dedication")
 	
 	var assassin_traits_raw = JSON.parse_string(assassin_data["traits"]) as Array

@@ -1,7 +1,6 @@
 # test_advanced_magic.gd
 extends GutTest
 
-var context: PFContext
 var counteract_manager: PFCounteractManager
 var turn_manager: PFTurnManager
 var time_manager: PFTimeManager
@@ -13,36 +12,26 @@ func before_each():
 	# Ensure the DB is fully initialized and singletons are ready
 	PFDatabase.get_instance()._initialize_schema_if_needed()
 	
-	context = PFContext.new()
 	PFContext.init_shared_services()
 	
 	# Instantiate specific managers for direct testing
 	counteract_manager = PFContext.counteract_manager
-	turn_manager = PFTurnManager.new()
+	turn_manager = autofree(PFTurnManager.new())
 	PFContext.active_turn_manager = turn_manager
 		
 	time_manager = PFTimeManager.get_instance()
 	if not time_manager:
-		time_manager = PFTimeManager.new()
+		time_manager = autofree(PFTimeManager.new())
 		time_manager._ready()
 		
-	caster = PFPlayerCharacter.new("Caster", [&"humanoid"], 1, 10, 0, 0, 0)
-	target = PFPlayerCharacter.new("Target", [&"humanoid"], 1, 10, 0, 0, 0)
+	caster = autofree(PFPlayerCharacter.new("Caster", [&"humanoid"], 1, 10, 0, 0, 0))
+	target = autofree(PFPlayerCharacter.new("Target", [&"humanoid"], 1, 10, 0, 0, 0))
 	
 	caster.actor_class = PFClass.new("Wizard")
 	caster.actor_class.caster_type = PFMagicConstants.CasterType.SPONTANEOUS
 
 func after_each():
-	if context:
-		context.queue_free()
-	if turn_manager:
-		turn_manager.queue_free()
-	if time_manager:
-		time_manager.queue_free()
-	if caster:
-		caster.queue_free()
-	if target:
-		target.queue_free()
+	pass
 
 func test_counteract_math():
 	# 3rd rank Dispel Magic vs 4th rank spell
@@ -149,3 +138,6 @@ func test_focus_points():
 	
 	# 10 minutes should have passed (600 seconds)
 	assert_eq(time_manager.current_time_seconds, initial_time + 600)
+
+func after_all():
+	PFContext.cleanup_shared_services()

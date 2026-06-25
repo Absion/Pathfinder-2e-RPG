@@ -4,10 +4,10 @@ var attacker: PFActor
 var target: PFActor
 
 func before_each():
-	attacker = PFPlayerCharacter.new("Scavenger", [&"humanoid"], 1, 20, 0, 0, 0)
-	target = PFPlayerCharacter.new("Target", [&"humanoid"], 1, 20, 0, 0, 0)
-	add_child(attacker)
-	add_child(target)
+	attacker = autofree(PFPlayerCharacter.new("Scavenger", [&"humanoid"], 1, 20, 0, 0, 0))
+	target = autofree(PFPlayerCharacter.new("Target", [&"humanoid"], 1, 20, 0, 0, 0))
+	add_child_autofree(attacker)
+	add_child_autofree(target)
 	
 	attacker.global_position = Vector3(0, 0, 0)
 	target.global_position = Vector3(0, 0, 0)

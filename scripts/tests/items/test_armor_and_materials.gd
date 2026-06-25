@@ -34,7 +34,7 @@ func test_mithral_material_stats():
 	assert_eq(mith_armor.speed_penalty, 0)
 
 func test_armor_specialization_effects():
-	var defender = PFPlayerCharacter.new("Defender", [], 5, 50, 0, 0, 0)
+	var defender = autofree(PFPlayerCharacter.new("Defender", [], 5, 50, 0, 0, 0))
 	defender.has_armor_specialization = true
 	
 	# Equip Plate Armor (+1 Potency) -> Plate Specialization grants 2 (heavy) + 1 (potency) = 3 Slashing Resistance

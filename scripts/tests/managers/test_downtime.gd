@@ -11,16 +11,16 @@ func test_downtime() -> void:
 	PFContext.init_shared_services()
 	
 	# We need a TimeManager and DowntimeManager
-	var time_mgr = PFTimeManager.new()
-	var downtime_mgr = PFDowntimeManager.new()
+	var time_mgr = autofree(PFTimeManager.new())
+	var downtime_mgr = autofree(PFDowntimeManager.new())
 	# Simulate _ready since they aren't in tree
 	PFTimeManager._instance = time_mgr
 	downtime_mgr._ready()
 	
-	var smith = PFPlayerCharacter.new("Blacksmith", [&"humanoid"], 3, 0, 0, 0, 0)
+	var smith = autofree(PFPlayerCharacter.new("Blacksmith", [&"humanoid"], 3, 0, 0, 0, 0))
 	smith.sheet.set_skill_rank(&"crafting", PFMathConstants.ProficiencyRank.EXPERT)
 	
-	var bard = PFPlayerCharacter.new("Bard", [&"humanoid"], 3, 0, 0, 0, 0)
+	var bard = autofree(PFPlayerCharacter.new("Bard", [&"humanoid"], 3, 0, 0, 0, 0))
 	bard.sheet.set_skill_rank(&"performance", PFMathConstants.ProficiencyRank.EXPERT)
 	
 	print("\nTest 1: Crafting Setup")
@@ -56,3 +56,6 @@ func test_downtime() -> void:
 	assert_false(bard.get_meta(&"is_busy"), "Bard should be done earning income.")
 	
 	print("\nAll Downtime Tests executed!")
+
+func after_all():
+	PFContext.cleanup_shared_services()

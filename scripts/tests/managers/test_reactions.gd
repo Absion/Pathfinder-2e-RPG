@@ -13,11 +13,11 @@ func test_grab_an_edge() -> void:
 	PFContext.reaction_manager.auto_resolve_prompts = true # Crucial for automated tests
 	
 	# 2. Setup Actors
-	var pc = PFPlayerCharacter.new("Alice", [&"humanoid"], 1, 20, 0, 0, 0)
+	var pc = autofree(PFPlayerCharacter.new("Alice", [&"humanoid"], 1, 20, 0, 0, 0))
 	
 	pc.action_economy.reactions_remaining = 1
 	pc.grant_reaction("Grab an Edge")
-	add_child(pc)
+	add_child_autofree(pc)
 	
 	# 3. Test Grab an Edge
 	print("\nTest: Grab an Edge")
@@ -36,10 +36,10 @@ func test_reactive_strike() -> void:
 	PFContext.init_shared_services()
 	PFContext.reaction_manager.auto_resolve_prompts = true
 	
-	var fighter = PFPlayerCharacter.new("Fighter", [&"humanoid"], 1, 20, 0, 0, 0)
-	var enemy = PFNpc.new(&"goblin", "Goblin", [], 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-	add_child(fighter)
-	add_child(enemy)
+	var fighter = autofree(PFPlayerCharacter.new("Fighter", [&"humanoid"], 1, 20, 0, 0, 0))
+	var enemy = autofree(PFNpc.new(&"goblin", "Goblin", [], 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+	add_child_autofree(fighter)
+	add_child_autofree(enemy)
 	
 	fighter.action_economy.reactions_remaining = 1
 	fighter.grant_reaction("Reactive Strike")
@@ -64,3 +64,6 @@ func test_reactive_strike() -> void:
 	await stride.execute(enemy)
 	assert_true(true, "Completed reactive strike test")
 	print("\nReactions tests completed!")
+
+func after_all():
+	PFContext.cleanup_shared_services()

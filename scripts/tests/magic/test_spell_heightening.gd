@@ -2,11 +2,11 @@ extends GutTest
 
 func test_ignition_heightening_and_persistent_damage():
 	# Mock an actor
-	var caster = PFPlayerCharacter.new("Wizard", [&"humanoid"], 5, 40, 0, 0, 0)
-	add_child(caster)
+	var caster = autofree(PFPlayerCharacter.new("Wizard", [&"humanoid"], 5, 40, 0, 0, 0))
+	add_child_autofree(caster)
 	
-	var target = PFActor.new("Goblin", [&"humanoid"], 1, 100)
-	add_child(target)
+	var target = autofree(PFActor.new("Goblin", [&"humanoid"], 1, 100))
+	add_child_autofree(target)
 	
 	# Create ignition spell using the new factory
 	var spell = PFSpell.create(&"ignition")

@@ -4,10 +4,10 @@ var attacker: PFActor
 var target: PFActor
 
 func before_each():
-	attacker = PFPlayerCharacter.new("Attacker", [&"humanoid"], 1, 20, 0, 0, 0)
-	target = PFPlayerCharacter.new("Target", [&"humanoid"], 1, 20, 0, 0, 0)
-	add_child(attacker)
-	add_child(target)
+	attacker = autofree(PFPlayerCharacter.new("Attacker", [&"humanoid"], 1, 20, 0, 0, 0))
+	target = autofree(PFPlayerCharacter.new("Target", [&"humanoid"], 1, 20, 0, 0, 0))
+	add_child_autofree(attacker)
+	add_child_autofree(target)
 	
 	# Stub method for has_critical_specialization
 	attacker.set_meta(&"has_crit_spec", true)

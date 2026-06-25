@@ -4,7 +4,7 @@ var db: PFDatabase
 func before_all() -> void:
 	PFContext.init_shared_services()
 	db = PFDatabase.get_instance()
-	PFContext.environment_manager = PFEnvironmentManager.new()
+	PFContext.environment_manager = autofree(PFEnvironmentManager.new())
 	
 	db._spells_cache[&"magic_missile"] = {
 		"name": "Magic Missile", "traits": "attack", "base_spell_rank": 1, 
@@ -37,7 +37,7 @@ func test_prepared_spellcasting():
 	char_class.caster_type = PFMagicConstants.CasterType.PREPARED
 	char_class.spell_progression = PFMagicConstants.SpellProgression.FULL_CASTER
 	
-	var caster = PFPlayerCharacter.new("Prepared Mage", [&"humanoid"], 1, 10, 0, 0, 0)
+	var caster = autofree(PFPlayerCharacter.new("Prepared Mage", [&"humanoid"], 1, 10, 0, 0, 0))
 	caster.actor_class = char_class
 	caster.level = 1
 	var spellbook = PFSpellbook.new(caster)
@@ -86,7 +86,7 @@ func test_spontaneous_spellcasting():
 	char_class.caster_type = PFMagicConstants.CasterType.SPONTANEOUS
 	char_class.spell_progression = PFMagicConstants.SpellProgression.FULL_CASTER
 	
-	var caster = PFPlayerCharacter.new("Spontaneous Mage", [&"humanoid"], 3, 20, 0, 0, 0)
+	var caster = autofree(PFPlayerCharacter.new("Spontaneous Mage", [&"humanoid"], 3, 20, 0, 0, 0))
 	caster.actor_class = char_class
 	caster.level = 3 # Level 3 full caster gets 3 Rank 1, 2 Rank 2
 	var spellbook = PFSpellbook.new(caster)
@@ -136,7 +136,7 @@ func test_learn_a_spell_action():
 	var char_class = PFClass.new("Wizard", 6, [&"intelligence"])
 	char_class.caster_type = PFMagicConstants.CasterType.PREPARED
 	
-	var caster = PFPlayerCharacter.new("Student", [&"humanoid"], 1, 10, 0, 0, 0)
+	var caster = autofree(PFPlayerCharacter.new("Student", [&"humanoid"], 1, 10, 0, 0, 0))
 	caster.actor_class = char_class
 	caster.level = 1
 	var spellbook = PFSpellbook.new(caster)
@@ -176,7 +176,7 @@ func test_divine_spellcasting():
 	char_class.spell_tradition = PFMagicConstants.MagicTradition.DIVINE
 	char_class.spell_progression = PFMagicConstants.SpellProgression.FULL_CASTER
 	
-	var caster = PFPlayerCharacter.new("Priest", [&"humanoid"], 1, 10, 0, 0, 0)
+	var caster = autofree(PFPlayerCharacter.new("Priest", [&"humanoid"], 1, 10, 0, 0, 0))
 	caster.actor_class = char_class
 	caster.level = 1
 	var spellbook = PFSpellbook.new(caster)
@@ -201,3 +201,6 @@ func test_divine_spellcasting():
 	# After learning it, they can
 	spellbook.learn_spell(rare_spell)
 	assert_true(spellbook.prepare_spell(rare_spell, 1))
+
+func after_all():
+	PFContext.cleanup_shared_services()

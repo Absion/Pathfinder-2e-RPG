@@ -16,7 +16,7 @@ func before_all() -> void:
 		db = PFDatabase.get_instance()
 
 func before_each() -> void:
-	attacker = PFPlayerCharacter.new("Attacker", [], 1, 50, 0, 0, 0)
+	attacker = autofree(PFPlayerCharacter.new("Attacker", [], 1, 50, 0, 0, 0))
 
 func test_attaching_scope_to_crossbow() -> void:
 	# Create a crossbow weapon

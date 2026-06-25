@@ -13,11 +13,12 @@ func before_all():
 	db.query("REPLACE INTO class_progressions (class_id, level, granted_features, granted_feat_slots, granted_spells) VALUES ('wizard', 4, '[]', '[\"class\", \"skill\"]', '{}')")
 
 func after_all():
+	PFContext.cleanup_shared_services()
 	if is_instance_valid(db):
 		pass # db.queue_free()
 
 func test_level_up_manager():
-	var hero = PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2))
 	hero.apply_class(&"wizard")
 	
 	# Verify Wizard HP applied correctly (Level 1)
@@ -45,7 +46,7 @@ func test_level_up_manager():
 		assert_true(false, "spells_learned not in pending_choices! Actual: " + str(pending_choices))
 
 func test_experience_tracker():
-	var hero = PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2)
+	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2))
 	hero.apply_class(&"wizard")
 	
 	assert_eq(hero.level, 1)

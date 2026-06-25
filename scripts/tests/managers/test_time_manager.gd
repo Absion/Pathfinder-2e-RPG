@@ -3,7 +3,7 @@ extends GutTest
 
 
 func test_time_advancement():
-	var tm = PFTimeManager.new()
+	var tm = autofree(PFTimeManager.new())
 	tm._ready()
 	
 	assert_eq(tm.current_day, 1)
@@ -21,7 +21,7 @@ func test_time_advancement():
 	tm.free()
 
 func test_day_rollover():
-	var tm = PFTimeManager.new()
+	var tm = autofree(PFTimeManager.new())
 	tm._ready()
 	
 	assert_eq(tm.current_day, 1)
@@ -38,7 +38,7 @@ func test_day_rollover():
 	tm.free()
 
 func test_rest_for_night():
-	var tm = PFTimeManager.new()
+	var tm = autofree(PFTimeManager.new())
 	tm._ready()
 	
 	tm.rest_for_night()

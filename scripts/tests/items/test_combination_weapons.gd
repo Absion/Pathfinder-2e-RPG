@@ -20,8 +20,8 @@ func before_all() -> void:
 	db.query("INSERT OR REPLACE INTO weapons (id, name, traits, level, weapon_type, damage_dice, damage_faces, hands_required, range_increment, linked_weapon_id, price_cp, material, hardness, max_hp, broken_threshold, grade, bulk, category, group_type, damage_type) VALUES ('mock_gunblade_ranged', 'Gunblade (Ranged)', 'combination', 1, 1, 1, 6, 2, 40, 'mock_gunblade_melee', 0, 0, 5, 20, 10, 0, 1, 0, 0, 0)")
 
 func before_each() -> void:
-	attacker = PFPlayerCharacter.new("Attacker", [], 1, 50, 0, 0, 0)
-	defender = PFPlayerCharacter.new("Defender", [], 1, 50, 0, 0, 0)
+	attacker = autofree(PFPlayerCharacter.new("Attacker", [], 1, 50, 0, 0, 0))
+	defender = autofree(PFPlayerCharacter.new("Defender", [], 1, 50, 0, 0, 0))
 
 func test_combination_toggle() -> void:
 	var gunblade = db.get_weapon("mock_gunblade_melee")

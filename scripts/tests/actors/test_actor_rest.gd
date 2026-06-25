@@ -4,7 +4,7 @@ extends GutTest
 
 func test_rest_healing():
 	# Player level 2, CON modifier +2, max hp 30.
-	var player = PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 2, 30, 0, 0, 0)
+	var player = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 2, 30, 0, 0, 0))
 	player.attributes.apply_background_boost(&"con")
 	player.attributes.apply_class_boost(&"con")
 	# CON mod should be +2
@@ -19,7 +19,7 @@ func test_rest_healing():
 	assert_eq(player.health.current_hp, 24)
 
 func test_rest_condition_decay():
-	var player = PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 1, 30, 0, 0, 0)
+	var player = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 1, 30, 0, 0, 0))
 	player.attributes.con_mod = 1
 	
 	player.apply_condition(PFCondition.create("doomed", 2))
@@ -40,7 +40,7 @@ func test_rest_condition_decay():
 
 func test_rest_minimum_healing():
 	# CON modifier -1, level 5
-	var player = PFPlayerCharacter.new("Ezren", [&"human", &"humanoid"], 5, 30, 0, 0, 0)
+	var player = autofree(PFPlayerCharacter.new("Ezren", [&"human", &"humanoid"], 5, 30, 0, 0, 0))
 	player.attributes.apply_voluntary_flaw(&"con") 
 	# CON mod should be -1 
 	
@@ -54,7 +54,7 @@ func test_rest_minimum_healing():
 	assert_eq(player.health.current_hp, 25)
 
 func test_rest_sleeping_in_armor():
-	var player = PFPlayerCharacter.new("Kyra", [&"human", &"humanoid"], 1, 30, 0, 0, 0)
+	var player = autofree(PFPlayerCharacter.new("Kyra", [&"human", &"humanoid"], 1, 30, 0, 0, 0))
 	
 	# 1. Unarmored -> NO FATIGUE
 	player._on_rested_for_night()

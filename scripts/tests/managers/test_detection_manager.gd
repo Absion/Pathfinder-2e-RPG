@@ -10,21 +10,21 @@ func before_all():
 	var db = PFDatabase.get_instance()
 	if db == null:
 		db = PFDatabase.new()
-		add_child(db)
+		add_child_autofree(db)
 
 func after_all():
 	pass
 func before_each():
-	manager = PFDetectionManager.new()
-	add_child(manager)
+	manager = autofree(PFDetectionManager.new())
+	add_child_autofree(manager)
 	
-	rogue = PFActor.new("Rogue", [], 1, 15)
-	guard_1 = PFActor.new("Guard 1", [], 1, 20)
-	guard_2 = PFActor.new("Guard 2", [], 1, 20)
+	rogue = autofree(PFActor.new("Rogue", [], 1, 15))
+	guard_1 = autofree(PFActor.new("Guard 1", [], 1, 20))
+	guard_2 = autofree(PFActor.new("Guard 2", [], 1, 20))
 	
-	add_child(rogue)
-	add_child(guard_1)
-	add_child(guard_2)
+	add_child_autofree(rogue)
+	add_child_autofree(guard_1)
+	add_child_autofree(guard_2)
 
 func after_each():
 	manager.queue_free()

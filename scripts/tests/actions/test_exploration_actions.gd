@@ -14,7 +14,7 @@ func before_all():
 	Engine.get_main_loop().root.add_child(db)
 	
 	# Setup GameRoot
-	game_root = PFGameRoot.new()
+	game_root = autofree(PFGameRoot.new())
 	game_root.name = "PFGameRoot"
 	var overworld = PFOverworldContext.new()
 	game_root.contexts["OverworldContext"] = overworld
@@ -26,12 +26,14 @@ func before_all():
 func after_all():
 	if db and db.is_inside_tree():
 		db.get_parent().remove_child(db)
+		db.queue_free()
 	if game_root and game_root.is_inside_tree():
 		game_root.get_parent().remove_child(game_root)
+		game_root.queue_free()
 
 func before_each():
-	actor = PFActor.new("Valeros", [&"human", &"humanoid"], 1, 20)
-	Engine.get_main_loop().root.add_child(actor)
+	actor = autofree(PFActor.new("Valeros", [&"human", &"humanoid"], 1, 20))
+	add_child_autofree(actor)
 
 func test_exploration_activity_updates_context():
 	var avoid_notice = PFActionExploration.new(&"avoid_notice")

@@ -13,10 +13,10 @@ func before_all() -> void:
 		"name": "Initiative First", "modifier_type": "", "target_stat": "", "multiplier": 0, "script_path": ""
 	}
 func test_initiative_sorting():
-	var tm = PFTurnManager.new()
-	var a1 = PFActor.new("Hero", [&"humanoid"], 1, 10)
-	var a2 = PFActor.new("Goblin", [&"humanoid"], 1, 10)
-	var a3 = PFActor.new("Boss", [&"humanoid"], 1, 10)
+	var tm = autofree(PFTurnManager.new())
+	var a1 = autofree(PFActor.new("Hero", [&"humanoid"], 1, 10))
+	var a2 = autofree(PFActor.new("Goblin", [&"humanoid"], 1, 10))
+	var a3 = autofree(PFActor.new("Boss", [&"humanoid"], 1, 10))
 	
 	tm.add_combatant(a1, false, &"perception")
 	tm.add_combatant(a2, true, &"perception")
@@ -39,9 +39,9 @@ func test_initiative_sorting():
 	assert_eq(tm.combatants[2].actor.entity_name, "Hero")
 	
 func test_turn_loop():
-	var tm = PFTurnManager.new()
-	var a1 = PFActor.new("Hero", [&"humanoid"], 1, 10)
-	var a2 = PFActor.new("Goblin", [&"humanoid"], 1, 10)
+	var tm = autofree(PFTurnManager.new())
+	var a1 = autofree(PFActor.new("Hero", [&"humanoid"], 1, 10))
+	var a2 = autofree(PFActor.new("Goblin", [&"humanoid"], 1, 10))
 	
 	tm.add_combatant(a1, false)
 	tm.add_combatant(a2, true)
@@ -63,12 +63,12 @@ func test_turn_loop():
 	assert_eq(tm.get_current_actor().entity_name, "Hero")
 
 func test_initiative_modifiers():
-	var tm = PFTurnManager.new()
+	var tm = autofree(PFTurnManager.new())
 
 	
-	var a1 = PFActor.new("Hero", [&"humanoid"], 1, 10)
-	var a2 = PFActor.new("Goblin", [&"humanoid"], 1, 10)
-	var a3 = PFActor.new("Scout", [&"humanoid"], 1, 10)
+	var a1 = autofree(PFActor.new("Hero", [&"humanoid"], 1, 10))
+	var a2 = autofree(PFActor.new("Goblin", [&"humanoid"], 1, 10))
+	var a3 = autofree(PFActor.new("Scout", [&"humanoid"], 1, 10))
 	
 	# Give the Scout an initiative modifier
 	var scout_cond = PFCondition.create("scout_bonus", 1)
@@ -111,3 +111,6 @@ func test_initiative_modifiers():
 	assert_eq(tm.combatants[0].actor.entity_name, "Hero")
 	# Goblin rolled 25 vs Scout's 10, so Goblin is second
 	assert_eq(tm.combatants[1].actor.entity_name, "Goblin")
+
+func after_all():
+	PFContext.cleanup_shared_services()
