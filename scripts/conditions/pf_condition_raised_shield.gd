@@ -28,7 +28,7 @@ func on_apply(owner: PFActor) -> bool:
 			return PFReactionShieldBlock.condition(trigger_actor, event_data, owner)
 			
 		var exec_lambda = func(trigger_actor: PFActor, event_data: Dictionary) -> Dictionary:
-			return await PFReactionShieldBlock.execute(trigger_actor, event_data, owner)
+			return PFReactionShieldBlock.execute(trigger_actor, event_data, owner)
 			
 		PFContext.reaction_manager.register_listener(PFCombatConstants.ReactionTriggers.BEFORE_TAKE_DAMAGE, owner, &"Shield Block", cond_lambda, exec_lambda)
 	return true

@@ -71,7 +71,7 @@ func test_parry_action():
 	var initial_ac = attacker.get_ac()
 	var parry_action = PFActionParry.new(parry_weapon)
 	
-	var success = await parry_action.execute(attacker)
+	var success = parry_action.execute(attacker)
 	assert_true(success)
 	
 	var new_ac = attacker.get_ac()

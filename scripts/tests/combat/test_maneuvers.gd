@@ -17,7 +17,7 @@ func before_each():
 
 func test_grapple():
 	var grapple_action = PFActionManeuver.new(PFActionManeuver.ManeuverType.GRAPPLE)
-	var success = await grapple_action.execute(attacker, defender)
+	var success = grapple_action.execute(attacker, defender)
 	assert_true(success)
 	
 func test_trip_with_weapon():
@@ -25,10 +25,10 @@ func test_trip_with_weapon():
 	
 	# Whip has reach 10ft, so from 10ft away it should work
 	defender.global_position = Vector3(10, 0, 0)
-	var success = await trip_action.execute(attacker, defender)
+	var success = trip_action.execute(attacker, defender)
 	assert_true(success)
 
 func test_shove():
 	var shove_action = PFActionManeuver.new(PFActionManeuver.ManeuverType.SHOVE)
-	var success = await shove_action.execute(attacker, defender)
+	var success = shove_action.execute(attacker, defender)
 	assert_true(success)

@@ -1,4 +1,4 @@
-﻿extends GutTest
+extends GutTest
 
 var attacker: PFActor
 var target: PFActor
@@ -23,7 +23,7 @@ func test_improvised_factory():
 
 func test_scavenge_forest():
 	var _action = PFActionScavenge.new([&"forest"])
-	var success = await _action.execute(attacker)
+	var success = _action.execute(attacker)
 	
 	assert_true(success)
 	var inv = attacker.get(&"inventory") as PFInventory
@@ -38,7 +38,7 @@ func test_scavenge_road():
 	inv.held_main_hand = null
 	
 	var _action = PFActionScavenge.new([&"road"])
-	var success = await _action.execute(attacker)
+	var success = _action.execute(attacker)
 	
 	assert_true(success)
 	var held = inv.held_main_hand as PFWeapon

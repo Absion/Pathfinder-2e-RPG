@@ -41,7 +41,7 @@ func test_combination_toggle() -> void:
 	
 	# Interact to toggle
 	var toggle_action = PFActionInteractCombination.new(gunblade)
-	assert_true(await toggle_action.execute(attacker))
+	assert_true(toggle_action.execute(attacker))
 	
 	# Should now be ranged
 	assert_true(gunblade.is_alternate_form_active)
@@ -51,7 +51,7 @@ func test_combination_toggle() -> void:
 	assert_eq(gunblade.range_increment, 40)
 	
 	# Toggle back
-	assert_true(await toggle_action.execute(attacker))
+	assert_true(toggle_action.execute(attacker))
 	
 	# Should now be melee again
 	assert_false(gunblade.is_alternate_form_active)

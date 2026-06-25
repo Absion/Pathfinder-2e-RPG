@@ -1,4 +1,4 @@
-﻿# test_attachments.gd
+# test_attachments.gd
 class_name TestAttachments
 extends GutTest
 
@@ -36,7 +36,7 @@ func test_attaching_scope_to_crossbow() -> void:
 	
 	# Attach scope
 	var attach_action = PFActionInteractAttach.new(scope, crossbow)
-	assert_true(await attach_action.execute(attacker))
+	assert_true(attach_action.execute(attacker))
 	
 	# Verify attachment
 	assert_eq(crossbow.attachment, scope)
@@ -64,7 +64,7 @@ func test_attaching_bayonet_weapon() -> void:
 	inv.add_item(bayonet)
 	
 	var attach_action = PFActionInteractAttach.new(bayonet, crossbow)
-	assert_true(await attach_action.execute(attacker))
+	assert_true(attach_action.execute(attacker))
 	
 	# Ensure bayonet attack exists
 	assert_not_null(crossbow.attachment.granted_weapon)

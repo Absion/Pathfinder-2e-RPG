@@ -38,7 +38,7 @@ func test_exploration_activity_updates_context():
 	var scout = PFActionExploration.new(&"scout")
 	
 	# Execute 'Avoid Notice'
-	await avoid_notice.execute(actor)
+	avoid_notice.execute(actor)
 	
 	var context = game_root.current_context as PFOverworldContext
 	assert_not_null(context)
@@ -51,5 +51,5 @@ func test_exploration_activity_updates_context():
 func test_generic_action_logs_without_crash():
 	# This ensures generic actions (which we just added) load properly from the DB
 	var sense_motive = PFActionGeneric.new(&"sense_motive")
-	await sense_motive.execute(actor)
+	sense_motive.execute(actor)
 	assert_eq(str(sense_motive.action_id), "sense_motive")
