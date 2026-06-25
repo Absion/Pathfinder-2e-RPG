@@ -25,8 +25,11 @@ var _class_features_cache: Dictionary = {}
 
 static func get_instance() -> PFDatabase:
 	var ml = Engine.get_main_loop()
-	if ml and ml.root.has_node("PFDatabase"):
-		return ml.root.get_node("PFDatabase") as PFDatabase
+	if ml:
+		if ml.root.has_node("PFDB"):
+			return ml.root.get_node("PFDB") as PFDatabase
+		elif ml.root.has_node("PFDatabase"):
+			return ml.root.get_node("PFDatabase") as PFDatabase
 	return null
 
 func _ready():
@@ -45,38 +48,29 @@ func _ready():
 	db.open_db()
 	_initialize_schema_if_needed()
 
+var query_result: Array = []
+
+func select_with_bindings(query_str: String, bindings: Array) -> Array:
+	if db and db.query_with_bindings(query_str, bindings):
+		return db.query_result
+	return []
+
+func query(query_str: String) -> bool:
+	if db and db.query(query_str):
+		query_result = db.query_result
+		return true
+	query_result = []
+	return false
+
+func query_with_bindings(query_str: String, bindings: Array) -> bool:
+	if db and db.query_with_bindings(query_str, bindings):
+		query_result = db.query_result
+		return true
+	query_result = []
+	return false
+
 func _initialize_schema_if_needed():
-	# TEMPORARY: Drop tables to force schema rebuild during prototyping
-	db.query("DROP TABLE IF EXISTS classes;")
-	db.query("DROP TABLE IF EXISTS spells;")
-	db.query("DROP TABLE IF EXISTS spell_variants;")
-	db.query("DROP TABLE IF EXISTS deities;")
-	db.query("DROP TABLE IF EXISTS sizes;")
-	db.query("DROP TABLE IF EXISTS traits;")
-	db.query("DROP TABLE IF EXISTS conditions;")
-	db.query("DROP TABLE IF EXISTS ancestries;")
-	db.query("DROP TABLE IF EXISTS beliefs;")
-	db.query("DROP TABLE IF EXISTS skills;")
-	db.query("DROP TABLE IF EXISTS languages;")
-	db.query("DROP TABLE IF EXISTS attachments;")
-	db.query("DROP TABLE IF EXISTS adjustments;")
-	db.query("DROP TABLE IF EXISTS regions;")
-	db.query("DROP TABLE IF EXISTS heritages;")
-	db.query("DROP TABLE IF EXISTS ethnicities;")
-	db.query("DROP TABLE IF EXISTS animal_companions;")
-	db.query("DROP TABLE IF EXISTS actions;")
-	db.query("DROP TABLE IF EXISTS specific_familiars;")
-	db.query("DROP TABLE IF EXISTS feats;")
-	db.query("DROP TABLE IF EXISTS class_features;")
-	db.query("DROP TABLE IF EXISTS class_progressions;")
-	db.query("DROP TABLE IF EXISTS weapons;")
-	db.query("DROP TABLE IF EXISTS shields;")
-	db.query("DROP TABLE IF EXISTS backgrounds;")
-	db.query("DROP TABLE IF EXISTS classes;")
-	db.query("DROP TABLE IF EXISTS domains;")
-	db.query("DROP TABLE IF EXISTS edicts;")
-	db.query("DROP TABLE IF EXISTS anathemas;")
-	db.query("DROP TABLE IF EXISTS player_knowledge;")
+	# Tables will only be created if they do not exist, and default data will only be inserted if missing.
 	
 	# Core Data-Driven Mechanics Tables
 	db.query("CREATE TABLE IF NOT EXISTS sizes (
@@ -519,10 +513,12 @@ func _seed_data():
 		('versatile_p', 'Versatile P', 'adds_damage_type', 0),
 		('versatile p', 'Versatile P', 'adds_damage_type', 0),
 		('steel', 'Steel', '', 0),
-		('nonlethal', 'Nonlethal', '', 0),
-		('injection', 'Injection', '', 0),
-		('reach', 'Reach', '', 0),
-		('two-hand d12', 'Two-Hand d12', '', 0);")
+		('two-hand d12', 'Two-Hand d12', '', 0),
+		('wood', 'Wood', '', 0),
+		('improvised', 'Improvised', '', 0),
+		('slashing', 'Slashing', '', 0),
+		('bludgeoning', 'Bludgeoning', '', 0),
+		('piercing', 'Piercing', '', 0);")
 		
 
 	# Seed Basic Actions
@@ -660,7 +656,7 @@ func _seed_data():
 		('doomed', 'Doomed', '', '', 0, 'res://scripts/conditions/pf_condition_doomed.gd'),
 		('drained', 'Drained', 'status', 'con_based', -1, ''),
 		('dying', 'Dying', '', '', 0, 'res://scripts/conditions/pf_condition_dying.gd'),
-		('encumbered', 'Encumbered', 'status', 'speed', -10, ''),
+		('encumbered', 'Encumbered', 'status', 'speed', -10, 'res://scripts/conditions/pf_condition_encumbered.gd'),
 		('enfeebled', 'Enfeebled', 'status', 'str_based', -1, ''),
 		('fascinated', 'Fascinated', 'status', 'perception_and_skill', -2, ''),
 		('fatigued', 'Fatigued', 'status', 'ac_and_saves', -1, ''),
@@ -687,6 +683,8 @@ func _seed_data():
 		('undetected', 'Undetected', '', '', 0, ''),
 		('unnoticed', 'Unnoticed', '', '', 0, ''),
 		('wounded', 'Wounded', '', '', 0, 'res://scripts/conditions/pf_condition_wounded.gd');")
+		
+	db.query("UPDATE conditions SET script_path = 'res://scripts/conditions/pf_condition_encumbered.gd' WHERE id = 'encumbered';")
 		
 	# Seed Languages
 	# Rarity: 0=Common, 1=Uncommon, 2=Rare
@@ -832,7 +830,8 @@ func _seed_data():
 		('dodge_away', 'Dodge Away', 4, 4, '[\"archetype\", \"acrobat\"]', '{\"requires_feat\": \"acrobat_dedication\"}', '{}', 'You dodge incoming attacks.'),
 		('acrobat_grace', 'Acrobat Grace', 4, 4, '[\"archetype\", \"acrobat\"]', '{\"requires_feat\": \"acrobat_dedication\"}', '{}', 'You move with extreme grace.'),
 		('assassin_dedication', 'Assassin Dedication', 4, 2, '[\"dedication\", \"archetype\", \"assassin\"]', '{}', '{}', 'You become an assassin.'),
-		('titan_wrestler', 'Titan Wrestler', 2, 1, '[\"general\", \"skill\"]', '{\"min_proficiency\": {\"athletics\": 1}}', '{}', 'You can grapple larger foes.');")
+		('titan_wrestler', 'Titan Wrestler', 2, 1, '[\"general\", \"skill\"]', '{\"min_proficiency\": {\"athletics\": 1}}', '{}', 'You can grapple larger foes.'),
+		('elf_weapon_familiarity', 'Elven Weapon Familiarity', 0, 1, '[\"elf\"]', '{}', '{\"granted_familiarity\": [\"longbow\", \"composite longbow\", \"shortbow\", \"composite shortbow\", \"longsword\", \"rapier\"]}', 'You are trained with elven weapons.');")
 		
 	db.query("INSERT OR IGNORE INTO class_features (id, name, granted_rules, description) VALUES 
 		('wizard_spellcasting', 'Arcane Spellcasting', '{}', 'You cast wizard spells.'),
@@ -900,6 +899,12 @@ func _seed_data():
 		
 	db.query("INSERT OR IGNORE INTO spells (id, name, traits, base_spell_rank, spell_category, traditions, saving_throw, is_attack, damage_type, scaling_rules, scaling_dice, description, script_path) VALUES 
 		('creation', 'Creation', 'manipulate', 4, 0, '" + tr_arc_pri + "', '', 0, '', 0, 0, 'You create a temporary object.', '');")
+		
+	db.query("INSERT OR IGNORE INTO spells (id, name, traits, base_spell_rank, spell_category, traditions, saving_throw, is_attack, damage_type, scaling_rules, scaling_dice, description, script_path) VALUES 
+		('fireball', 'Fireball', 'fire,concentrate,manipulate', 3, 0, '" + tr_arc_pri + "', 'Reflex', 0, 'fire', 1, 2, 'A roaring blast of fire appears at a spot you designate, dealing 6d6 fire damage.', '');")
+		
+	db.query("INSERT OR IGNORE INTO spell_variants (spell_id, action_cost, spell_range, target, duration, damage_dice, damage_faces, applied_conditions, special_effects) VALUES 
+		('fireball', 2, 500, '20-foot burst', '', 6, 6, '[]', '');")
 	
 	db.query("INSERT OR IGNORE INTO spell_variants (spell_id, action_cost, spell_range, target, duration, damage_dice, damage_faces, applied_conditions, special_effects) VALUES 
 		('creation', 4, 0, '', '1 hour', 0, 0, '[]', '');")

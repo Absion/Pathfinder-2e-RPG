@@ -1,4 +1,4 @@
-﻿# pf_downtime_manager.gd
+# pf_downtime_manager.gd
 class_name PFDowntimeManager
 extends Node
 
@@ -106,7 +106,7 @@ func _complete_task(actor: PFActor, task: Dictionary) -> void:
 				var gold = t_level * 5
 				if degree == PFCombatConstants.DegreeOfSuccess.CRITICAL_SUCCESS: gold *= 2
 				print("    > [Downtime] %s successfully earned %d gold!" % [actor.entity_name, gold])
-				actor.inventory.copper_pieces += gold * 100 # converting to copper
+				actor.inventory.copper += gold * 100 # converting to copper
 			else:
 				print("    > [Downtime] %s failed to earn any income." % actor.entity_name)
 		"retraining":

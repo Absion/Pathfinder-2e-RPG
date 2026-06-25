@@ -1,4 +1,4 @@
-﻿# pf_spell.gd
+# pf_spell.gd
 ## Represents a magical spell that can be cast by an actor.
 class_name PFSpell
 extends PFEntity
@@ -10,6 +10,7 @@ var targets: String
 var saving_throw: String
 var duration: String
 var is_cantrip: bool
+var is_sustained: bool
 var description: String
 var script_path: String
 
@@ -30,9 +31,9 @@ func _init(p_id: StringName):
 		
 	var spell_traits: Array[StringName] = []
 	if s_data["traits"] and s_data["traits"] != "":
-		var parsed = JSON.parse_string(s_data["traits"])
+		var parsed = s_data["traits"].split(",", false)
 		if parsed:
-			for t in parsed: spell_traits.append(StringName(t))
+			for t in parsed: spell_traits.append(StringName(t.strip_edges()))
 			
 	entity_name = str(s_data["name"])
 	traits = spell_traits
@@ -45,6 +46,12 @@ func _init(p_id: StringName):
 	saving_throw = str(s_data.get(&"saving_throw", ""))
 	duration = str(s_data.get(&"duration", ""))
 	is_cantrip = int(s_data.get(&"is_cantrip", 0)) == 1
+	
+	if duration != null and duration.to_lower().contains("sustained"):
+		is_sustained = true
+	else:
+		is_sustained = false
+		
 	description = str(s_data.get(&"description", ""))
 	
 	scaling_rules = int(s_data.get(&"scaling_rules", 0))
@@ -69,6 +76,10 @@ func get_saving_throw() -> StringName:
 	if saving_throw == "":
 		return &""
 	return StringName(saving_throw.to_lower())
+
+## Called when the spell is successfully sustained. Subclasses can override this.
+func on_sustain(caster: PFActor, ___target: PFActor = null) -> void:
+	print("    > %s sustains %s!" % [caster.entity_name, entity_name])
 
 ## Default effect resolution for spells.
 ## Can be overridden by custom spell scripts attached to complex spells.

@@ -1,4 +1,4 @@
-﻿# pf_inventory.gd
+# pf_inventory.gd
 ## Component that safely manages an actor's equipped items and total bulk.
 class_name PFInventory
 extends RefCounted
@@ -348,10 +348,14 @@ func _calculate_container_contents(container: PFItem) -> int:
 	return total
 
 func get_encumbered_limit() -> int:
+	# Note: In Pathfinder 2e, Light Bulk (L) is 0.1 Bulk.
+	# To avoid floating point math errors, our system multiplies all bulk values by 10 internally.
+	# Therefore, 1 Bulk = 10, 1 Light Bulk = 1. The encumbrance limit of 5 Bulk becomes 50.
 	var str_mod = owner.attributes.str_mod if "attributes" in owner and owner.attributes else 0
 	return (5 + str_mod) * 10
 
 func get_maximum_bulk_limit() -> int:
+	# See note above on why we multiply by 10 (base limit is 10 + str modifier).
 	var str_mod = owner.attributes.str_mod if "attributes" in owner and owner.attributes else 0
 	return (10 + str_mod) * 10
 

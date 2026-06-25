@@ -1,7 +1,9 @@
-﻿# pf_hazard.gd
+# pf_hazard.gd
 ## Represents a Trap, Environmental Hazard, or Haunt.
 class_name PFHazard
 extends PFActor
+
+
 
 enum Complexity {
 	SIMPLE,
@@ -33,6 +35,8 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int, p_hp: int,
 	has_spirit = p_traits.has(&"haunt")
 	
 	health.hp_changed.connect(_on_hp_changed)
+
+@warning_ignore("integer_division")
 
 func _on_hp_changed(current_hp: int, max_hp: int) -> void:
 	if current_hp <= 0 and not is_destroyed:
@@ -93,5 +97,5 @@ func attempt_disable(skill_used: StringName, degree_of_success: int) -> bool:
 func get_ac() -> int:
 	return 10 + level # Placeholder basic scaling, real hazards pull from their DB statblock
 	
-func get_save_bonus(save_type: StringName) -> int:
+func get_save_bonus(__save_type: StringName) -> int:
 	return level # Placeholder basic scaling

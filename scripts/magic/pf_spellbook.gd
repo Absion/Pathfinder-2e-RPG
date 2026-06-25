@@ -111,6 +111,10 @@ func learn_spell(spell: PFSpell) -> void:
 	if not known_spells.has(spell):
 		known_spells.append(spell)
 		print("    > %s learned %s" % [owner.entity_name, spell.entity_name])
+		
+		# In PF2e, gaining a focus spell automatically increases your focus pool by 1 (max 3).
+		if spell.has_trait(&"focus"):
+			increase_max_focus_points(1)
 
 func add_to_repertoire(spell: PFSpell, rank: int) -> bool:
 	if get_caster_type() != PFMagicConstants.CasterType.SPONTANEOUS:
@@ -186,6 +190,10 @@ func restore_daily_slots() -> void:
 
 # --- FOCUS POINTS ---
 
+func increase_max_focus_points(amount: int = 1) -> void:
+	max_focus_points = clampi(max_focus_points + amount, 0, 3)
+	print("    > %s increased max Focus Points to %d." % [owner.entity_name, max_focus_points])
+
 func spend_focus_point() -> bool:
 	if focus_points > 0:
 		focus_points -= 1
@@ -227,6 +235,7 @@ func cast_spell(spell: PFSpell, rank_cast_at: int = -1) -> bool:
 	# INNATE SPELLS
 	if innate_spells.has(actual_rank) and spell in innate_spells[actual_rank]:
 		print("%s successfully casts the innate spell %s at Rank %d!" % [owner.entity_name, spell.entity_name, actual_rank])
+		_register_sustained(spell)
 		return true
 	
 	var caster_type = get_caster_type()
@@ -235,6 +244,7 @@ func cast_spell(spell: PFSpell, rank_cast_at: int = -1) -> bool:
 		if prepared_spells.has(actual_rank) and prepared_spells[actual_rank].has(spell):
 			prepared_spells[actual_rank].erase(spell)
 			print("%s successfully casts %s at Rank %d! (Slot expended)" % [owner.entity_name, spell.entity_name, actual_rank])
+			_register_sustained(spell)
 			return true
 		else:
 			print("    > [ERROR] %s does not have %s prepared at Rank %d!" % [owner.entity_name, spell.entity_name, actual_rank])
@@ -250,6 +260,7 @@ func cast_spell(spell: PFSpell, rank_cast_at: int = -1) -> bool:
 		if can_cast:
 			if expend_slot(actual_rank):
 				print("%s successfully casts %s at Rank %d!" % [owner.entity_name, spell.entity_name, actual_rank])
+				_register_sustained(spell)
 				return true
 			return false
 		else:
@@ -258,3 +269,24 @@ func cast_spell(spell: PFSpell, rank_cast_at: int = -1) -> bool:
 
 	print("    > [ERROR] %s cannot cast spells of this type." % owner.entity_name)
 	return false
+
+func _register_sustained(spell: PFSpell) -> void:
+	if not spell.is_sustained:
+		return
+		
+	var tm = PFContext.active_turn_manager
+	if not tm:
+		return
+		
+	if not tm.active_sustained_spells.has(owner):
+		tm.active_sustained_spells[owner] = []
+		
+	if not tm.active_sustained_spells[owner].has(spell):
+		tm.active_sustained_spells[owner].append(spell)
+		print("    > %s can sustain %s on future turns." % [owner.entity_name, spell.entity_name])
+	
+	# Mark it as sustained this turn so it doesn't immediately expire
+	if not tm.spells_sustained_this_turn.has(owner):
+		tm.spells_sustained_this_turn[owner] = []
+	if not tm.spells_sustained_this_turn[owner].has(spell):
+		tm.spells_sustained_this_turn[owner].append(spell)

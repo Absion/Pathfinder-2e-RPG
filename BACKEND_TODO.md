@@ -15,14 +15,14 @@ These features give martial characters and skill-monkeys their tactical depth.
 
 ## Phase 3: The Stealth Subsystem
 This phase relies entirely on Phase 1's Cover mechanics.
-- [ ] **Stealth States**: Manage the transitions between *Observed*, *Hidden*, *Undetected*, and *Unnoticed*.
-- [ ] **Stealth Actions**: Implement *Hide*, *Sneak*, and *Seek*.
-- [ ] **Advanced Senses**: Implement Darkvision, Low-light vision, Scent, and Tremorsense interactions with stealth.
+- [x] **Stealth States**: Manage the transitions between *Observed*, *Hidden*, *Undetected*, and *Unnoticed*.
+- [x] **Stealth Actions**: Implement *Hide*, *Sneak*, and *Seek*.
+- [x] **Advanced Senses**: Implement Darkvision, Low-light vision, Scent, and Tremorsense interactions with stealth.
 
 ## Phase 4: Advanced Magic
-- [ ] **The Counteract Subsystem**: A unified manager for *Dispel Magic*, *Counterspell*, and treating severe diseases.
-- [ ] **Sustained Spells**: Logic for spending actions to maintain a spell's effect or move its area (e.g., *Flaming Sphere*).
-- [ ] **Focus Points**: Implement the 3-point focus pool, Focus Spells, and the *Refocus* exploration activity.
+- [x] **The Counteract Subsystem**: A unified manager for *Dispel Magic*, *Counterspell*, and treating severe diseases.
+- [x] **Sustained Spells**: Logic for spending actions to maintain a spell's effect or move its area (e.g., *Flaming Sphere*).
+- [x] **Focus Points**: Implement the 3-point focus pool, Focus Spells, and the *Refocus* exploration activity.
 
 ## Phase 5: Afflictions & Sub-Entities
 - [ ] **Affliction Stages**: Implement the rigid "Stage" system for diseases and poisons, progressing stages on failed saving throws.

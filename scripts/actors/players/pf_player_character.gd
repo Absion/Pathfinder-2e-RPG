@@ -1,4 +1,4 @@
-﻿# pf_player_character.gd
+# pf_player_character.gd
 ## A player-controlled character built using standard proficiency matrix mathematics.
 class_name PFPlayerCharacter
 extends PFActor
@@ -271,6 +271,7 @@ func apply_class(class_id: StringName) -> void:
 		c_data["spell_proficiency"] as PFMathConstants.ProficiencyRank,
 		c_data["spell_progression"] as PFMagicConstants.SpellProgression
 	)
+	actor_class.id = class_id
 	
 	if c_data["key_abilities"] and c_data["key_abilities"] != "":
 		var parsed = JSON.parse_string(c_data["key_abilities"])
@@ -549,6 +550,7 @@ func gain_experience(amount: int) -> void:
 	while experience_points >= 1000:
 		experience_points -= 1000
 		var choices = PFLevelUpManager.generate_level_up_blueprint(self)
+		level += 1
 		pending_level_up_choices.append(choices)
 		leveled_up.emit(level, choices)
 

@@ -28,6 +28,7 @@ var dice_amount: int
 var die_faces: int
 var base_damage_type: PFCombatConstants.DamageType
 var active_damage_type: PFCombatConstants.DamageType 
+var flat_damage_bonus: int = 0
 var deadly_die: int
 var fatal_die: int
 

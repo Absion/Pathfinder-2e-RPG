@@ -1,4 +1,4 @@
-﻿# pf_level_up_service.gd
+# pf_level_up_service.gd
 ## A Sandbox Builder for managing a character's pending level up transaction without mutating the character until confirmed.
 class_name PFLevelUpService
 extends RefCounted
@@ -29,8 +29,8 @@ func get_available_feats(slot_type: StringName) -> Array[Dictionary]:
 	if not db: return []
 	
 	# Fetch all feats from the database
-	db.db.query("SELECT * FROM feats")
-	var all_feats = db.db.query_result
+	db.query("SELECT * FROM feats")
+	var all_feats = db.query_result
 	var valid_feats: Array[Dictionary] = []
 	
 	for row in all_feats:

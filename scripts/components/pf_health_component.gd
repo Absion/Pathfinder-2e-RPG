@@ -1,4 +1,4 @@
-﻿# pf_health_component.gd
+# pf_health_component.gd
 ## Tracks hit points, temporary hit points, and dying rules.
 class_name PFHealthComponent
 extends PFComponent
@@ -56,12 +56,12 @@ func initialize(p_max_hp: int):
 	current_hp = max_hp
 
 func apply_damage(amount: int, type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.UNTYPED, tags: Array[StringName] = []) -> int:
-	var triggered_immunity = false
+	var _triggered_immunity = false
 	var triggered_weakness = false
-	var triggered_resistance = false
+	var _triggered_resistance = false
 	
 	if immunities.has(type):
-		triggered_immunity = true
+		_triggered_immunity = true
 		return 0 # Completely immune
 		
 	var final_damage = amount
@@ -79,12 +79,12 @@ func apply_damage(amount: int, type: PFCombatConstants.DamageType = PFCombatCons
 			
 	# Handle Resistances
 	if resistances.has(type):
-		triggered_resistance = true
+		_triggered_resistance = true
 		final_damage = max(0, final_damage - resistances[type])
 		
 	for tag in tags:
 		if trait_resistances.has(tag):
-			triggered_resistance = true
+			_triggered_resistance = true
 			final_damage = max(0, final_damage - trait_resistances[tag])
 			
 	# Apply Hardness (objects/hazards/shields)

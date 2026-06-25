@@ -14,6 +14,7 @@ class CombatantRecord extends RefCounted:
 	var initiative_roll: int
 	var initiative_modifier: int
 	var initiative_skill: StringName
+	var initiative_tie_breaker_roll: int
 	var force_first: bool = false
 	var force_last: bool = false
 	
@@ -23,12 +24,19 @@ class CombatantRecord extends RefCounted:
 		initiative_skill = p_skill
 		initiative_roll = 0
 		initiative_modifier = 0
+		initiative_tie_breaker_roll = 0
 
 var combatants: Array[CombatantRecord] = []
 var delayed_combatants: Array[CombatantRecord] = []
 var current_turn_index: int = -1
 var round_number: int = 0
 var in_encounter: bool = false
+
+# --- SUSTAINED SPELLS ---
+# { PFActor: Array[PFSpell] }
+var active_sustained_spells: Dictionary = {}
+# { PFActor: Array[PFSpell] } - Tracks which spells were sustained THIS turn
+var spells_sustained_this_turn: Dictionary = {}
 
 func add_combatant(actor: PFActor, is_enemy: bool = false, skill: StringName = &"perception") -> void:
 	# Check if they are already in the array
@@ -43,6 +51,7 @@ func roll_initiative() -> void:
 		# Base skill modifier + any specific status/circumstance bonuses to "initiative" (e.g. from Scouting)
 		c.initiative_modifier = c.actor.get_skill_bonus(c.initiative_skill) + c.actor.get_condition_modifier(&"initiative")
 		c.initiative_roll = randi_range(1, 20) + c.initiative_modifier
+		c.initiative_tie_breaker_roll = randi()
 		
 		# Check for feats or conditions that force first/last
 		if c.actor.has_condition("initiative_first"):
@@ -74,8 +83,12 @@ func _compare_initiative(a: CombatantRecord, b: CombatantRecord) -> bool:
 		# Enemies win ties
 		return a.is_enemy
 		
-	# Random tie breaker if perfectly tied and same faction
-	return randi() % 2 == 0
+	# True random tie breaker for matching teams (deterministic per initiative roll)
+	if a.initiative_tie_breaker_roll != b.initiative_tie_breaker_roll:
+		return a.initiative_tie_breaker_roll > b.initiative_tie_breaker_roll
+		
+	# Ultimate stable tie breaker if perfectly tied in random roll as well
+	return a.actor.get_instance_id() > b.actor.get_instance_id()
 
 func start_encounter() -> void:
 	if combatants.is_empty():
@@ -99,6 +112,29 @@ func next_turn() -> void:
 	print("--- %s ends their turn. ---" % current_actor.entity_name)
 	if current_actor.has_method(&"end_turn"):
 		current_actor.end_turn()
+		
+	# Process Sustained Spells Expiration
+	if active_sustained_spells.has(current_actor):
+		var active_spells = active_sustained_spells[current_actor]
+		var sustained_this_turn = []
+		if spells_sustained_this_turn.has(current_actor):
+			sustained_this_turn = spells_sustained_this_turn[current_actor]
+			
+		var i = active_spells.size() - 1
+		while i >= 0:
+			var spell = active_spells[i]
+			if not sustained_this_turn.has(spell):
+				print("    > %s failed to sustain %s. The effect expires!" % [current_actor.entity_name, spell.entity_name])
+				active_spells.remove_at(i)
+			i -= 1
+			
+		if active_spells.is_empty():
+			active_sustained_spells.erase(current_actor)
+			
+	# Clear the tracking array for this actor
+	if spells_sustained_this_turn.has(current_actor):
+		spells_sustained_this_turn[current_actor].clear()
+		
 	turn_ended.emit(current_actor)
 	
 	# Advance index

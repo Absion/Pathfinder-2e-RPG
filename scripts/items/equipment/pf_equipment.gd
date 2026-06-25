@@ -1,4 +1,4 @@
-﻿# pf_equipment.gd
+# pf_equipment.gd
 ## Represents permanent equipment like Wands, Rings, Boots.
 class_name PFEquipment
 extends PFItem
@@ -15,7 +15,7 @@ func _init(p_id: String):
 	var db = PFDatabase.get_instance()
 	if not db: return
 	
-	var data = db.query("SELECT * FROM equipment WHERE id = ?", [p_id])
+	var data = db.select_with_bindings("SELECT * FROM equipment WHERE id = ?", [p_id])
 	if data and data.size() > 0:
 		var item_data = data[0]
 		
@@ -76,8 +76,9 @@ func on_equipped(wearer: PFActor) -> void:
 			_:
 				# Assume it's a skill
 				var short_name = StringName(stat_name)
-				if wearer.sheet.skill_modifiers.has(short_name):
-					wearer.sheet.skill_modifiers[short_name].add_modifier(mod)
+				# TODO: Implement PFStat tracking for skills so items can add modifiers
+				#if wearer.sheet.skill_modifiers.has(short_name):
+				#	wearer.sheet.skill_modifiers[short_name].add_modifier(mod)
 					
 		_active_modifiers.append(mod)
 
@@ -99,7 +100,8 @@ func on_unequipped(wearer: PFActor) -> void:
 		if "will_save" in wearer.attributes:
 			wearer.attributes.will_save.remove_modifier_by_source(mod.source)
 			
-		for stat in wearer.sheet.skill_modifiers.values():
-			stat.remove_modifier_by_source(mod.source)
+		# TODO: Implement PFStat tracking for skills so items can add modifiers
+		#for stat in wearer.sheet.skill_modifiers.values():
+		#	stat.remove_modifier_by_source(mod.source)
 			
 	_active_modifiers.clear()

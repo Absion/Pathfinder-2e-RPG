@@ -14,6 +14,7 @@ static var root_node: Node
 static var detection_manager: PFDetectionManager
 static var reaction_manager: PFReactionManager
 static var environment_manager: PFEnvironmentManager
+static var counteract_manager: PFCounteractManager
 static var active_turn_manager: PFTurnManager
 
 ## Initializes shared static services that persist across both Combat and Overworld contexts
@@ -29,6 +30,10 @@ static func init_shared_services() -> void:
 	if environment_manager == null:
 		environment_manager = PFEnvironmentManager.new()
 		Engine.get_main_loop().root.add_child.call_deferred(environment_manager)
+		
+	if counteract_manager == null:
+		counteract_manager = PFCounteractManager.new()
+		Engine.get_main_loop().root.add_child.call_deferred(counteract_manager)
 
 ## Ask the TimeManager to rest the entire party.
 static func request_rest(hours: int = 8) -> void:

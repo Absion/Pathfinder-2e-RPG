@@ -11,7 +11,7 @@ func on_apply(owner: PFActor) -> bool:
 	# Apply clumsy 1
 	if not owner.has_condition("clumsy"):
 		var clumsy = PFCondition.create(&"clumsy", 1)
-		owner.add_condition(clumsy)
+		owner.apply_condition(clumsy)
 	else:
 		# If they are already clumsy, encumbered doesn't overwrite a higher clumsy,
 		# but if they are clumsy 1, it just stacks via max().

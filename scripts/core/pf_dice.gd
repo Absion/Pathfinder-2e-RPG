@@ -35,8 +35,8 @@ static func roll_d20() -> int:
 	return roll(1, 20).total
 
 # The core PF2e Success Logic (+10 is Crit, -10 is Crit Fail)
-static func determine_success(roll_total: int, target_dc: int, natural_roll: int) -> Degree:
-	var degree: int
+static func determine_success(roll_total: int, target_dc: int, natural_roll: int = 10) -> Degree:
+	var degree: Degree
 	
 	# 1. Determine base success purely off the math
 	if roll_total >= target_dc + 10:

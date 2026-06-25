@@ -22,10 +22,10 @@ func _init(p_type: PFCombatConstants.DamageType, p_dice: int, p_faces: int, p_mu
 	var type_name = PFDamage.get_type_name(damage_type)
 	var condition_title = "Persistent " + type_name
 	
-	# The Stacking Trick: We multiply the max potential damage by the crit multiplier
 	var max_damage_potential = (p_dice * p_faces) * damage_multiplier 
 	
-	super._init(condition_title, max_damage_potential)
+	super._init(&"persistent_damage", max_damage_potential)
+	condition_name = condition_title
 
 # NEW: Reject the condition if the owner is immune!
 func on_apply(owner: PFActor) -> bool:

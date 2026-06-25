@@ -30,24 +30,24 @@ func execute(user: PFActor, target: PFActor = null) -> Variant:
 	
 	var success_count = 0
 	
-	for target in target_actors:
-		var current_state = PFContext.detection_manager.get_detection_state(user, target)
+	for tgt in target_actors:
+		var current_state = PFContext.detection_manager.get_detection_state(user, tgt)
 		
 		# If they are already observed, Seeking doesn't do anything to them
 		if current_state == PFCombatConstants.DetectionState.OBSERVED:
 			continue
 			
-		var stealth_dc = target.get_skill_bonus(&"stealth") + 10
+		var stealth_dc = tgt.get_skill_bonus(&"stealth") + 10
 		var degree = PFDice.determine_success(total, stealth_dc, roll)
 		
 		if degree == PFDice.Degree.CRIT_SUCCESS:
-			PFContext.detection_manager.set_detection_state(user, target, PFCombatConstants.DetectionState.OBSERVED)
+			PFContext.detection_manager.set_detection_state(user, tgt, PFCombatConstants.DetectionState.OBSERVED)
 			success_count += 1
 		elif degree == PFDice.Degree.SUCCESS:
 			if current_state == PFCombatConstants.DetectionState.UNDETECTED or current_state == PFCombatConstants.DetectionState.UNNOTICED:
-				PFContext.detection_manager.set_detection_state(user, target, PFCombatConstants.DetectionState.HIDDEN)
+				PFContext.detection_manager.set_detection_state(user, tgt, PFCombatConstants.DetectionState.HIDDEN)
 			elif current_state == PFCombatConstants.DetectionState.HIDDEN:
-				PFContext.detection_manager.set_detection_state(user, target, PFCombatConstants.DetectionState.OBSERVED)
+				PFContext.detection_manager.set_detection_state(user, tgt, PFCombatConstants.DetectionState.OBSERVED)
 			success_count += 1
 			
 	return success_count > 0

@@ -302,6 +302,9 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	var damage_result = PFDice.roll(weapon.dice_amount, current_die_faces)
 	var damage_stat = user.get_strike_damage_bonus(weapon)
 	
+	if "flat_damage_bonus" in weapon:
+		damage_stat += weapon.flat_damage_bonus
+	
 	var has_splash = weapon.has_trait(&"splash")
 	if has_splash:
 		damage_stat = 0 # Splash weapons don't add Strength modifier to damage roll

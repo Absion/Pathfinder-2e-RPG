@@ -38,7 +38,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	var roll = PFDice.roll(1, 20).total + modifier
 	
 	var dc = PFGameMath.get_dc_by_level(target.level)
-	var rarity = target.get(&"rarity") if target.get(&"rarity") else &"common"
+	var _rarity = target.get(&"rarity") if target.get(&"rarity") else &"common"
 	match rarity:
 		&"uncommon": dc += 2
 		&"rare": dc += 5
@@ -168,7 +168,7 @@ func _get_random_unmatched_damage_type(actual_list: Array) -> String:
 	return "fire" # Fallback
 
 func _determine_skill_for_target(target: PFActor) -> StringName:
-	var traits = target.traits if "traits" in target else []
+	var _traits = target.traits if "traits" in target else []
 	var string_traits = []
 	for t in traits:
 		string_traits.append(str(t).to_lower())

@@ -1,3 +1,4 @@
+
 # pf_combat_grid.gd
 ## Renders the tactical battlefield and calculates PF2E diagonal distance math.
 class_name PFCombatGrid
@@ -130,6 +131,7 @@ func clear_highlights():
 	_highlighted_tiles.clear()
 	multimesh_instance.multimesh.instance_count = 0
 
+@warning_ignore("integer_division")
 func draw_base_grid(width: int = 50, height: int = 50):
 	var mm = base_grid_instance.multimesh
 	mm.instance_count = width * height

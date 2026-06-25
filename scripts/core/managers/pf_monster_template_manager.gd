@@ -1,4 +1,4 @@
-﻿class_name PFMonsterTemplateManager
+class_name PFMonsterTemplateManager
 extends Object
 
 ## Applies a Pathfinder 2e Monster Template to an NPC.
@@ -28,14 +28,14 @@ static func _apply_elite_adjustment(npc: PFNpc) -> void:
 	npc.monster_stats["perception"] = npc.monster_stats.get(&"perception", 0) + 2
 	
 	# Saves
-	npc.attributes.fortitude_base += 2
-	npc.attributes.reflex_base += 2
-	npc.attributes.will_base += 2
+	if npc.attributes.fort_save: npc.attributes.fort_save.base_value += 2
+	if npc.attributes.ref_save: npc.attributes.ref_save.base_value += 2
+	if npc.attributes.will_save: npc.attributes.will_save.base_value += 2
 	
 	# Damage +2
 	for item in npc.inventory.items:
 		if item is PFWeapon:
-			item.base_damage += 2
+			item.flat_damage_bonus += 2
 			
 	# HP adjustments based on the starting level (old_level)
 	var hp_adj = 0
@@ -48,8 +48,8 @@ static func _apply_elite_adjustment(npc: PFNpc) -> void:
 	else:
 		hp_adj = 30
 		
-	npc.max_hp += hp_adj
-	npc.current_hp += hp_adj
+	npc.health.max_hp += hp_adj
+	npc.health.current_hp += hp_adj
 
 static func _apply_weak_adjustment(npc: PFNpc) -> void:
 	var old_level = npc.level
@@ -63,14 +63,14 @@ static func _apply_weak_adjustment(npc: PFNpc) -> void:
 	npc.monster_stats["perception"] = npc.monster_stats.get(&"perception", 0) - 2
 	
 	# Saves
-	npc.attributes.fortitude_base -= 2
-	npc.attributes.reflex_base -= 2
-	npc.attributes.will_base -= 2
+	if npc.attributes.fort_save: npc.attributes.fort_save.base_value -= 2
+	if npc.attributes.ref_save: npc.attributes.ref_save.base_value -= 2
+	if npc.attributes.will_save: npc.attributes.will_save.base_value -= 2
 	
 	# Damage -2
 	for item in npc.inventory.items:
 		if item is PFWeapon:
-			item.base_damage = max(0, item.base_damage - 2)
+			item.flat_damage_bonus = max(0, item.flat_damage_bonus - 2)
 			
 	# HP adjustments based on the starting level (old_level)
 	var hp_adj = 0
@@ -83,5 +83,5 @@ static func _apply_weak_adjustment(npc: PFNpc) -> void:
 	else:
 		hp_adj = 30
 		
-	npc.max_hp = max(1, npc.max_hp - hp_adj)
-	npc.current_hp = max(1, npc.current_hp - hp_adj)
+	npc.health.max_hp = max(1, npc.health.max_hp - hp_adj)
+	npc.health.current_hp = max(1, npc.health.current_hp - hp_adj)

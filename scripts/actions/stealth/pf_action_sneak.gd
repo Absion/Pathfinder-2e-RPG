@@ -30,30 +30,30 @@ func execute(user: PFActor, target: PFActor = null) -> Variant:
 	
 	var success_count = 0
 	
-	for target in target_actors:
-		var current_state = PFContext.detection_manager.get_detection_state(target, user)
+	for tgt in target_actors:
+		var current_state = PFContext.detection_manager.get_detection_state(tgt, user)
 		
 		# You can only Sneak if you are Hidden or Undetected from the target
 		if current_state == PFCombatConstants.DetectionState.OBSERVED:
-			print("    > %s cannot Sneak past %s because they are already Observed!" % [user.entity_name, target.entity_name])
+			print("    > %s cannot Sneak past %s because they are already Observed!" % [user.entity_name, tgt.entity_name])
 			continue
 			
-		var perception_dc = target.get_skill_bonus(&"perception") + 10
+		var perception_dc = tgt.get_skill_bonus(&"perception") + 10
 		var degree = PFDice.determine_success(total, perception_dc, roll)
 		
 		if degree == PFDice.Degree.SUCCESS or degree == PFDice.Degree.CRIT_SUCCESS:
 			# Stay hidden/undetected
-			print("    > %s successfully sneaks past %s." % [user.entity_name, target.entity_name])
+			print("    > %s successfully sneaks past %s." % [user.entity_name, tgt.entity_name])
 			user.set_meta(&"is_sneaking", true)
 			success_count += 1
 		elif degree == PFDice.Degree.FAIL:
 			# If Undetected, become Hidden. If Hidden, become Observed.
 			if current_state == PFCombatConstants.DetectionState.UNDETECTED or current_state == PFCombatConstants.DetectionState.UNNOTICED:
-				PFContext.detection_manager.set_detection_state(target, user, PFCombatConstants.DetectionState.HIDDEN)
+				PFContext.detection_manager.set_detection_state(tgt, user, PFCombatConstants.DetectionState.HIDDEN)
 			else:
-				PFContext.detection_manager.set_detection_state(target, user, PFCombatConstants.DetectionState.OBSERVED)
+				PFContext.detection_manager.set_detection_state(tgt, user, PFCombatConstants.DetectionState.OBSERVED)
 		elif degree == PFDice.Degree.CRIT_FAIL:
 			# Automatically observed
-			PFContext.detection_manager.set_detection_state(target, user, PFCombatConstants.DetectionState.OBSERVED)
+			PFContext.detection_manager.set_detection_state(tgt, user, PFCombatConstants.DetectionState.OBSERVED)
 			
 	return success_count > 0

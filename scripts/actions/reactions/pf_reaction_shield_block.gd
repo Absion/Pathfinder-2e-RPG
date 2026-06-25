@@ -1,9 +1,9 @@
-﻿# pf_reaction_shield_block.gd
+# pf_reaction_shield_block.gd
 class_name PFReactionShieldBlock
 extends RefCounted
 
 ## Condition to check if Shield Block can be used
-static func condition(listener: PFActor, trigger_actor: PFActor, event_data: Dictionary) -> bool:
+static func condition(__trigger_actor: PFActor, event_data: Dictionary, listener: PFActor) -> bool:
 	var damage = event_data.get(&"damage", 0)
 	var type = event_data.get(&"type", PFCombatConstants.DamageType.UNTYPED)
 	
@@ -26,7 +26,7 @@ static func condition(listener: PFActor, trigger_actor: PFActor, event_data: Dic
 	return true
 
 ## Executes the Shield Block
-static func execute(listener: PFActor, trigger_actor: PFActor, event_data: Dictionary) -> Dictionary:
+static func execute(__trigger_actor: PFActor, event_data: Dictionary, listener: PFActor) -> Dictionary:
 	var damage = event_data.get(&"damage", 0)
 	var type = event_data.get(&"type", PFCombatConstants.DamageType.UNTYPED)
 	

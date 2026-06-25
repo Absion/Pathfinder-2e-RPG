@@ -56,7 +56,7 @@ static func generate_level_up_blueprint(actor: PFPlayerCharacter) -> Dictionary:
 						
 			# Spells
 			var spells_json = str(prog_data.get(&"granted_spells", "{}"))
-			if spells_json != "" and spells_json != "{}" and spells_json != "null":
+			if spells_json != "" and spells_json != "{}" and spells_json != "null" and spells_json != "<null>" and spells_json != "<Variant(null)>":
 				var spells_data = JSON.parse_string(spells_json)
 				if spells_data and typeof(spells_data) == TYPE_DICTIONARY:
 					if spells_data.has("spells_learned"):

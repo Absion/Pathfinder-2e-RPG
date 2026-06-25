@@ -1,4 +1,4 @@
-﻿# pf_reaction_grab_edge.gd
+# pf_reaction_grab_edge.gd
 ## Grab an Edge is a reaction triggered when you fall from or past an edge or handhold.
 class_name PFReactionGrabEdge
 extends RefCounted
@@ -10,7 +10,7 @@ static func register(actor: PFActor) -> void:
 		var exec = Callable(PFReactionGrabEdge, "execute").bind(actor)
 		PFContext.reaction_manager.register_listener(PFCombatConstants.ReactionTriggers.ON_FALL, actor, &"Grab an Edge", cond, exec)
 
-static func condition(listener: PFActor, _trigger_actor: PFActor, event_data: Dictionary) -> bool:
+static func condition(_trigger_actor: PFActor, event_data: Dictionary, listener: PFActor) -> bool:
 	# You can only grab an edge if YOU are the one falling
 	if event_data.get(&"falling_actor") != listener:
 		return false
@@ -27,7 +27,7 @@ static func condition(listener: PFActor, _trigger_actor: PFActor, event_data: Di
 		
 	return true
 
-static func execute(listener: PFActor, _trigger_actor: PFActor, event_data: Dictionary) -> Dictionary:
+static func execute(_trigger_actor: PFActor, event_data: Dictionary, listener: PFActor) -> Dictionary:
 	print("    > [REACTION] %s attempts to Grab an Edge!" % listener.entity_name)
 	
 	var edge_dc = event_data.get(&"edge_dc", 15) # Default DC if not provided

@@ -99,11 +99,11 @@ static func generate_npc(level: int, roadmap_name: String = "Brute") -> PFNpc:
 			damage_flat = sub_parts[1].to_int()
 			
 	var base_weapon = PFWeapon.new()
-	base_weapon.weapon_type = PFEquipmentConstants.WeaponType.UNARMED
-	base_weapon.damage_dice = damage_dice
-	base_weapon.damage_sides = damage_sides
-	base_weapon.damage_flat = damage_flat
-	base_weapon.item_name = "Strike"
+	base_weapon.weapon_type = PFEquipmentConstants.WeaponType.MELEE
+	base_weapon.dice_amount = damage_dice
+	base_weapon.die_faces = damage_sides
+	base_weapon.flat_damage_bonus = damage_flat
+	base_weapon.entity_name = "Strike"
 	
 	npc.inventory.add_item(base_weapon)
 	

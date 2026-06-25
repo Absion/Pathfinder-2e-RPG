@@ -25,10 +25,10 @@ func on_apply(owner: PFActor) -> bool:
 		# Let's use lambda functions for cleaner closure over `owner`.
 		
 		var cond_lambda = func(trigger_actor: PFActor, event_data: Dictionary) -> bool:
-			return PFReactionShieldBlock.condition(owner, trigger_actor, event_data)
+			return PFReactionShieldBlock.condition(trigger_actor, event_data, owner)
 			
 		var exec_lambda = func(trigger_actor: PFActor, event_data: Dictionary) -> Dictionary:
-			return await PFReactionShieldBlock.execute(owner, trigger_actor, event_data)
+			return await PFReactionShieldBlock.execute(trigger_actor, event_data, owner)
 			
 		PFContext.reaction_manager.register_listener(PFCombatConstants.ReactionTriggers.BEFORE_TAKE_DAMAGE, owner, &"Shield Block", cond_lambda, exec_lambda)
 	return true

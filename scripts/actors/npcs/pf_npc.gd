@@ -1,4 +1,4 @@
-﻿# pf_npc.gd
+# pf_npc.gd
 ## An enemy or friendly non-player character, scaling via Game Master Guide monster rules.
 class_name PFNpc
 extends PFActor
@@ -127,7 +127,6 @@ func get_save_bonus(save_type: StringName) -> int:
 		"reflex", "ref": base_save = attributes.ref_save.get_total()
 		"will": base_save = attributes.will_save.get_total()
 		
-	base_save -= attributes.item_penalty_to_save
 	return base_save
 
 func get_skill_dc(skill_name: StringName) -> int:

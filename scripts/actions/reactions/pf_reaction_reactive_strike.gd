@@ -1,8 +1,8 @@
-﻿# pf_reaction_reactive_strike.gd
+# pf_reaction_reactive_strike.gd
 class_name PFReactionReactiveStrike
 extends RefCounted
 
-static func condition(listener: PFActor, trigger_actor: PFActor, event_data: Dictionary) -> bool:
+static func condition(trigger_actor: PFActor, event_data: Dictionary, listener: PFActor) -> bool:
 	if trigger_actor == listener:
 		return false
 		
@@ -36,7 +36,7 @@ static func condition(listener: PFActor, trigger_actor: PFActor, event_data: Dic
 		
 	return true
 
-static func execute(listener: PFActor, trigger_actor: PFActor, event_data: Dictionary) -> Dictionary:
+static func execute(trigger_actor: PFActor, event_data: Dictionary, listener: PFActor) -> Dictionary:
 	print("    > [REACTION] %s uses Reactive Strike against %s!" % [listener.entity_name, trigger_actor.entity_name])
 	
 	# Reactive Strike is a free Strike action that doesn't increase MAP.

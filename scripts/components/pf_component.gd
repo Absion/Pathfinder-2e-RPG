@@ -4,6 +4,7 @@ class_name PFComponent
 extends Node
 
 # Emitted when this component's core state changes (e.g. Health changing)
+@warning_ignore("unused_signal")
 signal state_changed
 
 func _ready():

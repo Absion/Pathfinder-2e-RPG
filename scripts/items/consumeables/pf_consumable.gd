@@ -1,4 +1,4 @@
-﻿# pf_consumable.gd
+# pf_consumable.gd
 ## Represents an item that is consumed upon use (potions, elixirs, scrolls, ammunition).
 class_name PFConsumable
 extends PFItem
@@ -13,7 +13,7 @@ func _init(p_id: String):
 	var db = PFDatabase.get_instance()
 	if not db: return
 	
-	var data = db.query("SELECT * FROM consumables WHERE id = ?", [p_id])
+	var data = db.select_with_bindings("SELECT * FROM consumables WHERE id = ?", [p_id])
 	if data and data.size() > 0:
 		var item_data = data[0]
 		
@@ -21,7 +21,7 @@ func _init(p_id: String):
 		entity_name = item_data.get(&"name", "Unknown Consumable")
 		level = item_data.get(&"level", 1)
 		base_level = level
-		set_price_from_cp(item_data.get(&"price_cp", 0))
+		price_cp = item_data.get(&"price_cp", 0)
 		base_price_cp = price_cp
 		bulk_value = item_data.get(&"bulk", 1)
 		base_bulk_value = bulk_value
@@ -30,7 +30,9 @@ func _init(p_id: String):
 		if raw_traits != "":
 			var trait_strs = raw_traits.split(",")
 			for t in trait_strs:
-				add_trait(StringName(t.strip_edges()))
+				var new_trait = StringName(t.strip_edges())
+				if not traits.has(new_trait):
+					traits.append(new_trait)
 				
 		consumable_type = item_data.get(&"consumable_type", "")
 		charges = item_data.get(&"charges", 1)

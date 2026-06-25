@@ -1,4 +1,4 @@
-﻿# pf_action_interact_combination.gd
+# pf_action_interact_combination.gd
 class_name PFActionInteractCombination
 extends PFAction
 
@@ -32,10 +32,10 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 		# To toggle back, we need to re-query the base weapon stats or store them.
 		# Since the DB provides the fresh base stats, we can query it quickly.
 		var db = PFDatabase.get_instance()
-		if db and db.db:
-			db.db.query("SELECT * FROM weapons WHERE name = '" + weapon.base_name + "'") # or keep original ID if stored
-			if db.db.query_result.size() > 0:
-				_apply_stats_from_row(db.db.query_result[0])
+		if db:
+			db.query("SELECT * FROM weapons WHERE name = '" + weapon.base_name + "'") # or keep original ID if stored
+			if db.query_result.size() > 0:
+				_apply_stats_from_row(db.query_result[0])
 		weapon.is_alternate_form_active = false
 		
 	return true
