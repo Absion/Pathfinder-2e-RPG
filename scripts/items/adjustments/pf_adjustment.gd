@@ -1,8 +1,13 @@
-﻿# pf_adjustment.gd
+# pf_adjustment.gd
 ## A modification that alters an item. An item can typically only have one adjustment.
 class_name PFAdjustment
 extends PFItem
-var host_item: PFItem = null
+var host_item_ref: WeakRef = null
+
+func get_host_item() -> PFItem:
+	if host_item_ref and host_item_ref.get_ref():
+		return host_item_ref.get_ref() as PFItem
+	return null
 
 const SHIELD_AUG_PRIMARY_CHOICES: Array[StringName] = [&"backswing", &"forceful"]
 const SHIELD_AUG_SECONDARY_CHOICES: Array[StringName] = [&"disarm", &"nonlethal", &"shove", &"thrown_10", &"trip", &"versatile_s"]
@@ -35,7 +40,7 @@ func attach_to(item: PFItem) -> bool:
 		return false
 		
 	# Detach from current host if any
-	if host_item != null:
+	if get_host_item() != null:
 		detach()
 		
 	# Ensure the target can accept an adjustment
@@ -45,7 +50,7 @@ func attach_to(item: PFItem) -> bool:
 			return false
 			
 		item.adjustment = self
-		host_item = item
+		host_item_ref = weakref(item)
 		
 		# Apply granted traits
 		for t in granted_traits:
@@ -59,6 +64,7 @@ func attach_to(item: PFItem) -> bool:
 	return false
 
 func detach() -> void:
+	var host_item = get_host_item()
 	if host_item:
 		# Remove granted traits from host
 		for t in granted_traits:
@@ -68,7 +74,7 @@ func detach() -> void:
 			host_item.adjustment = null
 			
 		print("    > Removed adjustment %s from %s." % [entity_name, host_item.entity_name])
-		host_item = null
+		host_item_ref = null
 
 func _is_valid_host(item: PFItem) -> bool:
 	if valid_hosts.is_empty():

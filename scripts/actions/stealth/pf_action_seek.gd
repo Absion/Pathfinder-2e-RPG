@@ -37,7 +37,23 @@ func execute(user: PFActor, target: PFActor = null) -> Variant:
 		if current_state == PFCombatConstants.DetectionState.OBSERVED:
 			continue
 			
-		var stealth_dc = tgt.get_skill_bonus(&"stealth") + 10
+		var stealth_dc = 0
+		var min_prof = 0
+		
+		if tgt is PFHazard:
+			stealth_dc = tgt.stealth_dc
+			min_prof = tgt.stealth_min_proficiency
+		else:
+			stealth_dc = tgt.get_skill_bonus(&"stealth") + 10
+			
+		# Check minimum proficiency if applicable
+		if min_prof > PFMathConstants.ProficiencyRank.UNTRAINED:
+			var seeker_prof = PFMathConstants.ProficiencyRank.UNTRAINED
+			if "sheet" in user and user.sheet != null:
+				seeker_prof = user.sheet.get_skill_rank(&"perception")
+			if seeker_prof < min_prof:
+				continue # Automatically fail to find it
+				
 		var degree = PFDice.determine_success(total, stealth_dc, roll)
 		
 		if degree == PFDice.Degree.CRIT_SUCCESS:
