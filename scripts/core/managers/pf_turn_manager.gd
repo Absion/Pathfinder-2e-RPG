@@ -228,6 +228,12 @@ func get_enemies(actor: PFActor) -> Array[PFActor]:
 			enemies.append(c.actor)
 	return enemies
 
+func get_combatant_record(actor: PFActor) -> CombatantRecord:
+	for c in combatants:
+		if c.actor == actor:
+			return c
+	return null
+
 # --- DELAY LOGIC ---
 
 func delay_current_turn() -> bool:

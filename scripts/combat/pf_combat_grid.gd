@@ -173,3 +173,42 @@ static func get_distance_pf2e(pos1: Vector3, pos2: Vector3) -> int:
 	var total_units = straight_steps + diagonal_steps + floor(diagonal_steps / 2.0)
 	
 	return int(total_units * 5)
+
+## Checks if a grid position is occupied, accounting for PF2E overlap rules.
+func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: bool = true) -> bool:
+	if PFContext.active_turn_manager == null:
+		return false
+		
+	var snapped_target = Vector3(round(target_pos.x), 0, round(target_pos.z))
+	
+	for record in PFContext.active_turn_manager.combatants:
+		var actor = record.actor
+		if actor == mover:
+			continue
+			
+		var actor_pos = Vector3(round(actor.global_position.x), 0, round(actor.global_position.z))
+		
+		# If we aren't overlapping the XZ coordinate, it's free.
+		if actor_pos.distance_to(snapped_target) > 0.5:
+			continue
+			
+		# RULE 1: Swarms and Tiny creatures can share spaces.
+		var mover_is_swarm_or_tiny = mover != null and (mover.has_trait(&"swarm") or mover.size_id == &"tiny")
+		var target_is_swarm_or_tiny = actor.has_trait(&"swarm") or actor.size_id == &"tiny"
+		if mover_is_swarm_or_tiny or target_is_swarm_or_tiny:
+			continue
+			
+		# RULE 2: Flying or burrowing creates vertical separation. (Assuming Y threshold of 1.0 unit = 5ft)
+		if mover != null and abs(mover.global_position.y - actor.global_position.y) >= 1.0:
+			continue
+			
+		# RULE 3: You can move through an ally's space, but you cannot end your turn there.
+		if not end_of_move and mover != null:
+			var mover_record = PFContext.active_turn_manager.get_combatant_record(mover)
+			if mover_record and mover_record.is_enemy == record.is_enemy:
+				# It is an ally, we can pass through
+				continue
+				
+		return true
+		
+	return false

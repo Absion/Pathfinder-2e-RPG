@@ -27,7 +27,7 @@ This phase relies entirely on Phase 1's Cover mechanics.
 ## Phase 5: Afflictions & Sub-Entities
 - [x] **Affliction Stages**: Implement the rigid "Stage" system for diseases and poisons, progressing stages on failed saving throws.
 - [x] **Minions & Familiars**: Action economy sharing (Command an Animal) for autonomous pets.
-- [ ] **Swarms & Troops**: Specialized monster logic for area damage weaknesses and physical resistance.
+- [x] **Swarms & Troops**: Specialized monster logic for area damage weaknesses and physical resistance.
 
 ## Phase 6: Items & Economy
 - [ ] **Consumables**: Elixirs, Mutagens, and Talismans.
