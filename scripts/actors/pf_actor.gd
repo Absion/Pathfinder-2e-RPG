@@ -76,6 +76,15 @@ func _on_rested_for_night() -> void:
 		self.get(&"spellbook").restore_daily_slots()
 		print("    > %s recovers all daily spell slots." % entity_name)
 		
+	# Reset wands and prepare staves
+	if "inventory" in self and self.get(&"inventory") != null:
+		var inv = self.get(&"inventory")
+		for item in inv.items:
+			if item.has_method("reset_for_day"):
+				item.reset_for_day()
+			if item.has_method("clear_charges"):
+				item.clear_charges()
+		
 	# Sleeping in Armor Rule (Pathfinder 2e Remaster)
 	var armor = get_worn_armor()
 	if armor != null:

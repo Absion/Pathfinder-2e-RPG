@@ -41,10 +41,13 @@ func test_prepared_spellcasting():
 	caster.actor_class = char_class
 	caster.level = 1
 	var spellbook = PFSpellbook.new(caster)
+	var rep = PFSpellcastingReceptacle.new(&"test_class", char_class.spell_tradition, char_class.caster_type)
+	rep.spells_per_rank[1] = 2
+	spellbook.add_receptacle(rep)
 	caster.set(&"spellbook", spellbook)
 	
 	# Full Caster at level 1 gets 2 Rank 1 slots
-	assert_eq(spellbook.get_max_slots(1), 2)
+	assert_eq(rep.get_max_slots(1), 2)
 	
 	# Create a spell
 	var magic_missile = PFSpell.new(&"magic_missile")
@@ -69,17 +72,17 @@ func test_prepared_spellcasting():
 	var fireball = PFSpell.new(&"fireball")
 	fireball.base_spell_rank = 3
 	spellbook.learn_spell(fireball)
-	spellbook.extra_slots[3] = 1 # hack to give slot
-	assert_false(spellbook.cast_spell(fireball, 3)) # Cannot cast, not prepared
+	rep.spells_per_rank[3] = 1 # hack to give slot
+	assert_false(spellbook.cast_spell(fireball, null, 3)) # Cannot cast, not prepared
 	
 	# 6. Cast magic missile once
-	assert_true(spellbook.cast_spell(magic_missile, 1))
+	assert_true(spellbook.cast_spell(magic_missile, null, 1))
 	
 	# 7. Cast magic missile twice
-	assert_true(spellbook.cast_spell(magic_missile, 1))
+	assert_true(spellbook.cast_spell(magic_missile, null, 1))
 	
 	# 8. Cast magic missile third time (fails, slots empty)
-	assert_false(spellbook.cast_spell(magic_missile, 1))
+	assert_false(spellbook.cast_spell(magic_missile, null, 1))
 
 func test_spontaneous_spellcasting():
 	var char_class = PFClass.new("Sorcerer", 6, [&"charisma"])
@@ -90,6 +93,10 @@ func test_spontaneous_spellcasting():
 	caster.actor_class = char_class
 	caster.level = 3 # Level 3 full caster gets 3 Rank 1, 2 Rank 2
 	var spellbook = PFSpellbook.new(caster)
+	var rep = PFSpellcastingReceptacle.new(&"test_class", char_class.spell_tradition, char_class.caster_type)
+	rep.spells_per_rank[1] = 3
+	rep.spells_per_rank[2] = 2
+	spellbook.add_receptacle(rep)
 	caster.set(&"spellbook", spellbook)
 	spellbook.restore_daily_slots()
 	
@@ -106,11 +113,11 @@ func test_spontaneous_spellcasting():
 	assert_true(spellbook.add_to_repertoire(fireball, 2))
 	
 	# 1. Cast magic missile at rank 1 (success)
-	assert_true(spellbook.cast_spell(magic_missile, 1))
-	assert_eq(spellbook.current_slots[1], 2)
+	assert_true(spellbook.cast_spell(magic_missile, null, 1))
+	assert_eq(rep.get_available_slots(1), 2)
 	
 	# 2. Try to cast magic missile at rank 2 (fails, not in rank 2 repertoire and not signature)
-	assert_false(spellbook.cast_spell(magic_missile, 2))
+	assert_false(spellbook.cast_spell(magic_missile, null, 2))
 	
 	# 3. Set magic missile as signature
 	assert_true(spellbook.set_signature_spell(magic_missile))
@@ -122,15 +129,15 @@ func test_spontaneous_spellcasting():
 	assert_false(spellbook.set_signature_spell(grease)) # Cannot have 2 signature spells for rank 1
 	
 	# 5. Cast magic missile at rank 2 (success because it is signature now)
-	assert_true(spellbook.cast_spell(magic_missile, 2))
-	assert_eq(spellbook.current_slots[2], 1)
+	assert_true(spellbook.cast_spell(magic_missile, null, 2))
+	assert_eq(rep.get_available_slots(2), 1)
 	
 	# 6. Cast fireball at rank 2
-	assert_true(spellbook.cast_spell(fireball, 2))
-	assert_eq(spellbook.current_slots[2], 0)
+	assert_true(spellbook.cast_spell(fireball, null, 2))
+	assert_eq(rep.get_available_slots(2), 0)
 	
 	# 7. Cast fireball again at rank 2 (fails, out of slots)
-	assert_false(spellbook.cast_spell(fireball, 2))
+	assert_false(spellbook.cast_spell(fireball, null, 2))
 
 func test_learn_a_spell_action():
 	var char_class = PFClass.new("Wizard", 6, [&"intelligence"])
@@ -140,6 +147,8 @@ func test_learn_a_spell_action():
 	caster.actor_class = char_class
 	caster.level = 1
 	var spellbook = PFSpellbook.new(caster)
+	var rep = PFSpellcastingReceptacle.new(&"test_class", char_class.spell_tradition, char_class.caster_type)
+	spellbook.add_receptacle(rep)
 	caster.set(&"spellbook", spellbook)
 	
 	caster.inventory.gold = 10 # Rank 1 costs 2 GP
@@ -180,6 +189,9 @@ func test_divine_spellcasting():
 	caster.actor_class = char_class
 	caster.level = 1
 	var spellbook = PFSpellbook.new(caster)
+	var rep = PFSpellcastingReceptacle.new(&"test_class", char_class.spell_tradition, char_class.caster_type)
+	rep.spells_per_rank[1] = 2
+	spellbook.add_receptacle(rep)
 	caster.set(&"spellbook", spellbook)
 	
 	# Common divine spell

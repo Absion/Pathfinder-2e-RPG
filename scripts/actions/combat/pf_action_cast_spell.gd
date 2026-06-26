@@ -1,13 +1,15 @@
-﻿# pf_action_cast_spell.gd
+# pf_action_cast_spell.gd
 class_name PFActionCastSpell
 extends PFAction
 
 var spell: PFSpell
 var spell_rank: int
+var receptacle: PFSpellcastingReceptacle
 
-func _init(p_spell: PFSpell, p_rank: int = -1):
+func _init(p_spell: PFSpell, p_rank: int = -1, p_receptacle: PFSpellcastingReceptacle = null):
 	spell = p_spell
 	spell_rank = p_rank
+	receptacle = p_receptacle
 	
 	# Determine base action cost
 	var action_cost = PFCombatConstants.ActionCost.TWO_ACTIONS
@@ -49,7 +51,7 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	var spellbook = user.get(&"spellbook") as PFSpellbook
 	
 	# Try to spend resources
-	if not spellbook.cast_spell(spell, active_rank):
+	if not spellbook.cast_spell(spell, receptacle, active_rank):
 		return false # Failed to cast due to missing slot/focus point
 		
 	if target == null:

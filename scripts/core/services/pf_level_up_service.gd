@@ -38,7 +38,13 @@ func get_available_feats(slot_type: StringName) -> Array[Dictionary]:
 		var feat_type_enum = type_int as PFFeat.FeatType
 		
 		var feat_type_str = _feat_type_to_string(feat_type_enum)
-		if feat_type_str != slot_type and slot_type != "bonus":
+		
+		var is_valid_type = (feat_type_str == slot_type) or (slot_type == "bonus")
+		# Archetype feats can be taken in Class feat slots
+		if slot_type == "class" and feat_type_str == "archetype":
+			is_valid_type = true
+			
+		if not is_valid_type:
 			continue
 			
 		var required_level = row["level"] as int
@@ -174,3 +180,5 @@ func commit_transaction() -> void:
 		_actor.set(&"progression_history", {})
 		
 	_actor.progression_history[_actor.level] = history_entry
+	
+	PFLevelUpManager.recalculate_spell_slots(_actor)

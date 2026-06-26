@@ -42,12 +42,15 @@ func before_each() -> void:
 	caster.actor_class = mock_class
 	
 	var sb = PFSpellbook.new(caster)
+	var rep = PFSpellcastingReceptacle.new(&"mock", PFMagicConstants.MagicTradition.ARCANE, PFMagicConstants.CasterType.PREPARED)
+	rep.spells_per_rank[1] = 2
+	rep.spells_per_rank[3] = 2
+	rep.spells_per_rank[4] = 1
+	rep.restore_slots()
+	sb.add_receptacle(rep)
 	caster.set(&"spellbook", sb)
 	sb.max_focus_points = 2
 	sb.focus_points = 2
-	sb.current_slots[1] = 2
-	sb.current_slots[3] = 2
-	sb.current_slots[4] = 1
 
 func test_spell_attack_cantrip() -> void:
 	var spell = PFIgnitionSpell.new("mock_ignition")
@@ -78,7 +81,7 @@ func test_spell_attack_cantrip() -> void:
 	assert_between(damage_taken, 8, 32)
 	
 	# As a cantrip, it should not consume slots
-	assert_eq(sb.current_slots.get(1, 0), 2)
+	assert_eq(sb.receptacles[0].get_available_slots(1), 2)
 
 func test_saving_throw_spell() -> void:
 	var spell = PFSpell.new("mock_fireball")
@@ -87,9 +90,8 @@ func test_saving_throw_spell() -> void:
 	spell.damage_type = PFCombatConstants.DamageType.FIRE
 	
 	var sb = caster.get(&"spellbook") as PFSpellbook
-	if not sb.prepared_spells.has(4):
-		sb.prepared_spells[4] = []
-	sb.prepared_spells[4].append(spell)
+	sb.learn_spell(spell)
+	sb.prepare_spell(spell, 4)
 	
 	# Force the target to critically fail the save
 	# Caster spell DC = 10, Target save bonus = -50
@@ -111,7 +113,7 @@ func test_saving_throw_spell() -> void:
 	assert_between(damage_taken, 16, 96)
 	
 	# As a rank 4 spell for a prepared caster, the slot is expended by erasing the spell
-	assert_false(sb.prepared_spells[4].has(spell))
+	assert_false(sb.receptacles[0].prepared_spells[4].has(spell))
 
 func test_focus_points() -> void:
 	var spell = PFSpell.new("mock_lay_on_hands")

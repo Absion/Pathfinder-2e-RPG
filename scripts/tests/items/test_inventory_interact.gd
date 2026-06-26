@@ -82,3 +82,54 @@ func test_pick_up_and_release():
 	await action_release.execute(actor)
 	assert_true(potion.carry_state == PFEquipmentConstants.CarryState.DROPPED, "Potion should be DROPPED after Release")
 	assert_null(actor.inventory.held_main_hand, "Main hand should be empty")
+
+func test_swap_weapon():
+	actor.inventory.hold_item(sword, true)
+	var ActionInteract = load("res://scripts/actions/combat/pf_action_interact.gd")
+	var action_swap = ActionInteract.new(ActionInteract.InteractType.SWAP, sword, true, shield)
+	assert_true(action_swap.is_usable(actor), "Swap should be usable")
+	
+	await action_swap.execute(actor)
+	assert_true(sword.carry_state == PFEquipmentConstants.CarryState.WORN, "Sword should be stowed (WORN)")
+	assert_true(shield.carry_state == PFEquipmentConstants.CarryState.HELD, "Shield should be drawn (HELD)")
+	assert_eq(actor.inventory.held_main_hand, shield, "Shield should be in main hand")
+
+func test_pass_item():
+	var ally = PFPlayerCharacter.new("Ally", [], 1, 15, 0, 0, 0)
+	actor.inventory.hold_item(potion, true)
+	var ActionInteract = load("res://scripts/actions/combat/pf_action_interact.gd")
+	var action_pass = ActionInteract.new(ActionInteract.InteractType.PASS_OFF, potion, true)
+	assert_true(action_pass.is_usable(actor), "Pass off should be usable")
+	
+	await action_pass.execute(actor, ally)
+	assert_null(actor.inventory.held_main_hand, "Actor should not hold potion")
+	assert_eq(ally.inventory.held_main_hand, potion, "Ally should hold potion")
+	ally.queue_free()
+
+func test_throw_item():
+	var enemy = PFNpc.new("enemy_1", "Enemy", [&"humanoid"], 1, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+	actor.inventory.hold_item(potion, true)
+	var ActionInteract = load("res://scripts/actions/combat/pf_action_interact.gd")
+	var action_throw = ActionInteract.new(ActionInteract.InteractType.THROW, potion, true)
+	assert_true(action_throw.is_usable(actor), "Throw should be usable")
+	
+	await action_throw.execute(actor, enemy)
+	assert_null(actor.inventory.held_main_hand, "Actor should not hold potion")
+	assert_eq(potion.current_hp, 0, "Consumable potion should shatter")
+	enemy.queue_free()
+
+func test_change_grip():
+	actor.inventory.hold_item(sword, true)
+	var ActionInteract = load("res://scripts/actions/combat/pf_action_interact.gd")
+	var action_add_grip = ActionInteract.new(ActionInteract.InteractType.CHANGE_GRIP_ADD, sword, true)
+	assert_true(action_add_grip.is_usable(actor), "Add Grip should be usable")
+	
+	await action_add_grip.execute(actor)
+	assert_eq(actor.inventory.two_handed_item, sword, "Sword should be held in two hands")
+	assert_null(actor.inventory.held_main_hand, "Main hand should be empty as it's now a 2H item")
+	
+	var action_remove_grip = ActionInteract.new(ActionInteract.InteractType.CHANGE_GRIP_REMOVE, sword, true)
+	assert_true(action_remove_grip.is_usable(actor), "Remove Grip should be usable")
+	await action_remove_grip.execute(actor)
+	assert_eq(actor.inventory.held_main_hand, sword, "Sword should be back in main hand")
+	assert_null(actor.inventory.two_handed_item, "2H slot should be empty")

@@ -82,3 +82,98 @@ static func apply_class_feature(_actor: PFPlayerCharacter, feature_id: StringNam
 	
 	print("    > Applied Class Feature: %s" % feature_data["name"])
 	# Future: We can parse feature_data["granted_rules"] and programmatically apply effects
+
+static func recalculate_spell_slots(actor: PFPlayerCharacter) -> void:
+	if not actor.spellbook: return
+	
+	# Recalculate Class Receptacle Slots
+	if actor.actor_class and actor.actor_class.is_spellcaster:
+		var class_id = actor.actor_class.id
+		var class_rep: PFSpellcastingReceptacle = null
+		for rep in actor.spellbook.receptacles:
+			if rep.source_id == class_id:
+				class_rep = rep
+				break
+		
+		if class_rep:
+			class_rep.spells_per_rank.clear()
+			var prog = PFMagicConstants.FULL_CASTER_PROGRESSION if actor.actor_class.spell_progression == PFMagicConstants.SpellProgression.FULL_CASTER else PFMagicConstants.BOUNDED_CASTER_PROGRESSION
+			if prog.has(actor.level):
+				for rank in prog[actor.level].keys():
+					class_rep.spells_per_rank[rank] = prog[actor.level][rank]
+
+	# Parse feats for archetype magic progression
+	var archetype_levels = {}
+	for feat in actor.feats:
+		if feat.granted_rules.has("grant_archetype_spellcasting"):
+			var rule = feat.granted_rules["grant_archetype_spellcasting"]
+			var tradition = rule.get("tradition", PFMagicConstants.MagicTradition.NONE)
+			var caster_type = rule.get("caster_type", PFMagicConstants.CasterType.NONE)
+			var progression_tier = rule.get("progression", "basic")
+			var source_id = rule.get("source_id", "archetype_magic")
+			var is_bounded = rule.get("bounded", false)
+			
+			if not archetype_levels.has(source_id):
+				archetype_levels[source_id] = {
+					"tradition": tradition,
+					"caster_type": caster_type,
+					"tier": progression_tier,
+					"bounded": is_bounded
+				}
+			else:
+				# Upgrade tier
+				if progression_tier == "expert" and archetype_levels[source_id]["tier"] == "basic":
+					archetype_levels[source_id]["tier"] = "expert"
+				elif progression_tier == "master":
+					archetype_levels[source_id]["tier"] = "master"
+					
+	for source_id in archetype_levels:
+		var data = archetype_levels[source_id]
+		var rep: PFSpellcastingReceptacle = null
+		for r in actor.spellbook.receptacles:
+			if r.source_id == source_id:
+				rep = r
+				break
+		if not rep:
+			rep = PFSpellcastingReceptacle.new(source_id, data["tradition"], data["caster_type"])
+			actor.spellbook.add_receptacle(rep)
+			
+		# Apply slots
+		rep.spells_per_rank.clear()
+		
+		if data.get("bounded", false):
+			var table: Dictionary = {}
+			if data["tier"] == "master" and PFMagicConstants.ARCHETYPE_BOUNDED_MASTER_PROGRESSION.has(actor.level):
+				table = PFMagicConstants.ARCHETYPE_BOUNDED_MASTER_PROGRESSION[actor.level]
+			elif (data["tier"] == "expert" or data["tier"] == "master") and PFMagicConstants.ARCHETYPE_BOUNDED_EXPERT_PROGRESSION.has(actor.level):
+				table = PFMagicConstants.ARCHETYPE_BOUNDED_EXPERT_PROGRESSION[actor.level]
+			elif PFMagicConstants.ARCHETYPE_BOUNDED_BASIC_PROGRESSION.has(actor.level):
+				table = PFMagicConstants.ARCHETYPE_BOUNDED_BASIC_PROGRESSION[actor.level]
+				
+			for rank in table:
+				rep.spells_per_rank[rank] = table[rank]
+		else:
+			# 1. Basic Progression
+			if PFMagicConstants.ARCHETYPE_BASIC_PROGRESSION.has(actor.level):
+				var basic = PFMagicConstants.ARCHETYPE_BASIC_PROGRESSION[actor.level]
+				for rank in basic:
+					rep.spells_per_rank[rank] = rep.spells_per_rank.get(rank, 0) + basic[rank]
+			
+			# 2. Expert Progression
+			if (data["tier"] == "expert" or data["tier"] == "master") and PFMagicConstants.ARCHETYPE_EXPERT_PROGRESSION.has(actor.level):
+				var expert = PFMagicConstants.ARCHETYPE_EXPERT_PROGRESSION[actor.level]
+				for rank in expert:
+					rep.spells_per_rank[rank] = rep.spells_per_rank.get(rank, 0) + expert[rank]
+					
+			# 3. Master Progression
+			if data["tier"] == "master" and PFMagicConstants.ARCHETYPE_MASTER_PROGRESSION.has(actor.level):
+				var master = PFMagicConstants.ARCHETYPE_MASTER_PROGRESSION[actor.level]
+				for rank in master:
+					rep.spells_per_rank[rank] = rep.spells_per_rank.get(rank, 0) + master[rank]
+					
+		# 4. Proficiency
+		if data["tradition"] != PFMagicConstants.MagicTradition.NONE:
+			var target_rank = PFMathConstants.ProficiencyRank.TRAINED
+			if data["tier"] == "expert": target_rank = PFMathConstants.ProficiencyRank.EXPERT
+			elif data["tier"] == "master": target_rank = PFMathConstants.ProficiencyRank.MASTER
+			actor.sheet.set_spell_rank(data["tradition"], target_rank)

@@ -29,6 +29,13 @@ func before_each():
 	
 	caster.actor_class = PFClass.new("Wizard")
 	caster.actor_class.caster_type = PFMagicConstants.CasterType.SPONTANEOUS
+	
+	var sb = PFSpellbook.new(caster)
+	var rep = PFSpellcastingReceptacle.new(&"mock", PFMagicConstants.MagicTradition.ARCANE, PFMagicConstants.CasterType.SPONTANEOUS)
+	rep.spells_per_rank[1] = 3
+	rep.restore_slots()
+	sb.add_receptacle(rep)
+	caster.set(&"spellbook", sb)
 
 func after_each():
 	pass
@@ -58,8 +65,8 @@ func test_sustained_spells():
 	var spell = PFSpell.new(&"illusory_object")
 	spell.is_sustained = true
 	caster.spellbook.known_spells.append(spell)
-	caster.spellbook.repertoire[1] = [spell]
-	caster.spellbook.current_slots[1] = 1
+	caster.spellbook.receptacles[0].add_to_repertoire(spell, 1)
+	caster.spellbook.receptacles[0].restore_slots()
 	
 	# Start encounter
 	turn_manager.add_combatant(caster, false)
@@ -69,7 +76,7 @@ func test_sustained_spells():
 	assert_true(turn_manager.get_current_actor() == caster)
 	
 	# Cast spell
-	assert_true(caster.spellbook.cast_spell(spell, 1))
+	assert_true(caster.spellbook.cast_spell(spell, null, 1))
 	
 	# Verify it's registered
 	assert_true(turn_manager.active_sustained_spells.has(caster))
@@ -97,8 +104,8 @@ func test_sustained_spells():
 	assert_false(turn_manager.active_sustained_spells.has(caster))
 	
 	# Let's test actually sustaining it
-	caster.spellbook.current_slots[1] = 1
-	caster.spellbook.cast_spell(spell, 1)
+	caster.spellbook.receptacles[0].restore_slots()
+	caster.spellbook.cast_spell(spell, null, 1)
 	assert_true(turn_manager.active_sustained_spells.has(caster))
 	
 	# Advance to target's turn

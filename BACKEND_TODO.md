@@ -30,11 +30,17 @@ This phase relies entirely on Phase 1's Cover mechanics.
 - [x] **Swarms & Troops**: Specialized monster logic for area damage weaknesses and physical resistance.
 
 ## Phase 6: Items & Economy
-- [ ] **Interact & Carry States**: Differentiate between *Held*, *Worn*, and *Stowed* items, and implement the `PFActionInteract` to enforce the action economy (e.g., 1 action to draw, 2 to retrieve from backpack, 0 to release/drop).
-- [ ] **Item Damage**: Implement item durability, Hardness, and the *Broken* condition mechanics.
-- [ ] **Consumables**: Elixirs, Mutagens, and Talismans.
-- [ ] **Magical Staves & Wands**: Tracking staff charges and wand overcharging.
-- [ ] **Crafting Subsystem**: Downtime activity logic for crafting items from formulas.
+- [x] **Interact & Carry States**: Differentiate between *Held*, *Worn*, and *Stowed* items, and implement the `PFActionInteract` to enforce the action economy (e.g., 1 action to draw, 2 to retrieve from backpack, 0 to release/drop).
+- [x] **Item Damage**: Implement item durability, Hardness, and the *Broken* condition mechanics.
+- [x] **Consumables**: Elixirs, Mutagens, and Talismans.
+- [x] **Magical Staves & Wands**: Tracking staff charges and wand overcharging.
+- [x] **Crafting Subsystem**: Downtime activity logic for crafting items from formulas.
 
 ## Phase 7: Deep Character Progression
-- [ ] **Archetypes / Multiclassing**: Logic to select Dedication feats and merge spell slots across multiple traditions.
+- [x] **Archetypes / Multiclassing**: Logic to select Dedication feats and merge spell slots across multiple traditions.
+
+## Phase 8: Game Loop & Daily Preparation
+- [ ] **Daily Preparation Manager**: Create a unified manager (`PFDailyPrepManager`) for the Morning Rest cycle. 
+  - Allows actors to explicitly prepare their spells in their spellbook.
+  - Allows Prepared Casters to expend slots to charge magical staves.
+  - Resets Focus Points, Hit Points, and handles temporary item generation (Alchemist infusions, snare crafting).

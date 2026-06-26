@@ -288,8 +288,18 @@ func apply_class(class_id: StringName) -> void:
 	sheet.set_save_rank(&"ref", actor_class.saving_throws["ref"])
 	sheet.set_save_rank(&"will", actor_class.saving_throws["will"])
 	
+	if actor_class.is_spellcaster and actor_class.spell_tradition != PFMagicConstants.MagicTradition.NONE:
+		sheet.set_spell_rank(actor_class.spell_tradition, actor_class.spell_proficiency)
+	
+	spellbook = PFSpellbook.new(self)
 	if actor_class.is_spellcaster:
-		spellbook = PFSpellbook.new(self)
+		var rep = PFSpellcastingReceptacle.new(class_id, actor_class.spell_tradition, actor_class.caster_type)
+		# Provide slots using helper progression
+		var progression = PFMagicConstants.FULL_CASTER_PROGRESSION if actor_class.spell_progression == PFMagicConstants.SpellProgression.FULL_CASTER else PFMagicConstants.BOUNDED_CASTER_PROGRESSION
+		if progression.has(level):
+			for rank in progression[level].keys():
+				rep.spells_per_rank[rank] = progression[level][rank]
+		spellbook.add_receptacle(rep)
 		spellbook.restore_daily_slots()
 		
 	print("    > %s is now a Level %d %s! (Max HP: %d)" % [entity_name, level, actor_class.entity_name, health.max_hp])

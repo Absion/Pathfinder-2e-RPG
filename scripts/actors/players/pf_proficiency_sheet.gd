@@ -1,4 +1,4 @@
-﻿# pf_proficiency_sheet.gd
+# pf_proficiency_sheet.gd
 # A component attached to an actor that manages their specific proficiencies.
 ## Stores and calculates all proficiency ranks for a player's skills and saves.
 class_name PFProficiencySheet
@@ -8,6 +8,7 @@ var skills: Dictionary = {}
 var weapon_proficiencies: Dictionary = {}
 var armor_proficiencies: Dictionary = {}
 var saving_throws: Dictionary = {}
+var spell_proficiencies: Dictionary = {}
 
 func _init():
 	# Initialize Core Skills
@@ -34,6 +35,12 @@ func _init():
 	saving_throws[&"ref"] = PFMathConstants.ProficiencyRank.UNTRAINED
 	saving_throws[&"will"] = PFMathConstants.ProficiencyRank.UNTRAINED
 
+	# Default Spell Proficiencies
+	spell_proficiencies[PFMagicConstants.MagicTradition.ARCANE] = PFMathConstants.ProficiencyRank.UNTRAINED
+	spell_proficiencies[PFMagicConstants.MagicTradition.DIVINE] = PFMathConstants.ProficiencyRank.UNTRAINED
+	spell_proficiencies[PFMagicConstants.MagicTradition.OCCULT] = PFMathConstants.ProficiencyRank.UNTRAINED
+	spell_proficiencies[PFMagicConstants.MagicTradition.PRIMAL] = PFMathConstants.ProficiencyRank.UNTRAINED
+
 # ---------------------------------------------------------
 # SETTERS
 # ---------------------------------------------------------
@@ -59,6 +66,14 @@ func set_skill_rank(skill: StringName, rank: PFMathConstants.ProficiencyRank) ->
 		add_lore_skill(skill, rank)
 	else: 
 		push_error("Trying to set rank for invalid skill: " + skill)
+
+func set_spell_rank(tradition: PFMagicConstants.MagicTradition, rank: PFMathConstants.ProficiencyRank) -> void:
+	if spell_proficiencies.has(tradition):
+		# Only upgrade if the new rank is higher
+		if rank > spell_proficiencies[tradition]:
+			spell_proficiencies[tradition] = rank
+	else:
+		push_error("Trying to set rank for invalid tradition: " + str(tradition))
 
 func upgrade_skill(skill_name: StringName, character_level: int) -> bool:
 	# Add lore dynamically if needed

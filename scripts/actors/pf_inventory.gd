@@ -150,6 +150,34 @@ func wield_as_improvised(item: PFItem, main_hand: bool = true, damage_type: PFCo
 		add_item(item)
 	hold_item(improvised_weapon, main_hand)
 
+func pass_item(to_actor: PFActor, item: PFItem, from_main_hand: bool = true) -> void:
+	if not to_actor.inventory: return
+	release_item(from_main_hand)
+	items.erase(item)
+	to_actor.inventory.add_item(item)
+	
+	if to_actor.inventory.held_main_hand == null:
+		to_actor.inventory.hold_item(item, true)
+	elif to_actor.inventory.held_off_hand == null:
+		to_actor.inventory.hold_item(item, false)
+	else:
+		item.carry_state = PFEquipmentConstants.CarryState.DROPPED
+		
+func change_grip(to_two_handed: bool, item: PFItem) -> void:
+	if to_two_handed:
+		if held_main_hand == item and held_off_hand == null:
+			held_main_hand = null
+			two_handed_item = item
+		elif held_off_hand == item and held_main_hand == null:
+			held_off_hand = null
+			two_handed_item = item
+	else:
+		if two_handed_item == item:
+			two_handed_item = null
+			if held_main_hand == null:
+				held_main_hand = item
+			else:
+				held_off_hand = item
 # Add this method to allow feats/effects to modify the limit
 func set_max_invested_items(new_limit: int) -> void:
 	max_invested_items = new_limit
