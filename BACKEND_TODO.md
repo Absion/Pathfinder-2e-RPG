@@ -30,6 +30,8 @@ This phase relies entirely on Phase 1's Cover mechanics.
 - [x] **Swarms & Troops**: Specialized monster logic for area damage weaknesses and physical resistance.
 
 ## Phase 6: Items & Economy
+- [ ] **Interact & Carry States**: Differentiate between *Held*, *Worn*, and *Stowed* items, and implement the `PFActionInteract` to enforce the action economy (e.g., 1 action to draw, 2 to retrieve from backpack, 0 to release/drop).
+- [ ] **Item Damage**: Implement item durability, Hardness, and the *Broken* condition mechanics.
 - [ ] **Consumables**: Elixirs, Mutagens, and Talismans.
 - [ ] **Magical Staves & Wands**: Tracking staff charges and wand overcharging.
 - [ ] **Crafting Subsystem**: Downtime activity logic for crafting items from formulas.

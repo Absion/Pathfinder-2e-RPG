@@ -39,8 +39,8 @@ func after_each():
 
 func test_action_trigger_disruption():
 	# Alice attempts to cast a spell with manipulate trait
-	var interact = PFActionInteract.new()
-	
+	var item = PFItem.new()
+	var interact = PFActionInteract.new(PFActionInteract.InteractType.DRAW, item, true)
 	# Bob has a reactive strike that automatically disrupts manipulate actions on success
 	var condition_lambda = func(_trigger_actor: PFActor, _event_data: Dictionary) -> bool:
 		return _trigger_actor == actor_a

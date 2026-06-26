@@ -13,6 +13,11 @@ const RUNE_STATS = {
 	PFEquipmentConstants.ReinforcingRune.SUPREME: [15, 196, 98, "Supreme Reinforcing ", 19, 4000000] # 40000.0 gp -> 4000000 cp
 }
 var ac_bonus: int
+
+func get_ac_bonus() -> int:
+	if is_broken():
+		return maxi(0, ac_bonus - 2)
+	return ac_bonus
 var speed_penalty: int
 
 var blockable_damage_types: Array[PFCombatConstants.DamageType] = [

@@ -318,8 +318,7 @@ func get_ac() -> int:
 		armor = PFArmor.new("Unarmored", [], 0, 0.0, PFEquipmentConstants.ArmorCategory.UNARMORED, PFEquipmentConstants.ArmorGroup.UNARMORED, 0, 99)
 	
 	var capped_dex = mini(attributes.dex_mod, armor.dex_cap)
-	base_ac += capped_dex + armor.ac_bonus + sheet.get_armor_bonus(armor.category, level)
-	if armor.is_broken(): base_ac -= 2 
+	base_ac += capped_dex + armor.get_ac_bonus() + sheet.get_armor_bonus(armor.category, level)
 	return base_ac + attributes.ac_modifiers.get_total() + get_condition_modifier(&"ac")
 
 func get_strike_bonus(weapon: PFWeapon) -> int:

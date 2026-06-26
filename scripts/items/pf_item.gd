@@ -8,7 +8,8 @@ var grade: PFEquipmentConstants.MaterialGrade
 
 var level: int
 var base_level: int
-var is_wielded: bool = false # NEW: Tracks if the item is in a hand or stowed
+var carry_state: PFEquipmentConstants.CarryState = PFEquipmentConstants.CarryState.DROPPED
+var stowed_container: PFItem = null # If STOWED, what container is it in?
 var is_weapon: bool = false
 
 var size_id: StringName = &"medium"
@@ -35,6 +36,9 @@ var broken_threshold: int
 var requires_investment: bool = false # NEW
 var is_specific_magic: bool = false
 var granted_actions: Array[StringName] = []
+
+func add_granted_action(action_id: StringName) -> void:
+	granted_actions.append(action_id)
 
 # Updated Constructor
 func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int = 1, p_price_gp: float = 0.0, 
@@ -179,7 +183,10 @@ func take_item_damage(amount: int) -> void:
 		print("    > %s's Hardness completely absorbed the blow." % entity_name)
 
 func is_broken() -> bool:
-	return current_hp <= broken_threshold and current_hp > 0
+	return current_hp <= broken_threshold
+
+func get_cost_in_gp() -> float:
+	return price_cp / 100.0
 
 func is_destroyed() -> bool:
 	return current_hp <= 0

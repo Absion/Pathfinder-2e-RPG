@@ -45,6 +45,7 @@ func is_lootable() -> bool:
 
 func add_item(item: PFItem) -> void:
 	items.append(item)
+	item.carry_state = PFEquipmentConstants.CarryState.STOWED
 	print("    > %s added %s to their inventory." % [owner.entity_name, item.entity_name])
 	_emit_inventory_update()
 
@@ -68,6 +69,7 @@ func equip_item(item: PFItem) -> void:
 			return
 	
 	worn_items.append(item)
+	item.carry_state = PFEquipmentConstants.CarryState.WORN
 	
 	if item is PFEquipment:
 		item.on_equipped(owner)
@@ -77,6 +79,7 @@ func equip_item(item: PFItem) -> void:
 func unequip_item(item: PFItem) -> void:
 	if worn_items.has(item):
 		worn_items.erase(item)
+		item.carry_state = PFEquipmentConstants.CarryState.STOWED
 		if item is PFEquipment:
 			item.on_unequipped(owner)
 		print("    > %s unequipped %s." % [owner.entity_name, item.entity_name])
@@ -92,17 +95,24 @@ func hold_item(item: PFItem, main_hand: bool = true) -> void:
 	# 2. Check if the hand is free
 	if main_hand:
 		if held_main_hand != null:
+			held_main_hand.carry_state = PFEquipmentConstants.CarryState.DROPPED
 			print("    > %s drops %s to hold %s." % [owner.entity_name, held_main_hand.entity_name, item.entity_name])
 		held_main_hand = item
 	else:
 		if held_off_hand != null:
+			held_off_hand.carry_state = PFEquipmentConstants.CarryState.DROPPED
 			print("    > %s drops %s to hold %s." % [owner.entity_name, held_off_hand.entity_name, item.entity_name])
 		held_off_hand = item
 		
+	item.carry_state = PFEquipmentConstants.CarryState.HELD
 	print("    > %s is now holding %s." % [owner.entity_name, item.entity_name])
 	_emit_inventory_update()
 
 func release_item(main_hand: bool = true) -> void:
+	var item = held_main_hand if main_hand else held_off_hand
+	if item != null:
+		item.carry_state = PFEquipmentConstants.CarryState.DROPPED
+	
 	if main_hand:
 		held_main_hand = null
 	else:
@@ -115,15 +125,23 @@ func equip_weapon(weapon: PFItem, hands: int = 1, main_hand: bool = true) -> voi
 		return
 
 	if hands == 2:
+		if held_main_hand: held_main_hand.carry_state = PFEquipmentConstants.CarryState.DROPPED
+		if held_off_hand: held_off_hand.carry_state = PFEquipmentConstants.CarryState.DROPPED
 		two_handed_item = weapon
 		held_main_hand = null
 		held_off_hand = null
 	elif main_hand:
+		if held_main_hand: held_main_hand.carry_state = PFEquipmentConstants.CarryState.DROPPED
 		held_main_hand = weapon
+		if two_handed_item: two_handed_item.carry_state = PFEquipmentConstants.CarryState.DROPPED
 		two_handed_item = null
 	else:
+		if held_off_hand: held_off_hand.carry_state = PFEquipmentConstants.CarryState.DROPPED
 		held_off_hand = weapon
+		if two_handed_item: two_handed_item.carry_state = PFEquipmentConstants.CarryState.DROPPED
 		two_handed_item = null
+		
+	weapon.carry_state = PFEquipmentConstants.CarryState.HELD
 	_emit_inventory_update()
 
 func wield_as_improvised(item: PFItem, main_hand: bool = true, damage_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.BLUDGEONING) -> void:
@@ -177,13 +195,11 @@ func wield_item(item: PFItem, main_hand: bool = true) -> void:
 			# We'll tag it with the item instance to remove it later, or the actor system will recalculate it.
 			owner.apply_condition(clumsy)
 			
-	# Mark as wielded
-	item.is_wielded = true
 	hold_item(item, main_hand)
 
 func can_raise_shield(shield: PFShield) -> bool:
 	# 1. Is the shield wielded?
-	if not shield.is_wielded: return false
+	if shield.carry_state != PFEquipmentConstants.CarryState.HELD: return false
 	
 	# 2. If it's not a buckler, standard shields just need to be wielded
 	if not shield.has_trait(&"buckler"): return true

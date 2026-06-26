@@ -43,7 +43,7 @@ func test_aquatic_combat() -> void:
 	
 	pc.inventory.add_item(sword)
 	pc.inventory.held_main_hand = sword
-	sword.is_wielded = true
+	sword.carry_state = PFEquipmentConstants.CarryState.HELD
 	
 	var strike = PFActionStrike.new(sword)
 	strike.execute(pc, target)

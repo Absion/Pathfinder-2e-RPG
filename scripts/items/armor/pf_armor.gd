@@ -24,6 +24,11 @@ var group: PFEquipmentConstants.ArmorGroup
 
 var resilient_bonus: int = 0
 var ac_bonus: int
+
+func get_ac_bonus() -> int:
+	if is_broken():
+		return maxi(0, ac_bonus - 2)
+	return ac_bonus
 var dex_cap: int
 var check_penalty: int
 var speed_penalty: int

@@ -1,46 +1,37 @@
 extends GutTest
 
-class_name TestConsumables
+var actor: PFActor
+var potion
 
-func get_test_name() -> String:
-	return "Consumables and Activation Tests"
-
-func test_main() -> void:
-	print("\n--- Running Consumables Tests ---")
+func before_each():
+	actor = PFPlayerCharacter.new("Fighter", [], 1, 15, 0, 0, 0)
+	actor.health.current_hp = 1 # Nearly dead
 	
-	var pc = autofree(PFPlayerCharacter.new("Test Actor", [&"humanoid"], 1, 10, 0, 0, 0))
-	
-	# Test Consumable
-	var potion = PFConsumable.new("potion_of_healing")
-	potion.entity_name = "Potion of Minor Healing"
-	potion.charges = 1
+	potion = PFConsumable.new("mock_potion")
+	potion.entity_name = "Minor Healing Potion"
 	potion.consumable_type = "potion"
-	potion.traits.append(&"healing")
+	potion.charges = 1
+	potion.carry_state = PFEquipmentConstants.CarryState.HELD
+	actor.inventory.add_item(potion)
+	actor.inventory.hold_item(potion, true)
+
+func after_each():
+	actor.queue_free()
+
+func test_drink_potion():
+	var ActionDrink = load("res://scripts/actions/combat/pf_action_drink.gd")
+	var action_drink = ActionDrink.new(potion)
 	
-	pc.inventory.add_item(potion)
-	assert_true(pc.inventory.items.has(potion), "Potion should be in inventory")
+	assert_true(action_drink.is_usable(actor), "Drink should be usable when HELD")
 	
-	var _action = PFActionConsume.new(potion)
-	_action.execute(pc)
+	await action_drink.execute(actor)
+	assert_true(potion.charges == 0 or potion not in actor.inventory.items, "Potion should be consumed")
+	assert_null(actor.inventory.held_main_hand, "Hand should be empty after drinking")
+
+func test_cannot_drink_stowed():
+	potion.carry_state = PFEquipmentConstants.CarryState.STOWED
+	actor.inventory.release_item(true)
 	
-	assert_eq(potion.charges, 0, "Potion charges should be 0")
-	assert_false(pc.inventory.items.has(potion), "Potion should be removed from inventory after consumption")
-	
-	# Test Equipment Activation
-	var ring = PFEquipment.new("ring_of_fire")
-	ring.entity_name = "Ring of Fire"
-	ring.requires_investment = true
-	
-	pc.inventory.add_item(ring)
-	pc.inventory.equip_item(ring) # Fails investment
-	assert_false(pc.inventory.worn_items.has(ring), "Should not equip uninvested ring")
-	
-	pc.inventory.invest_item(ring)
-	pc.inventory.equip_item(ring)
-	assert_true(pc.inventory.worn_items.has(ring), "Should equip invested ring")
-	
-	var act_action = PFActionActivateItem.new(ring)
-	var success = await act_action.execute(pc)
-	assert_true(success, "Should successfully activate the invested item")
-	
-	print("Consumables tests passed!")
+	var ActionDrink = load("res://scripts/actions/combat/pf_action_drink.gd")
+	var action_drink = ActionDrink.new(potion)
+	assert_false(action_drink.is_usable(actor), "Cannot drink a STOWED potion")

@@ -101,6 +101,10 @@ func set_combat_hostile() -> void:
 
 func get_ac() -> int:
 	var base_ac = monster_stats.get(&"ac", 10)
+	for item in inventory.worn_items:
+		if item is PFArmor and item.is_broken():
+			base_ac -= 2
+			break
 	return base_ac + attributes.ac_modifiers.get_total()
 
 func get_strike_bonus(weapon: PFWeapon) -> int:

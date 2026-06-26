@@ -50,7 +50,7 @@ func test_reactive_strike() -> void:
 	sword.weapon_type = PFEquipmentConstants.WeaponType.MELEE
 	fighter.inventory.add_item(sword)
 	fighter.inventory.held_main_hand = sword
-	sword.is_wielded = true
+	sword.carry_state = PFEquipmentConstants.CarryState.HELD
 	
 	# Position them - skip global_position since not in tree
 	# fighter.global_position = Vector3(0, 0, 0)

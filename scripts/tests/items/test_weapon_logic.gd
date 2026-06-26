@@ -30,7 +30,7 @@ func test_improvised_weapon_creation_and_penalty() -> void:
 	assert_not_null(weapon)
 	assert_true(weapon.is_improvised)
 	assert_eq(weapon.hands_required, 1)
-	assert_true(weapon.is_wielded)
+	assert_true(weapon.carry_state == PFEquipmentConstants.CarryState.HELD)
 	
 	# Check strike action penalizes -2
 	var strike = PFActionStrike.new(weapon)

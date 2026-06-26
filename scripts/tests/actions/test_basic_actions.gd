@@ -43,8 +43,8 @@ func after_each():
 	actor_b.queue_free()
 
 func test_interact_action():
-	var interact = PFActionInteract.new()
-	
+	var item = PFItem.new()
+	var interact = PFActionInteract.new(PFActionInteract.InteractType.DRAW, item, true)
 	var success = await interact.execute(actor_a)
 	assert_true(success)
 

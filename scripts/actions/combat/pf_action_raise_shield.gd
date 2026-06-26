@@ -11,12 +11,12 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	# We look at held_main_hand, held_off_hand, and two_handed_item
 	var shield: PFShield = null
 	
-	if user.inventory.held_main_hand is PFShield and user.inventory.held_main_hand.is_wielded:
-		shield = user.inventory.held_main_hand
-	elif user.inventory.held_off_hand is PFShield and user.inventory.held_off_hand.is_wielded:
-		shield = user.inventory.held_off_hand
-	elif user.inventory.two_handed_item is PFShield and user.inventory.two_handed_item.is_wielded:
-		shield = user.inventory.two_handed_item
+	if user.inventory.held_main_hand is PFShield and user.inventory.held_main_hand.carry_state == PFEquipmentConstants.CarryState.HELD:
+		shield = user.inventory.held_main_hand as PFShield
+	elif user.inventory.held_off_hand is PFShield and user.inventory.held_off_hand.carry_state == PFEquipmentConstants.CarryState.HELD:
+		shield = user.inventory.held_off_hand as PFShield
+	elif user.inventory.two_handed_item is PFShield and user.inventory.two_handed_item.carry_state == PFEquipmentConstants.CarryState.HELD:
+		shield = user.inventory.two_handed_item as PFShield
 		
 	# 2. Check if we found a valid shield
 	if shield == null:

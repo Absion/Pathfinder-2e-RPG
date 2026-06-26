@@ -6,7 +6,7 @@ extends PFCondition
 var shield: PFShield
 
 func _init(p_shield: PFShield):
-	super._init(&"raised_shield", p_shield.ac_bonus)
+	super._init(&"raised_shield", p_shield.get_ac_bonus())
 	shield = p_shield
 
 func get_modifier(context: StringName) -> int:
