@@ -25,7 +25,7 @@ This phase relies entirely on Phase 1's Cover mechanics.
 - [x] **Focus Points**: Implement the 3-point focus pool, Focus Spells, and the *Refocus* exploration activity.
 
 ## Phase 5: Afflictions & Sub-Entities
-- [ ] **Affliction Stages**: Implement the rigid "Stage" system for diseases and poisons, progressing stages on failed saving throws.
+- [x] **Affliction Stages**: Implement the rigid "Stage" system for diseases and poisons, progressing stages on failed saving throws.
 - [ ] **Minions & Familiars**: Action economy sharing (Command an Animal) for autonomous pets.
 - [ ] **Swarms & Troops**: Specialized monster logic for area damage weaknesses and physical resistance.
 

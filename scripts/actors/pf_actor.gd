@@ -120,6 +120,35 @@ func can_be_flanked_by(attacker: PFActor) -> bool:
 # ACTIVE CONDITIONS ENGINE
 # ---------------------------------------------------------
 
+func expose_to_affliction(affliction_id: StringName) -> void:
+	# Default affliction logic
+	var affliction = PFCondition.create(affliction_id)
+	if affliction is PFConditionAffliction:
+		# Immediately prompt save
+		print("    > %s is exposed to %s! Attempting %s save (DC %d)..." % [entity_name, affliction.condition_name, affliction.save_stat, affliction.save_dc])
+		var save_mod = get_save_bonus(affliction.save_stat)
+		var roll = randi() % 20 + 1
+		var total = roll + save_mod
+		
+		# Simple degree of success
+		var degree = PFMathConstants.DegreeOfSuccess.FAIL
+		if total >= affliction.save_dc + 10 or roll == 20: degree = PFMathConstants.DegreeOfSuccess.CRIT_SUCCESS
+		elif total >= affliction.save_dc: degree = PFMathConstants.DegreeOfSuccess.SUCCESS
+		elif total <= affliction.save_dc - 10 or roll == 1: degree = PFMathConstants.DegreeOfSuccess.CRIT_FAIL
+		
+		if roll == 20 and degree < PFMathConstants.DegreeOfSuccess.CRIT_SUCCESS: degree = (degree + 1) as PFMathConstants.DegreeOfSuccess
+		elif roll == 1 and degree > PFMathConstants.DegreeOfSuccess.CRIT_FAIL: degree = (degree - 1) as PFMathConstants.DegreeOfSuccess
+		
+		if degree <= PFMathConstants.DegreeOfSuccess.FAIL:
+			var stage = 1 if degree == PFMathConstants.DegreeOfSuccess.FAIL else 2
+			print("    > [FAILED] %s contracts %s at Stage %d!" % [entity_name, affliction.condition_name, stage])
+			affliction.current_stage = stage
+			apply_condition(affliction)
+		else:
+			print("    > [SUCCESS] %s resists %s!" % [entity_name, affliction.condition_name])
+	else:
+		push_error("expose_to_affliction called with non-affliction ID: " + str(affliction_id))
+
 func apply_condition(new_condition: PFCondition) -> void:
 	# Check if condition already exists
 	for c in conditions:
@@ -265,6 +294,10 @@ func get_skill_rank(_skill: StringName) -> int:
 	return PFMathConstants.ProficiencyRank.UNTRAINED
 
 func get_ability_modifier(_ability: StringName) -> int:
+	# Virtual function for polymorphism
+	return 0
+
+func get_save_bonus(_save_type: StringName) -> int:
 	# Virtual function for polymorphism
 	return 0
 

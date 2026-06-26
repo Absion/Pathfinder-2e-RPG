@@ -10,6 +10,7 @@ var db
 var _sizes_cache: Dictionary = {}
 var _traits_cache: Dictionary = {}
 var _conditions_cache: Dictionary = {}
+var _afflictions_cache: Dictionary = {}
 var _actions_cache: Dictionary = {}
 var _beliefs_cache: Dictionary = {}
 var _skills_cache: Dictionary = {}
@@ -352,6 +353,18 @@ func _initialize_schema_if_needed():
 		granted_actions TEXT DEFAULT ''
 	);")
 	
+	# Afflictions
+	db.query("CREATE TABLE IF NOT EXISTS afflictions (
+		id TEXT PRIMARY KEY,
+		name TEXT,
+		saving_throw_stat TEXT,
+		dc INTEGER,
+		max_stage INTEGER,
+		onset_interval INTEGER,
+		stage_interval INTEGER,
+		stages TEXT
+	);")
+	
 	# Ancestries
 	db.query("CREATE TABLE IF NOT EXISTS ancestries (
 		id TEXT PRIMARY KEY,
@@ -496,6 +509,20 @@ func _initialize_schema_if_needed():
 
 func _seed_data():
 	print("PFDatabase: Seeding default data...")
+	# Afflictions
+	db.query("""INSERT OR IGNORE INTO afflictions (id, name, saving_throw_stat, dc, max_stage, onset_interval, stage_interval, stages) VALUES 
+		('giant_centipede_venom', 'Giant Centipede Venom', 'fortitude', 17, 6, 0, 1, 
+		'[
+			{"stage": 1, "damage": "1d6", "damage_type": "poison"},
+			{"stage": 2, "damage": "1d8", "damage_type": "poison", "conditions": [{"id": "enfeebled", "value": 1}]},
+			{"stage": 3, "damage": "1d12", "damage_type": "poison", "conditions": [{"id": "enfeebled", "value": 1}]},
+			{"stage": 4, "damage": "2d6", "damage_type": "poison", "conditions": [{"id": "enfeebled", "value": 2}]},
+			{"stage": 5, "damage": "2d8", "damage_type": "poison", "conditions": [{"id": "enfeebled", "value": 2}]},
+			{"stage": 6, "damage": "3d6", "damage_type": "poison", "conditions": [{"id": "enfeebled", "value": 2}]}
+		]')
+	;""")
+	
+	print("PFDatabase: Seeding complete.")
 	
 	# Seed Sizes
 	db.query("INSERT OR IGNORE INTO sizes (id, name, effective_size, base_bulk) VALUES 
@@ -947,14 +974,25 @@ func get_trait_data(trait_id: StringName) -> Dictionary:
 	_traits_cache[trait_id] = db.query_result[0]
 	return _traits_cache[trait_id]
 
-func get_condition_data(condition_id: StringName) -> Dictionary:
+func get_condition_data(condition_id: StringName, silent: bool = false) -> Dictionary:
 	if _conditions_cache.has(condition_id): return _conditions_cache[condition_id]
 	db.query("SELECT * FROM conditions WHERE id = '" + str(condition_id) + "'")
 	if db.query_result.size() == 0:
-		push_error("PFDatabase: Condition not found -> " + str(condition_id))
+		if not silent:
+			push_error("PFDatabase: Condition not found -> " + str(condition_id))
 		return {}
 	_conditions_cache[condition_id] = db.query_result[0]
 	return _conditions_cache[condition_id]
+
+func get_affliction_data(affliction_id: StringName, silent: bool = false) -> Dictionary:
+	if _afflictions_cache.has(affliction_id): return _afflictions_cache[affliction_id]
+	db.query("SELECT * FROM afflictions WHERE id = '" + str(affliction_id) + "'")
+	if db.query_result.size() == 0:
+		if not silent:
+			push_error("PFDatabase: Affliction not found -> " + str(affliction_id))
+		return {}
+	_afflictions_cache[affliction_id] = db.query_result[0]
+	return _afflictions_cache[affliction_id]
 
 func get_belief_data(belief_id: StringName) -> Dictionary:
 	if _beliefs_cache.has(belief_id): return _beliefs_cache[belief_id]

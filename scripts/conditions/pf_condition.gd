@@ -22,7 +22,7 @@ func _init(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0):
 	var db_inst = PFDatabase.get_instance()
 	var data: Dictionary = {}
 	if db_inst:
-		data = db_inst.get_condition_data(p_id)
+		data = db_inst.get_condition_data(p_id, true)
 	if data:
 		condition_name = data.get(&"name", str(p_id))
 		modifier_type = data.get(&"modifier_type", "")
@@ -44,7 +44,14 @@ static func create(p_id: StringName, p_initial_value: int = 1, p_source_dc: int 
 	var db_inst = PFDatabase.get_instance()
 	var data: Dictionary = {}
 	if db_inst:
-		data = db_inst.get_condition_data(p_id)
+		data = db_inst.get_condition_data(p_id, true)
+		
+		# If not found in conditions, check afflictions
+		if data.is_empty():
+			var affliction_data = db_inst.get_affliction_data(p_id)
+			if not affliction_data.is_empty():
+				return PFConditionAffliction.new(p_id, p_initial_value, p_source_dc)
+				
 	if data and data.get(&"script_path", "") != "":
 		var script = load(data["script_path"])
 		if script:
