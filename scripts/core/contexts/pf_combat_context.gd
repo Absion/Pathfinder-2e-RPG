@@ -8,6 +8,7 @@ var turn_manager: PFTurnManager
 var camera_rig: PFCameraRig
 var ui_layer: CanvasLayer
 var action_menu: PFActionMenu
+var active_hero: PFActor
 
 func build_services() -> void:
 	# Instantiate our core combat services
@@ -35,9 +36,10 @@ func build_services() -> void:
 	ui_layer.add_child(action_menu)
 
 func bind_services() -> void:
-	# Inject dependencies. For example, if TurnManager needs the GridManager:
-	# turn_manager.bind_dependencies(grid_manager)
-	pass
+	turn_manager.turn_started.connect(func(actor: PFActor):
+		if active_hero and (actor == active_hero or (actor is PFMinion and actor.master == active_hero)):
+			action_menu.bind_to_actor(actor)
+	)
 
 func setup() -> void:
 	print("Combat Context Setup Complete!")
@@ -49,7 +51,8 @@ func enter_context(args: Dictionary = {}) -> void:
 	bind_services()
 	
 	if args.has(&"hero"):
-		action_menu.bind_to_actor(args["hero"])
+		active_hero = args["hero"]
+		action_menu.bind_to_actor(active_hero)
 		
 	if args.has(&"player_mesh"):
 		camera_rig.tracked_target = args["player_mesh"]

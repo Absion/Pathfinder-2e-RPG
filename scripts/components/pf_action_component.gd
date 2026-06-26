@@ -29,6 +29,22 @@ func start_turn():
 	var parent = get_parent()
 	
 	if parent and parent is PFActor:
+		if parent.has_trait(&"minion"):
+			if parent.commanded_this_turn:
+				actions_remaining = min(actions_remaining, 2)
+			else:
+				if parent.has_passive_feature(&"independent") or parent.has_passive_feature(&"mature_companion"):
+					print("    > %s acts independently! (1 Action)" % parent.entity_name)
+					actions_remaining = 1
+				else:
+					actions_remaining = 0
+					
+			reactions_remaining = 0
+			extra_reactions.clear()
+			attack_stacks = 0
+			parent.commanded_this_turn = false
+			return
+			
 		# Quickened adds an action
 		if parent.has_condition("quickened"):
 			new_actions += 1

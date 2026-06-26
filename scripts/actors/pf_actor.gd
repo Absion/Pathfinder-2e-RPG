@@ -33,6 +33,7 @@ var conditions: Array[PFCondition] = []
 var immunities: Dictionary = {}
 var has_raised_shield: bool = false
 var is_dead: bool = false
+var minions: Array[PFActor] = []
 
 # --- PASSIVES & FLAGS ---
 var has_armor_specialization: bool = false
@@ -326,14 +327,24 @@ func start_turn() -> void:
 	conditions = conditions.filter(func(c): return c.is_active)
 
 func use_action(action: PFAction, target: PFActor = null) -> void:
-	var cost_val = action.cost
-	
-	if action_economy.actions_remaining < cost_val:
-		print("%s doesn't have enough actions for %s." % [entity_name, action.entity_name])
-		return
+	var cost_val = 0
+	match action.cost:
+		PFCombatConstants.ActionCost.ONE_ACTION: cost_val = 1
+		PFCombatConstants.ActionCost.TWO_ACTIONS: cost_val = 2
+		PFCombatConstants.ActionCost.THREE_ACTIONS: cost_val = 3
 		
-	action_economy.actions_remaining -= cost_val
-	print("[%s spends %d action(s). %d remaining]" % [entity_name, cost_val, action_economy.actions_remaining])
+	if action.cost == PFCombatConstants.ActionCost.REACTION:
+		if action_economy.reactions_remaining < 1:
+			print("%s doesn't have enough reactions for %s." % [entity_name, action.entity_name])
+			return
+		action_economy.reactions_remaining -= 1
+		print("[%s spends 1 reaction.]" % entity_name)
+	else:
+		if action_economy.actions_remaining < cost_val:
+			print("%s doesn't have enough actions for %s." % [entity_name, action.entity_name])
+			return
+		action_economy.actions_remaining -= cost_val
+		print("[%s spends %d action(s). %d remaining]" % [entity_name, cost_val, action_economy.actions_remaining])
 	
 	if await action.execute(self, target):
 		action_economy.attack_stacks += action.map_weight
@@ -345,6 +356,10 @@ func execute_subordinate_action(action: PFAction, target: PFActor = null) -> voi
 
 func end_turn() -> void:
 	print("\n--- %s ends their turn. ---" % entity_name)
+	
+	if has_trait(&"minion"):
+		action_economy.actions_remaining = 0
+		action_economy.reactions_remaining = 0
 	
 	for c in conditions:
 		if c.is_active: c.on_turn_end(self)

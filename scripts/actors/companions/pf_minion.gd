@@ -6,6 +6,7 @@ extends PFNpc
 
 # --- COMPONENTS ---
 var master: PFActor
+var commanded_this_turn: bool = false
 
 # --- INITIALIZATION ---
 func _init(p_name: String, p_master: PFActor, p_traits: Array[StringName] = [], p_level: int = 1,
@@ -30,9 +31,3 @@ func receive_command() -> void:
 	else:
 		print("    > %s was already commanded this turn." % entity_name)
 
-# Helper function to intercept the start of a turn if a turn manager tries to reset actions to 3
-func start_turn() -> void:
-	# Usually PFActor might reset actions_remaining to 3 here
-	# But minions stay at 0 until commanded
-	action_economy.actions_remaining = 0
-	action_economy.reactions_remaining = 1

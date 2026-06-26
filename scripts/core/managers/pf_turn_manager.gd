@@ -31,6 +31,7 @@ var delayed_combatants: Array[CombatantRecord] = []
 var current_turn_index: int = -1
 var round_number: int = 0
 var in_encounter: bool = false
+var sub_turn_stack: Array[PFActor] = []
 
 # --- SUSTAINED SPELLS ---
 # { PFActor: Array[PFSpell] }
@@ -59,7 +60,20 @@ func roll_initiative() -> void:
 		if c.actor.has_condition("initiative_last"):
 			c.force_last = true
 			
-		print("    > %s rolled %d for Initiative using %s" % [c.actor.entity_name, c.initiative_roll, c.initiative_skill])
+		if c.actor is PFMinion and c.actor.master != null:
+			# Find the master in combatants
+			for master_record in combatants:
+				if master_record.actor == c.actor.master:
+					# Copy master's exact stats, but tweak tie breaker so minion goes immediately AFTER master
+					c.initiative_roll = master_record.initiative_roll
+					c.initiative_modifier = master_record.initiative_modifier
+					c.initiative_tie_breaker_roll = master_record.initiative_tie_breaker_roll - 1
+					c.force_first = master_record.force_first
+					c.force_last = master_record.force_last
+					print("    > %s shares %s's initiative!" % [c.actor.entity_name, master_record.actor.entity_name])
+					break
+		else:
+			print("    > %s rolled %d for Initiative using %s" % [c.actor.entity_name, c.initiative_roll, c.initiative_skill])
 		
 	# Sort descending
 	combatants.sort_custom(_compare_initiative)
@@ -160,9 +174,33 @@ func _start_current_turn() -> void:
 	turn_started.emit(current_actor)
 
 func get_current_actor() -> PFActor:
+	if not sub_turn_stack.is_empty():
+		return sub_turn_stack.back()
+		
 	if not in_encounter or current_turn_index < 0 or current_turn_index >= combatants.size():
 		return null
 	return combatants[current_turn_index].actor
+	
+func push_sub_turn(actor: PFActor) -> void:
+	if not in_encounter: return
+	sub_turn_stack.push_back(actor)
+	print("--- %s begins a Sub-Turn! ---" % actor.entity_name)
+	turn_started.emit(actor)
+	
+func pop_sub_turn() -> void:
+	if sub_turn_stack.is_empty(): return
+	var actor = sub_turn_stack.pop_back()
+	print("--- %s's Sub-Turn ends. ---" % actor.entity_name)
+	
+	if actor.has_method(&"end_turn"):
+		actor.end_turn()
+		
+	turn_ended.emit(actor)
+	
+	var current = get_current_actor()
+	if current:
+		print("--- Resuming %s's turn. ---" % current.entity_name)
+		turn_started.emit(current)
 
 func get_allies(actor: PFActor) -> Array[PFActor]:
 	var is_enemy_flag = false

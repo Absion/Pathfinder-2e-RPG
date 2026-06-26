@@ -236,6 +236,7 @@ When generating GDScript for this project, you MUST adhere to the following rule
 10. **Underscore Unused Virtual Parameters.** When defining virtual methods in base classes (like `PFAction.execute()`) that don't utilize their parameters, you MUST prefix the parameter with an underscore (e.g., `_target`) to suppress Godot 4 unused variable warnings while maintaining the correct signature for subclasses.
 11. **Global UI Themes.** Never hardcode StyleBox generation or generic colors (like Color('#1a1a2e')) inside individual UI scripts. All UI controls MUST rely on res://assets/ui/theme/pf_global_theme.tres to ensure a cohesive and easily updatable visual aesthetic across the entire engine.
 12. **Test Logic Integrity:** Tests must be written to ensure game logic works according to the actual PF2e rules as they should work (e.g., using legal character creation steps rather than hacking internal arrays). When a test fails or throws warnings, look at fixing the underlying broken logic first to ensure that is the root issue before ever modifying the test just to make it green.
+13. **Fix Orphan Warnings:** Always fix any orphan node warnings during unit test execution along with standard errors. Use `.free()` instead of `.queue_free()` in the `after_each` block if nodes are instantiated but never added to the SceneTree, to ensure GUT correctly clears them before counting orphans.
 
 ---
 
