@@ -6,7 +6,7 @@ extends PFCondition
 var shield: PFShield
 
 func _init(p_shield: PFShield):
-	super._init("Raised Shield", p_shield.ac_bonus)
+	super._init(&"raised_shield", p_shield.ac_bonus)
 	shield = p_shield
 
 func get_modifier(context: StringName) -> int:
@@ -17,9 +17,7 @@ func get_modifier(context: StringName) -> int:
 func on_apply(owner: PFActor) -> bool:
 	if PFContext.reaction_manager:
 		# Bind the static callbacks using Callable
-		var cond_cb = Callable(PFReactionShieldBlock, "condition").bind(owner)
-		var exec_cb = Callable(PFReactionShieldBlock, "execute").bind(owner)
-		
+
 		# Since condition and execute expect (trigger_actor, event_data), and bind appends arguments to the end,
 		# wait, bind appends. So the static function signature should be (trigger_actor, event_data, listener).
 		# Let's use lambda functions for cleaner closure over `owner`.

@@ -58,7 +58,7 @@ func test_reactive_strike() -> void:
 	
 	# Enemy uses Stride (Move trait)
 	var stride = PFActionStride.new()
-	var initial_enemy_hp = enemy.health.current_hp
+	var _initial_enemy_hp = enemy.health.current_hp
 	
 	# Executing stride should trigger Reactive Strike because ON_LEAVE_SQUARE
 	await stride.execute(enemy)

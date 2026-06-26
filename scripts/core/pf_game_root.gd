@@ -12,9 +12,7 @@ func _ready():
 	transition_to_context("CombatContext")
 
 func _register_contexts():
-	# Here we will add instances of our different contexts
-	# For now, we manually create them. In a real scenario, they might be Preloaded Scenes
-	pass
+	contexts["CombatContext"] = PFCombatContext.new()
 
 func transition_to_context(context_name: String, args: Dictionary = {}):
 	if current_context:
@@ -30,3 +28,9 @@ func transition_to_context(context_name: String, args: Dictionary = {}):
 
 func _on_context_request_change(new_context: String, args: Dictionary):
 	transition_to_context(new_context, args)
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		for context in contexts.values():
+			if is_instance_valid(context) and not context.is_inside_tree():
+				context.free()

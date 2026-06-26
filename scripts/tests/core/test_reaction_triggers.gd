@@ -1,4 +1,4 @@
-﻿extends GutTest
+extends GutTest
 
 var turn_manager: PFTurnManager
 var reaction_manager: PFReactionManager
@@ -35,21 +35,17 @@ func before_each():
 	turn_manager.add_combatant(actor_b)
 
 func after_each():
-	turn_manager.queue_free()
-	reaction_manager.queue_free()
 	PFContext.reaction_manager = null
-	actor_a.queue_free()
-	actor_b.queue_free()
 
 func test_action_trigger_disruption():
 	# Alice attempts to cast a spell with manipulate trait
 	var interact = PFActionInteract.new()
 	
 	# Bob has a reactive strike that automatically disrupts manipulate actions on success
-	var condition_lambda = func(trigger_actor: PFActor, event_data: Dictionary) -> bool:
-		return trigger_actor == actor_a
+	var condition_lambda = func(_trigger_actor: PFActor, _event_data: Dictionary) -> bool:
+		return _trigger_actor == actor_a
 		
-	var execute_lambda = func(trigger_actor: PFActor, event_data: Dictionary) -> Dictionary:
+	var execute_lambda = func(_trigger_actor: PFActor, event_data: Dictionary) -> Dictionary:
 		event_data["disrupted"] = true
 		return event_data
 		
@@ -68,10 +64,10 @@ func test_move_trait_trigger():
 	
 	var reacted = [false]
 	
-	var condition_lambda = func(trigger_actor: PFActor, event_data: Dictionary) -> bool:
-		return trigger_actor == actor_a
+	var condition_lambda = func(_trigger_actor: PFActor, _event_data: Dictionary) -> bool:
+		return _trigger_actor == actor_a
 		
-	var execute_lambda = func(trigger_actor: PFActor, event_data: Dictionary) -> Dictionary:
+	var execute_lambda = func(_trigger_actor: PFActor, event_data: Dictionary) -> Dictionary:
 		reacted[0] = true
 		return event_data
 		

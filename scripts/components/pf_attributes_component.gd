@@ -86,7 +86,7 @@ func apply_class_boost(stat: StringName) -> void:
 
 func apply_free_boost(stat: StringName) -> bool:
 	if stat == &"": return false
-	if boosts["free"].has(stat):
+	if not is_npc and boosts["free"].has(stat):
 		push_warning("Level 1 free boosts cannot overlap on " + str(stat))
 		return false
 	boosts["free"].append(stat)

@@ -139,8 +139,8 @@ func draw_base_grid(width: int = 50, height: int = 50):
 	var faint_color = Color(1.0, 1.0, 1.0, 0.08) # Very faint white
 	var i = 0
 	
-	var half_w = width / 2
-	var half_h = height / 2
+	var half_w = int(width / 2.0)
+	var half_h = int(height / 2.0)
 	
 	for x in range(-half_w, width - half_w):
 		for z in range(-half_h, height - half_h):

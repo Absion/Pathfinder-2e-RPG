@@ -1,4 +1,4 @@
-﻿# pf_action_fall.gd
+# pf_action_fall.gd
 ## An environmental/forced action representing an actor falling.
 class_name PFActionFall
 extends PFAction
@@ -25,7 +25,7 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 		"edge_dc": edge_dc,
 		"fall_halted": false,
 		"fall_damage_multiplier": 1.0,
-		"distance_fallen_so_far": distance / 2 # Simulating they fall past an edge halfway down
+		"distance_fallen_so_far": int(distance / 2.0) # Simulating they fall past an edge halfway down
 	}
 	
 	if PFContext.reaction_manager:

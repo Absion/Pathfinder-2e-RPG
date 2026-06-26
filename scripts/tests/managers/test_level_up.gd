@@ -24,12 +24,12 @@ func test_level_up() -> void:
 	human_ancestry.size_id = &"medium"
 	
 	var pc = autofree(PFPlayerCharacter.new("Fighter Bob", [&"humanoid", &"human"], 1, 0, 0, 0, 0))
+	pc.attributes.apply_ancestry_boost(&"str")
+	pc.attributes.apply_background_boost(&"str")
+	pc.attributes.apply_class_boost(&"str")
 	pc.attributes.apply_free_boost(&"str")
-	pc.attributes.apply_free_boost(&"str")
-	pc.attributes.apply_free_boost(&"str")
-	pc.attributes.apply_free_boost(&"str")
-	pc.attributes.apply_free_boost(&"con")
-	pc.attributes.apply_free_boost(&"con") # con_mod = +2
+	pc.attributes.apply_ancestry_boost(&"con")
+	pc.attributes.apply_background_boost(&"con") # con_mod = +2
 	pc.actor_class = fighter_class
 	pc.apply_ancestry(human_ancestry) # sets max_hp to 8, plus whatever class normally gives at level 1... wait, in PF2E level 1 HP is Ancestry + Class + Con
 	pc.health.max_hp = 8 + 10 + 2 # 20
@@ -47,7 +47,7 @@ func test_level_up() -> void:
 	var blueprint = PFLevelUpManager.generate_level_up_blueprint(pc)
 	
 	assert_eq(blueprint["new_level"], 2, "Blueprint should be for level 2.")
-	assert_eq(blueprint["hp_gain"], 11, "HP gain should be 10 (class) + 1 (con).")
+	assert_eq(blueprint["hp_gain"], 12, "HP gain should be 10 (class) + 2 (con).")
 	assert_eq(blueprint["skill_increases"], 1, "Should gain 1 skill increase at level 2.")
 	
 	# 2. Begin Sandbox
@@ -55,7 +55,7 @@ func test_level_up() -> void:
 	service.begin_level_up(pc, blueprint)
 	
 	var preview = service.get_preview_stats()
-	assert_eq(preview["hp"], 31, "Preview HP should be 20 + 11 = 31.")
+	assert_eq(preview["hp"], 32, "Preview HP should be 20 + 12 = 32.")
 	
 	# 3. Test Toughness Feat
 	# Assuming Toughness exists in DB... we need to ensure Toughness is in DB if we test it.
@@ -71,11 +71,11 @@ func test_level_up() -> void:
 	assert_true(success, "Should successfully select Toughness.")
 	
 	preview = service.get_preview_stats()
-	assert_eq(preview["hp"], 33, "Preview HP should increase by 2 (character level 2) with Toughness.")
+	assert_eq(preview["hp"], 34, "Preview HP should increase by 2 (character level 2) with Toughness.")
 	
 	service.undo_feat(0)
 	preview = service.get_preview_stats()
-	assert_eq(preview["hp"], 31, "Preview HP should revert to 31 after undoing Toughness.")
+	assert_eq(preview["hp"], 32, "Preview HP should revert to 32 after undoing Toughness.")
 	
 	# 4. Test Skill Upgrade Validations
 	success = service.select_skill(&"athletics")
@@ -99,7 +99,7 @@ func test_level_up() -> void:
 	service.commit_transaction()
 	
 	assert_eq(pc.level, 2, "Character should now be level 2.")
-	assert_eq(pc.health.max_hp, 31, "Character max HP should be permanently updated.")
+	assert_eq(pc.health.max_hp, 32, "Character max HP should be permanently updated.")
 	assert_eq(pc.sheet.get_skill_rank(&"athletics"), PFMathConstants.ProficiencyRank.EXPERT, "Athletics should be permanently upgraded to Expert.")
 	assert_true(pc.progression_history.has(2), "Audit log should have an entry for Level 2.")
 	

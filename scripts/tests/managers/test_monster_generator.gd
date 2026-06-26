@@ -7,7 +7,7 @@ func test_brute_generation() -> void:
 	var npc: PFNpc = autofree(PFMonsterGenerator.generate_npc(5, &"Brute"))
 	assert_eq(npc.level, 5, "Brute Level should be 5")
 	# Brute AC is Low. Level 5 Low AC should be roughly 19 (PFMonsterTables.ARMOR_CLASS[5]["LOW"])
-	var expected_ac = PFMonsterGenerator._get_random_value(PFMonsterTables.ARMOR_CLASS[5][&"LOW"]) if PFMonsterTables.ARMOR_CLASS.has(5) else 19
+	var _expected_ac = PFMonsterGenerator._get_random_value(PFMonsterTables.ARMOR_CLASS[5][&"LOW"]) if PFMonsterTables.ARMOR_CLASS.has(5) else 19
 	# Actually wait, _get_random_value is inside PFMonsterGenerator, not PFMonsterTables.
 	
 	# Just assert weapon exists

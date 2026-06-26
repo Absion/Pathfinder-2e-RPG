@@ -37,8 +37,8 @@ func get_available_feats(slot_type: StringName) -> Array[Dictionary]:
 		var type_int = row["feat_type"] as int
 		var feat_type_enum = type_int as PFFeat.FeatType
 		
-		var type_string = _feat_type_to_string(feat_type_enum)
-		if type_string != slot_type and slot_type != "bonus":
+		var feat_type_str = _feat_type_to_string(feat_type_enum)
+		if feat_type_str != slot_type and slot_type != "bonus":
 			continue
 			
 		var required_level = row["level"] as int

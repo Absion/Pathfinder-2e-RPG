@@ -12,9 +12,9 @@ func test_hazards() -> void:
 	
 	# Create a Rogue PC
 	var rogue = autofree(PFPlayerCharacter.new("Rogue", [&"humanoid"], 3, 30, 5, 5, 5))
-	rogue.attributes.apply_free_boost(&"dex")
-	rogue.attributes.apply_free_boost(&"dex")
-	rogue.attributes.apply_free_boost(&"dex")
+	rogue.attributes.apply_ancestry_boost(&"dex")
+	rogue.attributes.apply_background_boost(&"dex")
+	rogue.attributes.apply_class_boost(&"dex")
 	rogue.attributes.apply_free_boost(&"dex")
 	rogue.sheet.set_skill_rank(&"thievery", PFMathConstants.ProficiencyRank.EXPERT)
 	rogue.sheet.set_skill_rank(&"perception", PFMathConstants.ProficiencyRank.EXPERT)

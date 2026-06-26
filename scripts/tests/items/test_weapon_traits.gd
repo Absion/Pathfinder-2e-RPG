@@ -48,7 +48,7 @@ func test_versatile_trait():
 	# Longsword should deal piercing damage now due to versatile p
 	assert_eq(versatile_weapon.active_damage_type, PFCombatConstants.DamageType.SLASHING) # Base type shouldn't change
 	
-	var strike2 = PFActionStrike.new(versatile_weapon)
+	var _strike2 = PFActionStrike.new(versatile_weapon)
 	# By default it's slashing
 
 func test_nonlethal_trait():

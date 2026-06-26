@@ -75,7 +75,7 @@ func on_equipped(wearer: PFActor) -> void:
 					wearer.attributes.will_save.add_modifier(mod)
 			_:
 				# Assume it's a skill
-				var short_name = StringName(stat_name)
+				var _short_name = StringName(stat_name)
 				# TODO: Implement PFStat tracking for skills so items can add modifiers
 				#if wearer.sheet.skill_modifiers.has(short_name):
 				#	wearer.sheet.skill_modifiers[short_name].add_modifier(mod)

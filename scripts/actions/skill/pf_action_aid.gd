@@ -1,4 +1,4 @@
-﻿# pf_action_aid.gd
+# pf_action_aid.gd
 class_name PFActionAid
 extends PFAction
 
@@ -17,7 +17,7 @@ func execute(user: PFActor, target: PFActor = null) -> Variant:
 	super.execute(user, target)
 	
 	# Setting up Aid registers a custom reaction listener for ON_ALLY_ACTION
-	var condition_lambda = func(trigger_actor: PFActor, event_data: Dictionary) -> bool:
+	var condition_lambda = func(trigger_actor: PFActor, _event_data: Dictionary) -> bool:
 		return trigger_actor == target
 		
 	var execute_lambda = func(trigger_actor: PFActor, event_data: Dictionary) -> Dictionary:

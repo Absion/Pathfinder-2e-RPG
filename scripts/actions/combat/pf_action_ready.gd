@@ -27,7 +27,7 @@ func execute(user: PFActor, target: PFActor = null) -> Variant:
 	# but for a generic Ready action, the player defines the trigger. For simplicity in the engine right now,
 	# we will listen to ON_MOVE and ON_MANIPULATE from any hostile as the trigger.
 	
-	var condition_lambda = func(trigger_actor: PFActor, event_data: Dictionary) -> bool:
+	var condition_lambda = func(trigger_actor: PFActor, _event_data: Dictionary) -> bool:
 		# Trigger if the actor is hostile
 		return trigger_actor != user # simplified hostility check
 		

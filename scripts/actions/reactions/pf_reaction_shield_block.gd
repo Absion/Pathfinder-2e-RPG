@@ -15,7 +15,7 @@ static func condition(__trigger_actor: PFActor, event_data: Dictionary, listener
 		return false
 		
 	# Must have a shield equipped and raised
-	var raised_cond = listener.get_condition("Raised Shield")
+	var raised_cond = listener.get_condition(&"raised_shield")
 	if not raised_cond or not "shield" in raised_cond:
 		return false
 		
@@ -28,9 +28,9 @@ static func condition(__trigger_actor: PFActor, event_data: Dictionary, listener
 ## Executes the Shield Block
 static func execute(__trigger_actor: PFActor, event_data: Dictionary, listener: PFActor) -> Dictionary:
 	var damage = event_data.get(&"damage", 0)
-	var type = event_data.get(&"type", PFCombatConstants.DamageType.UNTYPED)
+	var _type = event_data.get(&"type", PFCombatConstants.DamageType.UNTYPED)
 	
-	var raised_cond = listener.get_condition("Raised Shield")
+	var raised_cond = listener.get_condition(&"raised_shield")
 	if not raised_cond or not "shield" in raised_cond:
 		return event_data
 		
@@ -52,7 +52,7 @@ static func execute(__trigger_actor: PFActor, event_data: Dictionary, listener: 
 		if shield.current_hp <= shield.broken_threshold:
 			print("    > [WARNING] Your shield is Broken!")
 			# Lower the shield automatically
-			listener.remove_condition("Raised Shield")
+			listener.remove_condition(&"raised_shield")
 	
 	# Mutate the event_data to pass the reduced damage back to the original strike logic
 	event_data["damage"] = remaining_damage

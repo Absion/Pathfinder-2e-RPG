@@ -34,9 +34,9 @@ func test_downtime() -> void:
 	assert_true(smith.get_meta(&"is_busy"), "Smith should be busy.")
 	
 	print("\nTest 2: Earn Income")
-	bard.attributes.apply_free_boost(&"cha")
-	bard.attributes.apply_free_boost(&"cha")
-	bard.attributes.apply_free_boost(&"cha")
+	bard.attributes.apply_ancestry_boost(&"cha")
+	bard.attributes.apply_background_boost(&"cha")
+	bard.attributes.apply_class_boost(&"cha")
 	bard.attributes.apply_free_boost(&"cha")
 	success = downtime_mgr.begin_earn_income(bard, &"performance", 3, 5) # 5 days
 	assert_true(success, "Should successfully start earning income.")

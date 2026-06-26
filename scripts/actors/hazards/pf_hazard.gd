@@ -45,7 +45,7 @@ func _on_hp_changed(current_hp: int, max_hp: int) -> void:
 		hazard_disabled.emit(self)
 		print("    > [Hazard] %s has been destroyed!" % entity_name)
 	# Basic broken threshold logic: Usually at half HP
-	elif current_hp <= max_hp / 2 and not is_broken:
+	elif current_hp <= int(max_hp / 2.0) and not is_broken:
 		is_broken = true
 		print("    > [Hazard] %s is now broken." % entity_name)
 

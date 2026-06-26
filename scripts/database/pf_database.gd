@@ -671,6 +671,7 @@ func _seed_data():
 		('paralyzed', 'Paralyzed', '', '', 0, ''),
 		('persistent_damage', 'Persistent Damage', '', '', 0, 'res://scripts/conditions/pf_condition_persistent.gd'),
 		('parry', 'Parry', 'circumstance', 'ac', 1, ''),
+		('raised_shield', 'Raised Shield', 'circumstance', 'ac', 0, ''),
 		('petrified', 'Petrified', '', '', 0, ''),
 		('prone', 'Prone', 'circumstance', 'attack', -2, 'res://scripts/conditions/pf_condition_prone.gd'),
 		('quickened', 'Quickened', '', '', 0, 'res://scripts/conditions/pf_condition_quickened.gd'),
@@ -1558,8 +1559,8 @@ func update_player_knowledge(monster_id: String, updates: Dictionary) -> void:
 		else:
 			set_statements.append("%s = %s" % [key, str(val)])
 			
-	var query = "UPDATE player_knowledge SET " + ", ".join(set_statements) + " WHERE monster_id = '" + monster_id + "';"
-	db.query(query)
+	var sql_query = "UPDATE player_knowledge SET " + ", ".join(set_statements) + " WHERE monster_id = '" + monster_id + "';"
+	db.query(sql_query)
 
 # --- HAZARDS ---
 
