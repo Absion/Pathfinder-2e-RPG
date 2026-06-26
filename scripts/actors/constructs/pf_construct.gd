@@ -28,12 +28,11 @@ func get_ac() -> int:
 	return 10 + get_condition_modifier(&"ac")
 
 # Override take_damage to apply hardness before passing to the base health component
-func take_damage(amount: int, damage_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.UNTYPED, effect_traits: Array[StringName] = []) -> void:
-	# In PF2e, Hardness reduces damage before weaknesses or resistances
+func take_damage(amount: int, damage_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.UNTYPED, effect_traits: Array[StringName] = [], source_actor: PFActor = null, target_position: Vector3 = Vector3.INF) -> void:
+	# Constructs apply hardness to damage before resistances
 	var final_damage = maxi(0, amount - hardness)
-	
 	if final_damage > 0:
-		super.take_damage(final_damage, damage_type, effect_traits)
+		super.take_damage(final_damage, damage_type, effect_traits, source_actor, target_position)
 		
 		# Check for the Broken condition
 		if health.current_hp <= broken_threshold and not has_condition("broken"):

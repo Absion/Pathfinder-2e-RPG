@@ -179,17 +179,35 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 	if PFContext.active_turn_manager == null:
 		return false
 		
-	var snapped_target = Vector3(round(target_pos.x), 0, round(target_pos.z))
-	
 	for record in PFContext.active_turn_manager.combatants:
 		var actor = record.actor
 		if actor == mover:
 			continue
 			
-		var actor_pos = Vector3(round(actor.global_position.x), 0, round(actor.global_position.z))
-		
+		var target_cells: Array[Vector3] = []
+		if mover is PFTroop:
+			for seg in mover.active_segments:
+				target_cells.append(Vector3(round(target_pos.x + seg.x), 0, round(target_pos.z + seg.z)))
+		else:
+			target_cells.append(Vector3(round(target_pos.x), 0, round(target_pos.z)))
+			
+		var actor_cells: Array[Vector3] = []
+		if actor is PFTroop:
+			for seg in actor.active_segments:
+				actor_cells.append(Vector3(round(actor.global_position.x + seg.x), 0, round(actor.global_position.z + seg.z)))
+		else:
+			actor_cells.append(Vector3(round(actor.global_position.x), 0, round(actor.global_position.z)))
+			
+		var overlap = false
+		for t_cell in target_cells:
+			for a_cell in actor_cells:
+				if t_cell.distance_to(a_cell) <= 0.5:
+					overlap = true
+					break
+			if overlap: break
+			
 		# If we aren't overlapping the XZ coordinate, it's free.
-		if actor_pos.distance_to(snapped_target) > 0.5:
+		if not overlap:
 			continue
 			
 		# RULE 1: Swarms and Tiny creatures can share spaces.

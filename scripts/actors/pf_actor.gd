@@ -394,7 +394,7 @@ func heal(amount: int, heal_type: PFCombatConstants.DamageType = PFCombatConstan
 	health.current_hp = mini(health.max_hp, health.current_hp) 
 	print("%s heals %d! HP: %d/%d" % [entity_name, amount, health.current_hp, health.max_hp])
 
-func take_damage(amount: int, damage_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.UNTYPED, effect_traits: Array[StringName] = []) -> void:
+func take_damage(amount: int, damage_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.UNTYPED, effect_traits: Array[StringName] = [], _source_actor: PFActor = null, _target_position: Vector3 = Vector3.INF) -> void:
 	var type_name = PFDamage.get_type_name(damage_type)
 	
 	if has_trait(&"construct") and (damage_type == PFCombatConstants.DamageType.VITALITY or damage_type == PFCombatConstants.DamageType.VOID):
