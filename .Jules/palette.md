@@ -1,0 +1,3 @@
+## 2024-06-27 - Programmatic UI Interaction Discoverability
+**Learning:** In Godot 4, programmatic UI elements like `TextureRect` default to `MOUSE_FILTER_IGNORE` and `PanelContainer` lack proper cursor affordances by default, leading to undiscoverable tooltips and non-obvious clickable elements.
+**Action:** When building data-driven UI components via script, explicitly set `mouse_filter = Control.MOUSE_FILTER_PASS` (for tooltips on images/icons) and `mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND` (for clickable containers/buttons) to ensure standard accessibility guidelines are met.

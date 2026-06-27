@@ -91,6 +91,8 @@ func _ready():
 	# Conditions Button / Bar
 	var conditions_panel = PanelContainer.new()
 	conditions_panel.theme_type_variation = &"ConditionPanel"
+	conditions_panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	conditions_panel.tooltip_text = "View Conditions"
 	mid_vbox.add_child(conditions_panel)
 	
 	conditions_hbox = HBoxContainer.new()
@@ -115,6 +117,7 @@ func _ready():
 		act_icon.texture = action_texture
 		act_icon.custom_minimum_size = Vector2(32, 32)
 		act_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		act_icon.mouse_filter = Control.MOUSE_FILTER_PASS
 		tracker_hbox.add_child(act_icon)
 		action_icons.append(act_icon)
 		
@@ -126,6 +129,7 @@ func _ready():
 	reaction_icon.texture = reaction_texture
 	reaction_icon.custom_minimum_size = Vector2(32, 32)
 	reaction_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	reaction_icon.mouse_filter = Control.MOUSE_FILTER_PASS
 	tracker_hbox.add_child(reaction_icon)
 	
 	# --- MIDDLE DIVIDER 2 ---
@@ -159,6 +163,7 @@ func _create_styled_button(text: String) -> Button:
 	var btn = Button.new()
 	btn.text = text
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	return btn
 
 func _open_submenu(menu_name: String):
@@ -309,14 +314,18 @@ func _update_ui():
 	for i in range(3):
 		if i < actions_rem:
 			action_icons[i].modulate = Color.WHITE
+			action_icons[i].tooltip_text = "Action (Available)"
 		else:
 			action_icons[i].modulate = Color(0.3, 0.3, 0.3, 0.5) # Dark Grey, semi-transparent
+			action_icons[i].tooltip_text = "Action (Spent)"
 			
 	var reactions_rem = bound_actor.action_economy.reactions_remaining
 	if reactions_rem > 0:
 		reaction_icon.modulate = Color.WHITE
+		reaction_icon.tooltip_text = "Reaction (Available)"
 	else:
 		reaction_icon.modulate = Color(0.3, 0.3, 0.3, 0.5)
+		reaction_icon.tooltip_text = "Reaction (Spent)"
 		
 	# Check Portrait
 	if "portrait" in bound_actor and bound_actor.portrait != null:

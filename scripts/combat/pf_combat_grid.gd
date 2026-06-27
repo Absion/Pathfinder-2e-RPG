@@ -179,17 +179,26 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 	if PFContext.active_turn_manager == null:
 		return false
 		
-	for record in PFContext.active_turn_manager.combatants:
-		var actor = record.actor
-		if actor == mover:
-			continue
-			
-		var target_cells: Array[Vector3] = []
+	# ⚡ Bolt: Cache mover calculations outside the loop
+	var target_cells: Array[Vector3] = []
+	var mover_is_swarm_or_tiny = false
+	var mover_record = null
+
+	if mover != null:
 		if mover is PFTroop:
 			for seg in mover.active_segments:
 				target_cells.append(Vector3(round(target_pos.x + seg.x), 0, round(target_pos.z + seg.z)))
 		else:
 			target_cells.append(Vector3(round(target_pos.x), 0, round(target_pos.z)))
+		mover_is_swarm_or_tiny = mover.has_trait(&"swarm") or mover.size_id == &"tiny"
+		mover_record = PFContext.active_turn_manager.get_combatant_record(mover)
+	else:
+		target_cells.append(Vector3(round(target_pos.x), 0, round(target_pos.z)))
+
+	for record in PFContext.active_turn_manager.combatants:
+		var actor = record.actor
+		if actor == mover:
+			continue
 			
 		var actor_cells: Array[Vector3] = []
 		if actor is PFTroop:
@@ -211,7 +220,6 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 			continue
 			
 		# RULE 1: Swarms and Tiny creatures can share spaces.
-		var mover_is_swarm_or_tiny = mover != null and (mover.has_trait(&"swarm") or mover.size_id == &"tiny")
 		var target_is_swarm_or_tiny = actor.has_trait(&"swarm") or actor.size_id == &"tiny"
 		if mover_is_swarm_or_tiny or target_is_swarm_or_tiny:
 			continue
@@ -222,7 +230,6 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 			
 		# RULE 3: You can move through an ally's space, but you cannot end your turn there.
 		if not end_of_move and mover != null:
-			var mover_record = PFContext.active_turn_manager.get_combatant_record(mover)
 			if mover_record and mover_record.is_enemy == record.is_enemy:
 				# It is an ally, we can pass through
 				continue
