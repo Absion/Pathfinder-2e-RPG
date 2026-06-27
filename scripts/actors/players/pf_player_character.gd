@@ -1,4 +1,4 @@
-# pf_player_character.gd
+﻿# pf_player_character.gd
 ## A player-controlled character built using standard proficiency matrix mathematics.
 class_name PFPlayerCharacter
 extends PFActor
@@ -104,9 +104,9 @@ func set_biography(new_gender: PFBiographyConstants.Gender, new_birthplace: Stri
 	])
 
 func set_ethnicity(new_ethnicity: StringName) -> bool:
-	var db = PFDatabase.get_instance()
-	if db:
-		var eth_data = db.get_ethnicity_data(new_ethnicity)
+	var database = PFDatabase.get_instance()
+	if database:
+		var eth_data = database.get_ethnicity_data(new_ethnicity)
 		if not eth_data.is_empty():
 			var required = eth_data.get(&"required_traits", [])
 			# Check if character has ALL required traits
@@ -246,10 +246,10 @@ func apply_background(new_background: PFBackground) -> void:
 	print("    > %s was a %s!" % [entity_name, background.entity_name])
 
 func apply_class(class_id: StringName) -> void:
-	var db = PFDatabase.get_instance()
-	if not db: return
+	var database = PFDatabase.get_instance()
+	if not database: return
 	
-	var c_data = db.get_class_data(class_id)
+	var c_data = database.get_class_data(class_id)
 	if c_data.is_empty(): return
 	
 	actor_class = PFClass.new(
@@ -293,13 +293,13 @@ func apply_class(class_id: StringName) -> void:
 	
 	spellbook = PFSpellbook.new(self)
 	if actor_class.is_spellcaster:
-		var rep = PFSpellcastingReceptacle.new(class_id, actor_class.spell_tradition, actor_class.caster_type)
+		var receptacle = PFSpellcastingReceptacle.new(class_id, actor_class.spell_tradition, actor_class.caster_type)
 		# Provide slots using helper progression
 		var progression = PFMagicConstants.FULL_CASTER_PROGRESSION if actor_class.spell_progression == PFMagicConstants.SpellProgression.FULL_CASTER else PFMagicConstants.BOUNDED_CASTER_PROGRESSION
 		if progression.has(level):
 			for rank in progression[level].keys():
-				rep.spells_per_rank[rank] = progression[level][rank]
-		spellbook.add_receptacle(rep)
+				receptacle.spells_per_rank[rank] = progression[level][rank]
+		spellbook.add_receptacle(receptacle)
 		spellbook.restore_daily_slots()
 		
 	print("    > %s is now a Level %d %s! (Max HP: %d)" % [entity_name, level, actor_class.entity_name, health.max_hp])
@@ -470,10 +470,10 @@ func get_strike_damage_bonus(weapon: PFWeapon) -> int:
 		dmg_bonus += 1
 		
 	if weapon.has_trait(&"twin"):
-		var inv = get("inventory") as PFInventory
-		if inv and inv.main_hand_item and inv.off_hand_item:
-			var main = inv.main_hand_item as PFWeapon
-			var off = inv.off_hand_item as PFWeapon
+		var inventory = get("inventory") as PFInventory
+		if inventory and inventory.main_hand_item and inventory.off_hand_item:
+			var main = inventory.main_hand_item as PFWeapon
+			var off = inventory.off_hand_item as PFWeapon
 			if main and off and main.base_name == off.base_name:
 				dmg_bonus += weapon.dice_amount # +1 per damage die, not just +1. Wait, let me check the Twin trait... wait, Twin says "+1 circumstance bonus per damage die". Let's do that!
 	
@@ -519,7 +519,7 @@ func get_ability_modifier(ability: StringName) -> int:
 # SPELLCASTING & CLASS HELPERS
 # ---------------------------------------------------------
 func get_spellcasting_mod() -> int:
-	# Virtual helper for familiars to query spellcasting mod until classes are implemented
+	# Virtual helper for familiars to query spellcasting modifier until classes are implemented
 	# Returns the highest mental attribute modifier
 	return max(attributes.int_mod, max(attributes.wis_mod, attributes.cha_mod))
 
@@ -615,3 +615,4 @@ func heroic_recovery() -> bool:
 # ---------------------------------------------------------
 func get_skill_rank(skill: StringName) -> int:
 	return sheet.get_skill_rank(skill)
+

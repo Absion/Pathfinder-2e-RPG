@@ -5,7 +5,7 @@ extends PFAction
 func _init():
 	super._init("Create a Diversion", [&"manipulate", &"mental"], PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	# Note: Create a Diversion can technically target all observing creatures in PF2e.
 	# For simplicity in this demo, we'll allow targeting a specific creature.
 	if not target:

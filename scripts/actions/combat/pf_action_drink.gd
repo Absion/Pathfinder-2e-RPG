@@ -28,7 +28,7 @@ func is_usable(user: PFActor) -> bool:
 		
 	return true
 
-func execute(user: PFActor, _target: PFActor = null) -> Variant:
+func execute(user: PFActor, _target: Variant = null) -> Variant:
 	if await check_trait_triggers(user):
 		return false # Disrupted
 		

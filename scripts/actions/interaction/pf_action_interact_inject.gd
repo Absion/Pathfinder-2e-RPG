@@ -10,7 +10,7 @@ func _init(p_weapon: PFWeapon, p_item: PFItem):
 	item_to_load = p_item
 	super._init("Interact (Load Injection Payload)", [&"manipulate"], PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
-func execute(user: PFActor, _target: PFActor = null) -> bool:
+func execute(user: PFActor, _target: Variant = null) -> bool:
 	if not weapon:
 		return false
 		
@@ -22,20 +22,21 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 		print("    > [ERROR] The weapon is already loaded with a payload!")
 		return false
 		
-	var inv = user.get(&"inventory") as PFInventory
-	if inv:
-		if inv.held_main_hand != weapon and inv.held_off_hand != weapon and inv.two_handed_item != weapon:
+	var inventory = user.get(&"inventory") as PFInventory
+	if inventory:
+		if inventory.held_main_hand != weapon and inventory.held_off_hand != weapon and inventory.two_handed_item != weapon:
 			print("    > [ERROR] You must be holding the weapon to load it!")
 			return false
 			
-		if not inv.items.has(item_to_load):
+		if not inventory.items.has(item_to_load):
 			print("    > [ERROR] You do not have that item in your inventory!")
 			return false
 			
 	# In a full system, verify item_to_load is a valid poison or potion
 	weapon.injection_payload = item_to_load
-	if inv:
-		inv.items.erase(item_to_load) # It is now stored in the weapon
+	if inventory:
+		inventory.items.erase(item_to_load) # It is now stored in the weapon
 		
 	print("    > Loaded %s into %s!" % [item_to_load.entity_name, weapon.entity_name])
 	return true
+

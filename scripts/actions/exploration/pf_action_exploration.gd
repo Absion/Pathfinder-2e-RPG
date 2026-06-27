@@ -7,8 +7,8 @@ extends PFAction
 var action_id: StringName
 
 func _init(p_action_id: StringName):
-	var db = PFDatabase.get_instance()
-	var data = db.get_action_data(p_action_id) if db else {}
+	var database = PFDatabase.get_instance()
+	var data = database.get_action_data(p_action_id) if database else {}
 	
 	var action_name = data.get(&"name", str(p_action_id))
 	var cost_str = data.get(&"cost", "1")
@@ -30,7 +30,7 @@ func _init(p_action_id: StringName):
 	super._init(action_name, traits_array, action_cost)
 	action_id = p_action_id
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	super.execute(user, target)
 	
 	var ml = Engine.get_main_loop()
@@ -45,3 +45,4 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		print(" -> %s uses %s (Warning: PFGameRoot not found)" % [user.entity_name, entity_name])
 
 	return true
+

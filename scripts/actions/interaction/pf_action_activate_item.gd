@@ -1,4 +1,4 @@
-﻿# pf_action_activate_item.gd
+# pf_action_activate_item.gd
 ## Action to activate a permanent item (wands, staves, rings).
 class_name PFActionActivateItem
 extends PFAction
@@ -9,7 +9,7 @@ func _init(p_item: PFEquipment):
 	super._init("Activate " + p_item.entity_name, [&"manipulate"], PFCombatConstants.ActionCost.ONE_ACTION)
 	item = p_item
 
-func execute(user: PFActor, target: PFActor = null) -> Variant:
+func execute(user: PFActor, target: Variant = null) -> Variant:
 	# 1. Check for Reactive Strikes
 	if await check_trait_triggers(user):
 		print("    > [DISRUPTED] %s's attempt to activate %s was disrupted!" % [user.entity_name, item.entity_name])

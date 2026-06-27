@@ -10,7 +10,7 @@ func _init(p_item: PFConsumable):
 	super._init("Consume " + p_item.entity_name, [&"manipulate"], PFCombatConstants.ActionCost.ONE_ACTION)
 	item = p_item
 
-func execute(user: PFActor, _target: PFActor = null) -> Variant:
+func execute(user: PFActor, _target: Variant = null) -> Variant:
 	# 1. Check for Reactive Strikes against manipulate
 	if await check_trait_triggers(user):
 		print("    > [DISRUPTED] %s's attempt to consume %s was disrupted!" % [user.entity_name, item.entity_name])

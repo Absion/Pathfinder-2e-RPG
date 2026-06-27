@@ -10,16 +10,16 @@ func _init(p_tags: Array[StringName] = []):
 	var initial_traits: Array[StringName] = [&"manipulate", &"interact"]
 	super._init("Scavenge Environment", initial_traits, PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
-func execute(user: PFActor, _target: PFActor = null) -> bool:
-	var inv = user.get(&"inventory") as PFInventory
-	if not inv:
+func execute(user: PFActor, _target: Variant = null) -> bool:
+	var inventory = user.get(&"inventory") as PFInventory
+	if not inventory:
 		print("    > [ERROR] %s has no inventory and cannot scavenge!" % user.entity_name)
 		return false
 		
 	var free_hands = 2
-	if inv.held_main_hand: free_hands -= 1
-	if inv.held_off_hand: free_hands -= 1
-	if inv.two_handed_item: free_hands -= 2
+	if inventory.held_main_hand: free_hands -= 1
+	if inventory.held_off_hand: free_hands -= 1
+	if inventory.two_handed_item: free_hands -= 2
 	
 	if free_hands <= 0:
 		print("    > [ERROR] %s needs at least one free hand to scavenge and hold an item!" % user.entity_name)
@@ -61,7 +61,8 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 	print("\n>>> %s scavenges the area and finds a %s!" % [user.entity_name, item_name])
 	
 	# Wield it in the first available hand
-	var main_hand = (inv.held_main_hand == null)
-	inv.wield_as_improvised(scavenged_item, main_hand, dmg_type)
+	var main_hand = (inventory.held_main_hand == null)
+	inventory.wield_as_improvised(scavenged_item, main_hand, dmg_type)
 	
 	return true
+

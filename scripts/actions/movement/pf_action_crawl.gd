@@ -5,7 +5,7 @@ extends PFAction
 func _init():
 	super._init("Crawl", [&"move"], PFCombatConstants.ActionCost.ONE_ACTION)
 
-func execute(user: PFActor, _target: PFActor = null) -> Variant:
+func execute(user: PFActor, _target: Variant = null) -> Variant:
 	if not user.has_condition("prone"):
 		print(" -> %s cannot Crawl because they are not Prone." % user.entity_name)
 		return false

@@ -1,4 +1,4 @@
-# pf_condition_bon_mot.gd
+﻿# pf_condition_bon_mot.gd
 class_name PFConditionBonMot
 extends PFCondition
 
@@ -8,8 +8,9 @@ func _init(p_id: StringName = &"bon_mot", p_initial_value: int = 2, p_source_dc:
 	modifier_type = "status"
 
 func get_modifier(context: StringName) -> int:
-	var ctx = str(context)
+	var context_string = str(context)
 	# Bon Mot applies a status penalty to Perception and Will saves
-	if ctx == "perception" or ctx == "will":
+	if context_string == "perception" or context_string == "will":
 		return -value
 	return 0
+

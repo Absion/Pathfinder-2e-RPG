@@ -5,7 +5,7 @@ extends PFAction
 func _init():
 	super._init("Aid", [], PFCombatConstants.ActionCost.ONE_ACTION)
 
-func execute(user: PFActor, target: PFActor = null) -> Variant:
+func execute(user: PFActor, target: Variant = null) -> Variant:
 	if target == null or target == user:
 		print(" -> %s must target an ally to Aid." % user.entity_name)
 		return false

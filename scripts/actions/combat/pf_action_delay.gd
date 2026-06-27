@@ -6,7 +6,7 @@ extends PFAction
 func _init():
 	super._init("Delay", [], PFCombatConstants.ActionCost.FREE)
 
-func execute(user: PFActor, _target: PFActor = null) -> bool:
+func execute(user: PFActor, _target: Variant = null) -> bool:
 	if not super.execute(user, null): return false
 	
 	if user.action_economy.actions_remaining < 3:

@@ -1,4 +1,4 @@
-# pf_action_menu.gd
+﻿# pf_action_menu.gd
 ## The dynamic programmatic UI for selecting combat actions.
 class_name PFActionMenu
 extends Control
@@ -155,16 +155,16 @@ func _build_main_menu():
 		
 	var actions = ["MOVE", "STRIKE", "MAGIC", "ITEM", "ACTIONS"]
 	for action_name in actions:
-		var btn = _create_styled_button(action_name)
-		btn.pressed.connect(func(): _open_submenu(action_name))
-		main_menu_vbox.add_child(btn)
+		var button = _create_styled_button(action_name)
+		button.pressed.connect(func(): _open_submenu(action_name))
+		main_menu_vbox.add_child(button)
 
 func _create_styled_button(text: String) -> Button:
-	var btn = Button.new()
-	btn.text = text
-	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	return btn
+	var button = Button.new()
+	button.text = text
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	return button
 
 func _open_submenu(menu_name: String):
 	for child in submenu_vbox.get_children():
@@ -330,3 +330,4 @@ func _update_ui():
 	# Check Portrait
 	if "portrait" in bound_actor and bound_actor.portrait != null:
 		portrait.texture = bound_actor.portrait
+

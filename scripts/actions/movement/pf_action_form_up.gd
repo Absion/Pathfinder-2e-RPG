@@ -36,7 +36,7 @@ func is_usable(user: PFActor) -> bool:
 		
 	return true
 
-func execute(user: PFActor, _target: PFActor = null) -> Variant:
+func execute(user: PFActor, _target: Variant = null) -> Variant:
 	var troop = user as PFTroop
 	print("%s uses Form Up! Moving to %s and reshaping." % [troop.entity_name, str(new_anchor)])
 	

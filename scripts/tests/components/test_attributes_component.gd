@@ -1,20 +1,20 @@
-# test_attributes_component.gd
+﻿# test_attributes_component.gd
 class_name TestAttributesComponent
 extends GutTest
 
-var db: PFDatabase
+var database: PFDatabase
 
 func before_all():
-	db = PFDatabase.get_instance()
-	if db == null:
-		db = PFDatabase.new()
-		db.name = "PFDatabase"
-		Engine.get_main_loop().root.add_child(db)
-		db._ready()
+	database = PFDatabase.get_instance()
+	if database == null:
+		database = PFDatabase.new()
+		database.name = "PFDatabase"
+		Engine.get_main_loop().root.add_child(database)
+		database._ready()
 
 func after_all():
-	if is_instance_valid(db):
-		pass # db.queue_free()
+	if is_instance_valid(database):
+		pass # database.queue_free()
 
 func test_abc_boosts():
 	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2))
@@ -57,3 +57,4 @@ func test_level_5_partial_boosts():
 	# The modifier should NOW increase to +5, and partial should be false
 	assert_eq(hero.attributes.str_mod, 5)
 	assert_false(hero.attributes.has_partial_boost(&"str"))
+

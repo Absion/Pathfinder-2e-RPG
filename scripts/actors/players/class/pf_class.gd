@@ -1,4 +1,4 @@
-# pf_class.gd
+﻿# pf_class.gd
 ## Defines the progression, proficiencies, and abilities gained as an actor levels up.
 class_name PFClass
 extends PFEntity
@@ -9,7 +9,7 @@ var key_abilities: Array[StringName]
 var perception_rank: PFMathConstants.ProficiencyRank
 var class_dc_rank: PFMathConstants.ProficiencyRank
 var saving_throws: Dictionary # e.g. { "fort": PFMathConstants.ProficiencyRank.EXPERT, ... }
-var trained_skills_count: int # 3 + INT mod usually
+var trained_skills_count: int # 3 + INT modifier usually
 
 # --- SPELLCASTING ---
 var is_spellcaster: bool
@@ -65,3 +65,4 @@ func _init(
 	spell_tradition = p_spell_tradition
 	spell_proficiency = p_spell_proficiency
 	spell_progression = p_spell_progression
+

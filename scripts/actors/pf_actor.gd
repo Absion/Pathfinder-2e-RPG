@@ -1,4 +1,4 @@
-# pf_actor.gd
+﻿# pf_actor.gd
 # Represents any living, undead, or construct entity in the game: Players, NPCs, and Monsters.
 ## The core base class for any targetable and interactive entity in the game world.
 #
@@ -53,15 +53,15 @@ func _init(p_name: String, p_traits: Array[StringName], p_level: int, p_hp: int)
 	add_child(action_economy)
 
 func _ready() -> void:
-	var tm = PFTimeManager.get_instance()
-	if tm:
-		tm.rested_for_night.connect(_on_rested_for_night)
+	var time_manager = PFTimeManager.get_instance()
+	if time_manager:
+		time_manager.rested_for_night.connect(_on_rested_for_night)
 		
 	# Every actor gets Grab an Edge inherently
 	PFReactionGrabEdge.register(self)
 
 func _on_rested_for_night() -> void:
-	# Base Healing: CON mod * Level (minimum 1)
+	# Base Healing: CON modifier * Level (minimum 1)
 	var con_mod = get_ability_modifier(&"CON")
 	var amount_to_heal = maxi(1, con_mod) * level
 	heal(amount_to_heal)
@@ -78,8 +78,8 @@ func _on_rested_for_night() -> void:
 		
 	# Reset wands and prepare staves
 	if "inventory" in self and self.get(&"inventory") != null:
-		var inv = self.get(&"inventory")
-		for item in inv.items:
+		var inventory = self.get(&"inventory")
+		for item in inventory.items:
 			if item.has_method("reset_for_day"):
 				item.reset_for_day()
 			if item.has_method("clear_charges"):
@@ -231,20 +231,20 @@ func get_condition_modifier(context: StringName) -> int:
 	
 	for c in conditions:
 		if c.is_active:
-			var mod = c.get_modifier(context)
-			if mod == 0: continue
+			var modifier = c.get_modifier(context)
+			if modifier == 0: continue
 			
 			if c.modifier_type == "status":
-				if mod > 0: highest_status_bonus = maxi(highest_status_bonus, mod)
-				else: highest_status_penalty = mini(highest_status_penalty, mod)
+				if modifier > 0: highest_status_bonus = maxi(highest_status_bonus, modifier)
+				else: highest_status_penalty = mini(highest_status_penalty, modifier)
 			elif c.modifier_type == "circumstance":
-				if mod > 0: highest_circumstance_bonus = maxi(highest_circumstance_bonus, mod)
-				else: highest_circumstance_penalty = mini(highest_circumstance_penalty, mod)
+				if modifier > 0: highest_circumstance_bonus = maxi(highest_circumstance_bonus, modifier)
+				else: highest_circumstance_penalty = mini(highest_circumstance_penalty, modifier)
 			elif c.modifier_type == "item":
-				if mod > 0: highest_item_bonus = maxi(highest_item_bonus, mod)
-				else: highest_item_penalty = mini(highest_item_penalty, mod)
+				if modifier > 0: highest_item_bonus = maxi(highest_item_bonus, modifier)
+				else: highest_item_penalty = mini(highest_item_penalty, modifier)
 			else:
-				untyped_sum += mod
+				untyped_sum += modifier
 				
 	return highest_status_bonus + highest_circumstance_bonus + highest_item_bonus + \
 		   highest_status_penalty + highest_circumstance_penalty + highest_item_penalty + \
@@ -514,3 +514,4 @@ func get_spell_dc() -> int:
 
 func get_spell_attack() -> int:
 	return 0
+

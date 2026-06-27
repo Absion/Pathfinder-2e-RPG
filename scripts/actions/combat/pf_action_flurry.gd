@@ -14,7 +14,7 @@ func _init(p_weapon: PFWeapon, p_has_monastic_weaponry: bool = false, p_in_monas
 	has_monastic_weaponry = p_has_monastic_weaponry
 	in_monastic_archer_stance = p_in_monastic_archer_stance
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	if target == null:
 		return false
 		

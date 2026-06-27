@@ -248,3 +248,10 @@ To maintain engine stability and avoid memory leaks during both runtime and Gut 
 2. **Singleton State Bleed:** Services initialized via `PFContext.init_shared_services()` persist. They MUST be cleaned up using `PFContext.cleanup_shared_services()` in a test's `after_all()` block. 
 3. **Synchronous Teardown:** When tearing down singletons or tests, use `.free()` after `remove_child()`. Do not use `.queue_free()` for test teardowns, as Gut checks orphans synchronously before the frame ends, leading to false positives and potential Signal 11 crashes if deferred methods fire on freed objects.
 4. **Avoid RefCounted Cycles:** Godot handles `RefCounted` objects via reference counting, not a garbage collector. If Object A holds a strong reference to Object B, and Object B holds a strong reference to Object A, a cyclic reference occurs and the memory will leak forever. If two `RefCounted` objects must know about each other, one side MUST use a `WeakRef` (e.g., `weakref(parent_object)`) to break the cycle.ne.
+
+## 18. Testing & Validation
+### Unit Testing Philosophy
+- **Component-Level Isolation**: Test files must be scoped to a single script or specific component (e.g., 	est_coda.gd for pf_coda.gd, 	est_firearm_customization.gd for pf_firearm_customization.gd). Do NOT create monolithic test files (like 	est_phase_7.gd).
+- **Runtime Compilation Checks**: Because GDScript is dynamically compiled at runtime, unit tests MUST instantiate the exact objects and perform actions that trigger core logic paths. This is required to catch signature mismatches (like execute(PFActor) vs execute(Variant)) and type narrowing/conversion errors that the static language server complains about but the headless test runner normally ignores until execution.
+- **Robustness Over Coverage**: Focus tests on the edges of composition (e.g., attach logic, traits integration, aura registration). Ensure that tests verify not only the positive cases but gracefully handle error paths without crashing the test runner.
+

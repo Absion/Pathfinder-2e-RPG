@@ -1,11 +1,11 @@
-extends GutTest
+﻿extends GutTest
 
 func test_action_toggle_condition():
-	var db = PFDatabase.get_instance()
-	if not db:
-		db = PFDatabase.new()
-		db.name = "PFDatabase"
-		get_tree().root.add_child(db)
+	var database = PFDatabase.get_instance()
+	if not database:
+		database = PFDatabase.new()
+		database.name = "PFDatabase"
+		get_tree().root.add_child(database)
 		
 	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
 	var drop_prone_action = PFActionToggleCondition.new(&"drop_prone")
@@ -26,3 +26,4 @@ func test_action_toggle_condition():
 	var cover_action = PFActionToggleCondition.new(&"take_cover")
 	await cover_action.execute(hero)
 	assert_true(hero.has_condition("cover"))
+

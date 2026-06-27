@@ -1,4 +1,4 @@
-# pf_action_interact_combination.gd
+﻿# pf_action_interact_combination.gd
 class_name PFActionInteractCombination
 extends PFAction
 
@@ -8,7 +8,7 @@ func _init(p_weapon: PFWeapon):
 	weapon = p_weapon
 	super._init("Interact (Toggle Combination Weapon)", [&"manipulate"], PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
-func execute(user: PFActor, _target: PFActor = null) -> bool:
+func execute(user: PFActor, _target: Variant = null) -> bool:
 	if not weapon:
 		return false
 		
@@ -16,9 +16,9 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 		print("    > [ERROR] This is not a valid combination weapon!")
 		return false
 		
-	var inv = user.get(&"inventory") as PFInventory
-	if inv:
-		if inv.held_main_hand != weapon and inv.held_off_hand != weapon and inv.two_handed_item != weapon:
+	var inventory = user.get(&"inventory") as PFInventory
+	if inventory:
+		if inventory.held_main_hand != weapon and inventory.held_off_hand != weapon and inventory.two_handed_item != weapon:
 			print("    > [ERROR] You must be holding the weapon to toggle its form!")
 			return false
 			
@@ -31,11 +31,11 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 		print("    > Toggling %s back to its primary form..." % weapon.entity_name)
 		# To toggle back, we need to re-query the base weapon stats or store them.
 		# Since the DB provides the fresh base stats, we can query it quickly.
-		var db = PFDatabase.get_instance()
-		if db:
-			db.query("SELECT * FROM weapons WHERE name = '" + weapon.base_name + "'") # or keep original ID if stored
-			if db.query_result.size() > 0:
-				_apply_stats_from_row(db.query_result[0])
+		var database = PFDatabase.get_instance()
+		if database:
+			database.query("SELECT * FROM weapons WHERE name = '" + weapon.base_name + "'") # or keep original ID if stored
+			if database.query_result.size() > 0:
+				_apply_stats_from_row(database.query_result[0])
 		weapon.is_alternate_form_active = false
 		
 	return true
@@ -68,3 +68,4 @@ func _apply_stats_from_row(row: Dictionary) -> void:
 		for t in split:
 			traits_array.append(StringName(t.strip_edges()))
 	weapon.traits = traits_array
+

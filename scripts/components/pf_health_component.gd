@@ -1,4 +1,4 @@
-# pf_health_component.gd
+﻿# pf_health_component.gd
 ## Tracks hit points, temporary hit points, and dying rules.
 class_name PFHealthComponent
 extends PFComponent
@@ -98,16 +98,16 @@ func apply_damage(amount: int, type: PFCombatConstants.DamageType = PFCombatCons
 	# Passive Bestiary Discovery/Un-discovery
 	var parent = get_parent()
 	if parent is PFNpc and parent.base_id != &"":
-		var db = PFDatabase.get_instance()
-		if db:
-			var knowledge = db.get_player_knowledge(parent.base_id)
+		var database = PFDatabase.get_instance()
+		if database:
+			var knowledge = database.get_player_knowledge(parent.base_id)
 			if not knowledge.is_empty():
 				var type_str = PFCombatConstants.DamageType.keys()[type].to_lower()
 				
 				# Weakness Check
 				if triggered_weakness:
 					if knowledge.get(&"state_weaknesses", 0) != 1: # 1 is KNOWN
-						db.update_player_knowledge(parent.base_id, {"state_weaknesses": 1})
+						database.update_player_knowledge(parent.base_id, {"state_weaknesses": 1})
 						print("    > [Bestiary Discovery] You discovered %s is weak to %s!" % [parent.entity_name, type_str])
 				else:
 					var false_data_str = knowledge.get(&"false_data", "{}")
@@ -117,7 +117,7 @@ func apply_damage(amount: int, type: PFCombatConstants.DamageType = PFCombatCons
 							if w.has(&"type") and w["type"] == type_str:
 								print("    > [Bestiary Discovery] You realize the supposed weakness to %s was false!" % type_str)
 								false_data.erase("weaknesses")
-								db.update_player_knowledge(parent.base_id, {
+								database.update_player_knowledge(parent.base_id, {
 									"state_weaknesses": 0,
 									"false_data": JSON.stringify(false_data)
 								})
@@ -139,3 +139,4 @@ func apply_damage(amount: int, type: PFCombatConstants.DamageType = PFCombatCons
 
 func heal(amount: int):
 	current_hp += amount
+

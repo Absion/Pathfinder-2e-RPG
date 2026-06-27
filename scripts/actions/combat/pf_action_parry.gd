@@ -10,13 +10,13 @@ func _init(p_weapon: PFWeapon):
 	weapon = p_weapon
 	super._init("Parry with " + p_weapon.entity_name, initial_traits, PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
-func execute(user: PFActor, _target: PFActor = null) -> bool:
-	var inv = user.get(&"inventory") as PFInventory
-	if inv:
-		if weapon.hands_required == 2 and inv.two_handed_item != weapon:
+func execute(user: PFActor, _target: Variant = null) -> bool:
+	var inventory = user.get(&"inventory") as PFInventory
+	if inventory:
+		if weapon.hands_required == 2 and inventory.two_handed_item != weapon:
 			print("    > [ERROR] %s requires two hands, but is not being held with two hands!" % weapon.entity_name)
 			return false
-		elif weapon.hands_required == 1 and inv.held_main_hand != weapon and inv.held_off_hand != weapon and inv.two_handed_item != weapon:
+		elif weapon.hands_required == 1 and inventory.held_main_hand != weapon and inventory.held_off_hand != weapon and inventory.two_handed_item != weapon:
 			print("    > [ERROR] %s must be held to parry!" % weapon.entity_name)
 			return false
 			
@@ -29,3 +29,4 @@ func execute(user: PFActor, _target: PFActor = null) -> bool:
 	print("\n>>> %s parries with %s! (+1 circumstance bonus to AC until start of next turn)" % [user.entity_name, weapon.entity_name])
 	
 	return true
+

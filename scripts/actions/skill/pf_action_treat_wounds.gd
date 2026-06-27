@@ -1,4 +1,4 @@
-# pf_action_treat_wounds.gd
+﻿# pf_action_treat_wounds.gd
 class_name PFActionTreatWounds
 extends PFAction
 
@@ -7,7 +7,7 @@ func _init():
 	# purely for testing and UI demonstration purposes.
 	super._init("Treat Wounds", [&"exploration", &"healing", &"manipulate"], PFCombatConstants.ActionCost.FREE, 1)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	if not target:
 		print("    > [ERROR] No target for Treat Wounds!")
 		return false
@@ -19,11 +19,11 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		
 	# Requires two free hands and healer's tools (simplified check)
 	var free_hands = 2
-	var inv = user.get(&"inventory") as PFInventory
-	if inv:
-		if inv.held_main_hand: free_hands -= 1
-		if inv.held_off_hand: free_hands -= 1
-		if inv.two_handed_item: free_hands -= 2
+	var inventory = user.get(&"inventory") as PFInventory
+	if inventory:
+		if inventory.held_main_hand: free_hands -= 1
+		if inventory.held_off_hand: free_hands -= 1
+		if inventory.two_handed_item: free_hands -= 2
 		
 	if free_hands < 2:
 		print("    > [ERROR] You need two free hands to use Treat Wounds!")
@@ -78,3 +78,4 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		
 	target.add_immunity(immunity_key, immunity_duration)
 	return true
+

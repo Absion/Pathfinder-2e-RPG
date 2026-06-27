@@ -21,7 +21,7 @@ func _init(p_type: ManeuverType, p_weapon: PFWeapon = null):
 	var type_name = ManeuverType.keys()[p_type].to_lower().capitalize()
 	super._init(type_name, initial_traits, PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	if not target:
 		print("    > [ERROR] No target for maneuver!")
 		return false
@@ -50,12 +50,12 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		base_bonus = user.get_maneuver_bonus(StringName(maneuver_trait), weapon)
 	else:
 		# Fallback if method doesn't exist
-		var inv = user.get(&"inventory") as PFInventory
+		var inventory = user.get(&"inventory") as PFInventory
 		var free_hands = 2
-		if inv:
-			if inv.held_main_hand: free_hands -= 1
-			if inv.held_off_hand: free_hands -= 1
-			if inv.two_handed_item: free_hands -= 2
+		if inventory:
+			if inventory.held_main_hand: free_hands -= 1
+			if inventory.held_off_hand: free_hands -= 1
+			if inventory.two_handed_item: free_hands -= 2
 			
 		if free_hands <= 0 and not (weapon and weapon.has_trait(StringName(maneuver_trait))):
 			print("    > [ERROR] You need at least one free hand to %s!" % maneuver_trait)
@@ -123,3 +123,4 @@ func _apply_effect(target: PFActor, is_crit: bool) -> void:
 				print("    > Target drops their weapon!")
 			else:
 				print("    > Target's grip is weakened (-2 circumstance penalty to attacks with the weapon until start of their next turn).")
+

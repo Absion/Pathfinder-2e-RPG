@@ -15,7 +15,7 @@ func is_usable(_user: PFActor) -> bool:
 		return false
 	return true
 
-func execute(user: PFActor, target: PFActor = null) -> Variant:
+func execute(user: PFActor, target: Variant = null) -> Variant:
 	if not target:
 		print("    > Sunder requires a target!")
 		return false

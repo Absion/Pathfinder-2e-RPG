@@ -1,4 +1,4 @@
-# pf_spatial_math.gd
+﻿# pf_spatial_math.gd
 ## Static utility class for calculating complex grid and spatial mechanics.
 class_name PFSpatialMath
 
@@ -37,13 +37,13 @@ static func is_flanking(attacker: PFActor, target: PFActor, ally: PFActor) -> bo
 	
 	var a1 = Vector2(attacker.position.x, attacker.position.z)
 	var a2 = Vector2(ally.position.x, ally.position.z)
-	var t = Vector2(target.position.x, target.position.z)
+	var target_pos2d = Vector2(target.position.x, target.position.z)
 	
 	# Simple PF2e logic for 1x1: A line between centers passes through opposite sides/corners.
 	# This means the target must be exactly between them in either the X or Z axis, or both.
 	# If Target is at (0,0), A1 at (-1,0), A2 must be at (1,0) (or 1,-1 or 1,1).
-	var dir1 = (a1 - t)
-	var dir2 = (a2 - t)
+	var dir1 = (a1 - target_pos2d)
+	var dir2 = (a2 - target_pos2d)
 	
 	# If they are on the exact same side, no flank.
 	if sign(dir1.x) == sign(dir2.x) and sign(dir1.x) != 0:
@@ -55,9 +55,9 @@ static func is_flanking(attacker: PFActor, target: PFActor, ally: PFActor) -> bo
 	# But since we snapped them to grid, if they are on opposite sides, the segment will pass through the 1x1 box.
 	# In PF2e, you can flank if you are opposite on ANY axis (X or Z) as long as you draw a line through opposite edges.
 	
-	# For true line intersection with the 1x1 box at `t`:
-	# The box is [t.x - 0.5, t.x + 0.5] x [t.y - 0.5, t.y + 0.5]
-	if _line_intersects_opposite_sides_of_rect(a1, a2, t, 1.0):
+	# For true line intersection with the 1x1 box at `target_pos2d`:
+	# The box is [target_pos2d.x - 0.5, target_pos2d.x + 0.5] x [target_pos2d.y - 0.5, target_pos2d.y + 0.5]
+	if _line_intersects_opposite_sides_of_rect(a1, a2, target_pos2d, 1.0):
 		return true
 		
 	return false
@@ -71,30 +71,30 @@ static func _line_intersects_opposite_sides_of_rect(p1: Vector2, p2: Vector2, re
 	var max_y = rect_center.y + half_size
 	
 	# Find intersections of line p1-p2 with the 4 infinite lines of the rect
-	var dx = p2.x - p1.x
-	var dy = p2.y - p1.y
+	var delta_x = p2.x - p1.x
+	var delta_y = p2.y - p1.y
 	
 	var hits_left = false
 	var hits_right = false
 	var hits_top = false
 	var hits_bottom = false
 	
-	if dx != 0:
-		var t_left = (min_x - p1.x) / dx
-		var y_left = p1.y + t_left * dy
+	if delta_x != 0:
+		var t_left = (min_x - p1.x) / delta_x
+		var y_left = p1.y + t_left * delta_y
 		if y_left >= min_y and y_left <= max_y and t_left >= 0 and t_left <= 1: hits_left = true
 		
-		var t_right = (max_x - p1.x) / dx
-		var y_right = p1.y + t_right * dy
+		var t_right = (max_x - p1.x) / delta_x
+		var y_right = p1.y + t_right * delta_y
 		if y_right >= min_y and y_right <= max_y and t_right >= 0 and t_right <= 1: hits_right = true
 
-	if dy != 0:
-		var t_top = (min_y - p1.y) / dy
-		var x_top = p1.x + t_top * dx
+	if delta_y != 0:
+		var t_top = (min_y - p1.y) / delta_y
+		var x_top = p1.x + t_top * delta_x
 		if x_top >= min_x and x_top <= max_x and t_top >= 0 and t_top <= 1: hits_top = true
 		
-		var t_bottom = (max_y - p1.y) / dy
-		var x_bottom = p1.x + t_bottom * dx
+		var t_bottom = (max_y - p1.y) / delta_y
+		var x_bottom = p1.x + t_bottom * delta_x
 		if x_bottom >= min_x and x_bottom <= max_x and t_bottom >= 0 and t_bottom <= 1: hits_bottom = true
 		
 	return (hits_left and hits_right) or (hits_top and hits_bottom)
@@ -297,3 +297,4 @@ static func get_line_targets(space_state: PhysicsDirectSpaceState3D, origin: Vec
 	
 	var raw_results = space_state.intersect_shape(query, 100)
 	return _filter_by_loe(space_state, origin, raw_results, ignores_cover)
+

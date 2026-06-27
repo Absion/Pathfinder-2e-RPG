@@ -1,4 +1,4 @@
-# pf_reaction_grab_edge.gd
+﻿# pf_reaction_grab_edge.gd
 ## Grab an Edge is a reaction triggered when you fall from or past an edge or handhold.
 class_name PFReactionGrabEdge
 extends RefCounted
@@ -16,9 +16,9 @@ static func condition(_trigger_actor: PFActor, event_data: Dictionary, listener:
 		return false
 		
 	# You must have at least one hand free
-	var inv = listener.get(&"inventory") as PFInventory
-	if inv:
-		if inv.held_main_hand != null and inv.held_off_hand != null:
+	var inventory = listener.get(&"inventory") as PFInventory
+	if inventory:
+		if inventory.held_main_hand != null and inventory.held_off_hand != null:
 			return false
 			
 	# There must be an edge to grab (usually passed in event_data)
@@ -56,3 +56,4 @@ static func execute(_trigger_actor: PFActor, event_data: Dictionary, listener: P
 			print("    > Critical Failure! You continue falling and take damage as normal.")
 			
 	return event_data
+

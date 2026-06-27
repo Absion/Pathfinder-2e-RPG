@@ -1,4 +1,4 @@
-class_name PFSpellbook
+﻿class_name PFSpellbook
 extends RefCounted
 
 var owner: PFActor
@@ -143,14 +143,15 @@ func get_valid_receptacles_for_spell(spell: PFSpell, rank: int) -> Array[PFSpell
 func _register_sustained(spell: PFSpell) -> void:
 	if not spell.is_sustained:
 		return
-	var tm = PFContext.active_turn_manager
-	if not tm: return
-	if not tm.active_sustained_spells.has(owner):
-		tm.active_sustained_spells[owner] = []
-	if not tm.active_sustained_spells[owner].has(spell):
-		tm.active_sustained_spells[owner].append(spell)
+	var time_manager = PFContext.active_turn_manager
+	if not time_manager: return
+	if not time_manager.active_sustained_spells.has(owner):
+		time_manager.active_sustained_spells[owner] = []
+	if not time_manager.active_sustained_spells[owner].has(spell):
+		time_manager.active_sustained_spells[owner].append(spell)
 		print("    > %s can sustain %s on future turns." % [owner.entity_name, spell.entity_name])
-	if not tm.spells_sustained_this_turn.has(owner):
-		tm.spells_sustained_this_turn[owner] = []
-	if not tm.spells_sustained_this_turn[owner].has(spell):
-		tm.spells_sustained_this_turn[owner].append(spell)
+	if not time_manager.spells_sustained_this_turn.has(owner):
+		time_manager.spells_sustained_this_turn[owner] = []
+	if not time_manager.spells_sustained_this_turn[owner].has(spell):
+		time_manager.spells_sustained_this_turn[owner].append(spell)
+

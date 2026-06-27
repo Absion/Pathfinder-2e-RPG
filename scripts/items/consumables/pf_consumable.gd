@@ -1,4 +1,4 @@
-# pf_consumable.gd
+﻿# pf_consumable.gd
 ## Represents an item that is consumed upon use (potions, elixirs, scrolls, ammunition).
 class_name PFConsumable
 extends PFItem
@@ -10,10 +10,10 @@ var spell_id: String
 
 func _init(p_id: String):
 	super._init()
-	var db = PFDatabase.get_instance()
-	if not db: return
+	var database = PFDatabase.get_instance()
+	if not database: return
 	
-	var data = db.select_with_bindings("SELECT * FROM consumables WHERE id = ?", [p_id])
+	var data = database.select_with_bindings("SELECT * FROM consumables WHERE id = ?", [p_id])
 	if data and data.size() > 0:
 		var item_data = data[0]
 		
@@ -58,3 +58,4 @@ func on_consume(consumer: PFActor) -> bool:
 		
 	charges -= 1
 	return true
+

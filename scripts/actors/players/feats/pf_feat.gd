@@ -1,4 +1,4 @@
-# pf_feat.gd
+﻿# pf_feat.gd
 ## Represents an individual feat selected by an actor
 class_name PFFeat
 extends PFEntity
@@ -19,8 +19,8 @@ var granted_rules_json: String
 var description: String
 
 func _init(p_id: StringName):
-	var db = PFDatabase.get_instance()
-	var f_data = db.get_feat_data(p_id)
+	var database = PFDatabase.get_instance()
+	var f_data = database.get_feat_data(p_id)
 	
 	if f_data.is_empty():
 		entity_name = "Unknown Feat"
@@ -42,3 +42,4 @@ func _init(p_id: StringName):
 	prerequisites_json = str(f_data["prerequisites"])
 	granted_rules_json = str(f_data["granted_rules"])
 	description = str(f_data["description"])
+

@@ -6,7 +6,7 @@ extends PFAction
 func _init():
 	super._init("Point Out", [&"auditory", &"manipulate", &"visual"], PFCombatConstants.ActionCost.ONE_ACTION, 0)
 
-func execute(user: PFActor, target: PFActor = null) -> Variant:
+func execute(user: PFActor, target: Variant = null) -> Variant:
 	if await check_trait_triggers(user):
 		return false
 		

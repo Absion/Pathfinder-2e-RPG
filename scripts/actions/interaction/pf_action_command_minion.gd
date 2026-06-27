@@ -5,7 +5,7 @@ extends PFAction
 func _init():
 	super._init("Command an Animal", [&"auditory", &"concentrate", &"manipulate"], PFCombatConstants.ActionCost.ONE_ACTION)
 
-func execute(actor: PFActor, target: PFActor = null) -> bool:
+func execute(actor: PFActor, target: Variant = null) -> bool:
 	if target == null:
 		print("    > [ERROR] Command requires a target minion.")
 		return false

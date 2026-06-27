@@ -7,6 +7,6 @@ func _init():
 	# We give it both "move" and "step" traits.
 	super._init("Step", [&"move", &"step"], PFCombatConstants.ActionCost.ONE_ACTION)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	print("%s carefully steps 5 feet." % user.entity_name)
 	return true

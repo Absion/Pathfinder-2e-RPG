@@ -41,12 +41,12 @@ func _get_master_spellcasting_mod() -> int:
 	return 0
 
 func get_ac() -> int:
-	# Familiar AC = 10 + master's level + master's spellcasting mod
+	# Familiar AC = 10 + master's level + master's spellcasting modifier
 	var base_ac = 10 + master.level + _get_master_spellcasting_mod()
 	return base_ac + get_condition_modifier(&"ac")
 
 func get_strike_bonus(weapon: PFWeapon) -> int:
-	# Familiar attacks = master's level + master's spellcasting mod
+	# Familiar attacks = master's level + master's spellcasting modifier
 	var base_bonus = master.level + _get_master_spellcasting_mod()
 	
 	if weapon and weapon.is_broken():
@@ -62,14 +62,14 @@ func get_spell_attack() -> int:
 
 func get_skill_bonus(skill: StringName) -> int:
 	var base_bonus = master.level
-	# Acrobatics and Stealth use level + spellcasting mod
+	# Acrobatics and Stealth use level + spellcasting modifier
 	if skill == &"acrobatics" or skill == &"stealth":
 		base_bonus += _get_master_spellcasting_mod()
 		
 	return base_bonus + get_condition_modifier(&"skill")
 
 func get_save_modifier(save_type: StringName) -> int:
-	# Familiar saves = master's level + master's spellcasting mod
+	# Familiar saves = master's level + master's spellcasting modifier
 	var base_save = master.level + _get_master_spellcasting_mod()
 	return base_save + get_condition_modifier(&"save")
 
@@ -78,12 +78,12 @@ func get_save_modifier(save_type: StringName) -> int:
 # ---------------------------------------------------------
 
 func apply_specific_familiar(db_id: StringName) -> bool:
-	var db = PFDatabase.get_instance()
-	if not db:
+	var database = PFDatabase.get_instance()
+	if not database:
 		push_error("PFFamiliar: Database missing.")
 		return false
 		
-	var data = db.get_specific_familiar(db_id)
+	var data = database.get_specific_familiar(db_id)
 	if data.is_empty():
 		return false
 		
@@ -118,3 +118,4 @@ func apply_specific_familiar(db_id: StringName) -> bool:
 			
 	print("%s is now a Specific Familiar: %s!" % [master.entity_name, entity_name])
 	return true
+

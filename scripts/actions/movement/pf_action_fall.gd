@@ -14,7 +14,7 @@ func _init(p_distance: int, p_has_edge: bool = false, p_edge_dc: int = 15):
 	has_edge = p_has_edge
 	edge_dc = p_edge_dc
 
-func execute(user: PFActor, _target: PFActor = null) -> bool:
+func execute(user: PFActor, _target: Variant = null) -> bool:
 	print("    > %s is falling %d feet!" % [user.entity_name, distance])
 	
 	var event_data = {

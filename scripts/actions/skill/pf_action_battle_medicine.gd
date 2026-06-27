@@ -1,11 +1,11 @@
-# pf_action_battle_medicine.gd
+﻿# pf_action_battle_medicine.gd
 class_name PFActionBattleMedicine
 extends PFAction
 
 func _init():
 	super._init("Battle Medicine", [&"healing", &"manipulate"], PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	if not target:
 		print("    > [ERROR] No target for Battle Medicine!")
 		return false
@@ -17,11 +17,11 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 		
 	# Requires a free hand (simplified check)
 	var free_hands = 2
-	var inv = user.get(&"inventory") as PFInventory
-	if inv:
-		if inv.held_main_hand: free_hands -= 1
-		if inv.held_off_hand: free_hands -= 1
-		if inv.two_handed_item: free_hands -= 2
+	var inventory = user.get(&"inventory") as PFInventory
+	if inventory:
+		if inventory.held_main_hand: free_hands -= 1
+		if inventory.held_off_hand: free_hands -= 1
+		if inventory.two_handed_item: free_hands -= 2
 		
 	if free_hands <= 0:
 		print("    > [ERROR] You need at least one free hand to use Battle Medicine!")
@@ -67,3 +67,4 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	# Target is immune for 1 day (14400 rounds)
 	target.add_immunity(immunity_key, 14400)
 	return true
+

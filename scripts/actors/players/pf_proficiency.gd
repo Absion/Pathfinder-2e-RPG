@@ -12,9 +12,9 @@ static func calculate_bonus(rank: PFMathConstants.ProficiencyRank, level: int) -
 
 # Maps every specific skill to its governing attribute
 static func get_skill_ability(skill: StringName) -> StringName:
-	var db = PFDatabase.get_instance()
-	if db:
-		var data = db.get_skill_data(skill)
+	var database = PFDatabase.get_instance()
+	if database:
+		var data = database.get_skill_data(skill)
 		if not data.is_empty() and data.has(&"key_ability"):
 			return StringName(data["key_ability"])
 			
@@ -24,3 +24,4 @@ static func get_skill_ability(skill: StringName) -> StringName:
 		
 	push_warning("Unknown skill '%s'. Defaulting to INT." % skill)
 	return &"INT"
+

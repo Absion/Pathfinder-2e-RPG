@@ -1,4 +1,4 @@
-# pf_equipment.gd
+﻿# pf_equipment.gd
 ## Represents permanent equipment like Wands, Rings, Boots.
 class_name PFEquipment
 extends PFItem
@@ -12,10 +12,10 @@ var _active_modifiers: Array[PFModifier] = []
 
 func _init(p_id: String):
 	super._init()
-	var db = PFDatabase.get_instance()
-	if not db: return
+	var database = PFDatabase.get_instance()
+	if not database: return
 	
-	var data = db.select_with_bindings("SELECT * FROM equipment WHERE id = ?", [p_id])
+	var data = database.select_with_bindings("SELECT * FROM equipment WHERE id = ?", [p_id])
 	if data and data.size() > 0:
 		var item_data = data[0]
 		
@@ -52,56 +52,57 @@ func on_equipped(wearer: PFActor) -> void:
 	
 	for stat_name in skill_bonus_data.keys():
 		var bonus = skill_bonus_data[stat_name]
-		var mod = PFModifier.new(bonus, PFMathConstants.ModifierType.ITEM, entity_name)
+		var modifier = PFModifier.new(bonus, PFMathConstants.ModifierType.ITEM, entity_name)
 		
 		match stat_name:
 			"ac":
 				if "ac_modifiers" in wearer.attributes:
-					wearer.attributes.ac_modifiers.add_modifier(mod)
+					wearer.attributes.ac_modifiers.add_modifier(modifier)
 			"attack":
 				if "attack_modifiers" in wearer.attributes:
-					wearer.attributes.attack_modifiers.add_modifier(mod)
+					wearer.attributes.attack_modifiers.add_modifier(modifier)
 			"dc":
 				if "dc_modifiers" in wearer.attributes:
-					wearer.attributes.dc_modifiers.add_modifier(mod)
+					wearer.attributes.dc_modifiers.add_modifier(modifier)
 			"fort":
 				if "fort_save" in wearer.attributes:
-					wearer.attributes.fort_save.add_modifier(mod)
+					wearer.attributes.fort_save.add_modifier(modifier)
 			"ref":
 				if "ref_save" in wearer.attributes:
-					wearer.attributes.ref_save.add_modifier(mod)
+					wearer.attributes.ref_save.add_modifier(modifier)
 			"will":
 				if "will_save" in wearer.attributes:
-					wearer.attributes.will_save.add_modifier(mod)
+					wearer.attributes.will_save.add_modifier(modifier)
 			_:
 				# Assume it's a skill
 				var _short_name = StringName(stat_name)
 				# TODO: Implement PFStat tracking for skills so items can add modifiers
 				#if wearer.sheet.skill_modifiers.has(short_name):
-				#	wearer.sheet.skill_modifiers[short_name].add_modifier(mod)
+				#	wearer.sheet.skill_modifiers[short_name].add_modifier(modifier)
 					
-		_active_modifiers.append(mod)
+		_active_modifiers.append(modifier)
 
 func on_unequipped(wearer: PFActor) -> void:
 	if not "sheet" in wearer or not wearer.sheet: return
 	if not "attributes" in wearer or not wearer.attributes: return
 	
-	for mod in _active_modifiers:
+	for modifier in _active_modifiers:
 		if "ac_modifiers" in wearer.attributes:
-			wearer.attributes.ac_modifiers.remove_modifier_by_source(mod.source)
+			wearer.attributes.ac_modifiers.remove_modifier_by_source(modifier.source)
 		if "attack_modifiers" in wearer.attributes:
-			wearer.attributes.attack_modifiers.remove_modifier_by_source(mod.source)
+			wearer.attributes.attack_modifiers.remove_modifier_by_source(modifier.source)
 		if "dc_modifiers" in wearer.attributes:
-			wearer.attributes.dc_modifiers.remove_modifier_by_source(mod.source)
+			wearer.attributes.dc_modifiers.remove_modifier_by_source(modifier.source)
 		if "fort_save" in wearer.attributes:
-			wearer.attributes.fort_save.remove_modifier_by_source(mod.source)
+			wearer.attributes.fort_save.remove_modifier_by_source(modifier.source)
 		if "ref_save" in wearer.attributes:
-			wearer.attributes.ref_save.remove_modifier_by_source(mod.source)
+			wearer.attributes.ref_save.remove_modifier_by_source(modifier.source)
 		if "will_save" in wearer.attributes:
-			wearer.attributes.will_save.remove_modifier_by_source(mod.source)
+			wearer.attributes.will_save.remove_modifier_by_source(modifier.source)
 			
 		# TODO: Implement PFStat tracking for skills so items can add modifiers
 		#for stat in wearer.sheet.skill_modifiers.values():
-		#	stat.remove_modifier_by_source(mod.source)
+		#	stat.remove_modifier_by_source(modifier.source)
 			
 	_active_modifiers.clear()
+

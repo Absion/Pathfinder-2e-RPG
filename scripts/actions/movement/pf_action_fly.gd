@@ -6,7 +6,7 @@ extends PFAction
 func _init():
 	super._init("Fly", [&"move"], PFCombatConstants.ActionCost.ONE_ACTION)
 
-func execute(user: PFActor, _target: PFActor = null) -> bool:
+func execute(user: PFActor, _target: Variant = null) -> bool:
 	# Check if the actor actually has a fly speed!
 	if user.speed_fly <= 0:
 		print("%s tries to fly, but they don't have a fly speed!" % user.entity_name)

@@ -5,7 +5,7 @@ extends PFAction
 func _init():
 	super._init("Leap", [&"move"], PFCombatConstants.ActionCost.ONE_ACTION)
 
-func execute(user: PFActor, _target: PFActor = null) -> Variant:
+func execute(user: PFActor, _target: Variant = null) -> Variant:
 	if await check_trait_triggers(user):
 		print(" -> %s's Leap action was disrupted!" % user.entity_name)
 		return false

@@ -1,4 +1,4 @@
-# pf_action_strike.gd
+﻿# pf_action_strike.gd
 # The core attack action for the engine.
 ## Standard offensive attack action using an equipped weapon or unarmed attack.
 class_name PFActionStrike
@@ -18,7 +18,7 @@ func _init(p_weapon: PFWeapon, p_intent_nonlethal: bool = false, p_versatile_typ
 	
 	super._init("Strike with " + p_weapon.entity_name, initial_traits, PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	if target == null:
 		print("Strike failed: No target.")
 		return false
@@ -33,12 +33,12 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 			user.action_economy.increment_attack()
 			return true
 		
-	var inv = user.get(&"inventory") as PFInventory
-	if inv:
-		if weapon.hands_required == 2 and inv.two_handed_item != weapon:
+	var inventory = user.get(&"inventory") as PFInventory
+	if inventory:
+		if weapon.hands_required == 2 and inventory.two_handed_item != weapon:
 			print("    > [ERROR] %s requires two hands, but is not being held with two hands!" % weapon.entity_name)
 			return false
-		elif weapon.hands_required == 1 and inv.held_main_hand != weapon and inv.held_off_hand != weapon and inv.two_handed_item != weapon:
+		elif weapon.hands_required == 1 and inventory.held_main_hand != weapon and inventory.held_off_hand != weapon and inventory.two_handed_item != weapon:
 			if not weapon.has_trait(&"free-hand") and not weapon.has_trait(&"unarmed"):
 				print("    > [ERROR] %s must be held to strike!" % weapon.entity_name)
 				return false
@@ -514,3 +514,4 @@ func _apply_critical_specialization(user: PFActor, target: PFActor) -> void:
 			print("    > Sword Specialization: Target is Off-Guard until start of your next turn!")
 		_:
 			print("    > (No critical specialization effect implemented for this group yet).")
+

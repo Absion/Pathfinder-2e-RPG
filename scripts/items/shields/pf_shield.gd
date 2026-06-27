@@ -1,4 +1,4 @@
-# pf_shield.gd
+﻿# pf_shield.gd
 ## Defensive item that can be raised to grant AC and used to block damage.
 class_name PFShield
 extends PFItem
@@ -114,8 +114,9 @@ func get_bash_weapon() -> PFWeapon:
 			if not bash_traits.has(t):
 				bash_traits.append(t)
 				
-	var w = PFWeapon.new(entity_name + " Bash", bash_traits, level, 0.0,
+	var bash_weapon = PFWeapon.new(entity_name + " Bash", bash_traits, level, 0.0,
 		PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.MARTIAL, PFEquipmentConstants.WeaponGroup.SHIELD, 
 		1, 4, PFCombatConstants.DamageType.BLUDGEONING, 
 		item_material, hardness, max_hp, 0, 0, grade)
-	return w
+	return bash_weapon
+

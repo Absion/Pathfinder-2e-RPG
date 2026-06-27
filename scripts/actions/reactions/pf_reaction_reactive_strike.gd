@@ -1,4 +1,4 @@
-# pf_reaction_reactive_strike.gd
+﻿# pf_reaction_reactive_strike.gd
 class_name PFReactionReactiveStrike
 extends RefCounted
 
@@ -8,9 +8,9 @@ static func condition(trigger_actor: PFActor, event_data: Dictionary, listener: 
 		
 	# Determine if listener has a melee weapon
 	var weapon = PFWeapon.new("Fist", [&"agile", &"finesse", &"nonlethal", &"unarmed"], 1, 0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.UNARMED, PFEquipmentConstants.WeaponGroup.BRAWLING, 1, 4, PFCombatConstants.DamageType.BLUDGEONING)
-	var inv = listener.get(&"inventory") as PFInventory
-	if inv and inv.held_main_hand and inv.held_main_hand is PFWeapon and inv.held_main_hand.weapon_type == PFEquipmentConstants.WeaponType.MELEE:
-		weapon = inv.held_main_hand
+	var inventory = listener.get(&"inventory") as PFInventory
+	if inventory and inventory.held_main_hand and inventory.held_main_hand is PFWeapon and inventory.held_main_hand.weapon_type == PFEquipmentConstants.WeaponType.MELEE:
+		weapon = inventory.held_main_hand
 	
 	var reach = 5
 	for t in weapon.traits:
@@ -41,9 +41,9 @@ static func execute(trigger_actor: PFActor, event_data: Dictionary, listener: PF
 	
 	# Reactive Strike is a free Strike action that doesn't increase MAP.
 	var weapon = PFWeapon.new("Fist", [&"agile", &"finesse", &"nonlethal", &"unarmed"], 1, 0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.UNARMED, PFEquipmentConstants.WeaponGroup.BRAWLING, 1, 4, PFCombatConstants.DamageType.BLUDGEONING)
-	var inv = listener.get(&"inventory") as PFInventory
-	if inv and inv.held_main_hand and inv.held_main_hand is PFWeapon:
-		weapon = inv.held_main_hand
+	var inventory = listener.get(&"inventory") as PFInventory
+	if inventory and inventory.held_main_hand and inventory.held_main_hand is PFWeapon:
+		weapon = inventory.held_main_hand
 		
 	var strike_action = PFActionStrike.new(weapon)
 	
@@ -61,3 +61,4 @@ static func execute(trigger_actor: PFActor, event_data: Dictionary, listener: PF
 	
 	# Event data is unchanged
 	return event_data
+

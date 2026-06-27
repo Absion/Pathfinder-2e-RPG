@@ -1,4 +1,4 @@
-# pf_level_up_manager.gd
+﻿# pf_level_up_manager.gd
 ## Generates a "blueprint" of pending choices and fixed bonuses when an actor levels up.
 class_name PFLevelUpManager
 extends RefCounted
@@ -32,10 +32,10 @@ static func generate_level_up_blueprint(actor: PFPlayerCharacter) -> Dictionary:
 		blueprint["ability_boosts"] = 4
 		
 	# 3. Class Progressions
-	var db = PFDatabase.get_instance()
-	if db and actor.actor_class:
+	var database = PFDatabase.get_instance()
+	if database and actor.actor_class:
 		var class_id = str(actor.actor_class.entity_name).to_lower() 
-		var prog_data = db.get_class_progression(class_id, next_level)
+		var prog_data = database.get_class_progression(class_id, next_level)
 		
 		if not prog_data.is_empty():
 			# Fixed features
@@ -76,8 +76,8 @@ static func generate_level_up_blueprint(actor: PFPlayerCharacter) -> Dictionary:
 	return blueprint
 
 static func apply_class_feature(_actor: PFPlayerCharacter, feature_id: StringName) -> void:
-	var db = PFDatabase.get_instance()
-	var feature_data = db.get_class_feature_data(feature_id)
+	var database = PFDatabase.get_instance()
+	var feature_data = database.get_class_feature_data(feature_id)
 	if feature_data.is_empty(): return
 	
 	print("    > Applied Class Feature: %s" % feature_data["name"])
@@ -90,9 +90,9 @@ static func recalculate_spell_slots(actor: PFPlayerCharacter) -> void:
 	if actor.actor_class and actor.actor_class.is_spellcaster:
 		var class_id = actor.actor_class.id
 		var class_rep: PFSpellcastingReceptacle = null
-		for rep in actor.spellbook.receptacles:
-			if rep.source_id == class_id:
-				class_rep = rep
+		for receptacle in actor.spellbook.receptacles:
+			if receptacle.source_id == class_id:
+				class_rep = receptacle
 				break
 		
 		if class_rep:
@@ -129,17 +129,17 @@ static func recalculate_spell_slots(actor: PFPlayerCharacter) -> void:
 					
 	for source_id in archetype_levels:
 		var data = archetype_levels[source_id]
-		var rep: PFSpellcastingReceptacle = null
+		var receptacle: PFSpellcastingReceptacle = null
 		for r in actor.spellbook.receptacles:
 			if r.source_id == source_id:
-				rep = r
+				receptacle = r
 				break
-		if not rep:
-			rep = PFSpellcastingReceptacle.new(source_id, data["tradition"], data["caster_type"])
-			actor.spellbook.add_receptacle(rep)
+		if not receptacle:
+			receptacle = PFSpellcastingReceptacle.new(source_id, data["tradition"], data["caster_type"])
+			actor.spellbook.add_receptacle(receptacle)
 			
 		# Apply slots
-		rep.spells_per_rank.clear()
+		receptacle.spells_per_rank.clear()
 		
 		if data.get("bounded", false):
 			var table: Dictionary = {}
@@ -151,25 +151,25 @@ static func recalculate_spell_slots(actor: PFPlayerCharacter) -> void:
 				table = PFMagicConstants.ARCHETYPE_BOUNDED_BASIC_PROGRESSION[actor.level]
 				
 			for rank in table:
-				rep.spells_per_rank[rank] = table[rank]
+				receptacle.spells_per_rank[rank] = table[rank]
 		else:
 			# 1. Basic Progression
 			if PFMagicConstants.ARCHETYPE_BASIC_PROGRESSION.has(actor.level):
 				var basic = PFMagicConstants.ARCHETYPE_BASIC_PROGRESSION[actor.level]
 				for rank in basic:
-					rep.spells_per_rank[rank] = rep.spells_per_rank.get(rank, 0) + basic[rank]
+					receptacle.spells_per_rank[rank] = receptacle.spells_per_rank.get(rank, 0) + basic[rank]
 			
 			# 2. Expert Progression
 			if (data["tier"] == "expert" or data["tier"] == "master") and PFMagicConstants.ARCHETYPE_EXPERT_PROGRESSION.has(actor.level):
 				var expert = PFMagicConstants.ARCHETYPE_EXPERT_PROGRESSION[actor.level]
 				for rank in expert:
-					rep.spells_per_rank[rank] = rep.spells_per_rank.get(rank, 0) + expert[rank]
+					receptacle.spells_per_rank[rank] = receptacle.spells_per_rank.get(rank, 0) + expert[rank]
 					
 			# 3. Master Progression
 			if data["tier"] == "master" and PFMagicConstants.ARCHETYPE_MASTER_PROGRESSION.has(actor.level):
 				var master = PFMagicConstants.ARCHETYPE_MASTER_PROGRESSION[actor.level]
 				for rank in master:
-					rep.spells_per_rank[rank] = rep.spells_per_rank.get(rank, 0) + master[rank]
+					receptacle.spells_per_rank[rank] = receptacle.spells_per_rank.get(rank, 0) + master[rank]
 					
 		# 4. Proficiency
 		if data["tradition"] != PFMagicConstants.MagicTradition.NONE:
@@ -177,3 +177,4 @@ static func recalculate_spell_slots(actor: PFPlayerCharacter) -> void:
 			if data["tier"] == "expert": target_rank = PFMathConstants.ProficiencyRank.EXPERT
 			elif data["tier"] == "master": target_rank = PFMathConstants.ProficiencyRank.MASTER
 			actor.sheet.set_spell_rank(data["tradition"], target_rank)
+

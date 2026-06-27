@@ -1,4 +1,4 @@
-extends GutTest
+﻿extends GutTest
 
 class_name TestBestiary
 
@@ -9,10 +9,10 @@ func test_bestiary() -> void:
 	print("\n--- Running Bestiary Tests ---")
 	
 	PFContext.init_shared_services()
-	var db = PFDatabase.get_instance()
+	var database = PFDatabase.get_instance()
 	
-	# Clear db for this specific test
-	db.query("DELETE FROM player_knowledge;")
+	# Clear database for this specific test
+	database.query("DELETE FROM player_knowledge;")
 	
 	var wizard = autofree(PFPlayerCharacter.new("Wizard", [&"humanoid"], 5, 0, 0, 0, 0))
 	wizard.attributes.apply_ancestry_boost(&"int")
@@ -35,10 +35,10 @@ func test_bestiary() -> void:
 	print("\nTest 1: Recall Knowledge Crit Failure")
 	# Force a low roll by overriding math or just manually injecting the failure state to test generation reliably
 	var rk_action = PFActionRecallKnowledge.new()
-	var current_knowledge = db.get_player_knowledge(dragon.base_id)
-	rk_action._grant_false_knowledge(db, dragon.base_id, dragon, current_knowledge)
+	var current_knowledge = database.get_player_knowledge(dragon.base_id)
+	rk_action._grant_false_knowledge(database, dragon.base_id, dragon, current_knowledge)
 	
-	current_knowledge = db.get_player_knowledge(dragon.base_id)
+	current_knowledge = database.get_player_knowledge(dragon.base_id)
 	assert_true(current_knowledge.get(&"false_data", "{}") != "{}", "Should have generated false data on crit fail.")
 	
 	var false_data = JSON.parse_string(current_knowledge["false_data"])
@@ -57,7 +57,7 @@ func test_bestiary() -> void:
 	# TEST 2: Passive Un-Discovery
 	print("\nTest 2: Passive Un-Discovery via Combat")
 	# Let's forcefully inject a fake Fire weakness for the test
-	db.update_player_knowledge(dragon.base_id, {
+	database.update_player_knowledge(dragon.base_id, {
 		"state_weaknesses": 2,
 		"false_data": JSON.stringify({"weaknesses": [{"type": "fire", "value": 5}]})
 	})
@@ -65,7 +65,7 @@ func test_bestiary() -> void:
 	# Wizard hits dragon with Fire
 	dragon.health.apply_damage(10, PFCombatConstants.DamageType.FIRE)
 	
-	var updated_knowledge = db.get_player_knowledge(dragon.base_id)
+	var updated_knowledge = database.get_player_knowledge(dragon.base_id)
 	var updated_false_data = JSON.parse_string(updated_knowledge["false_data"])
 	
 	assert_true(updated_knowledge.get(&"state_weaknesses", 0) == 0, "Weakness state should revert to 0 after realizing it's fake.")
@@ -76,19 +76,19 @@ func test_bestiary() -> void:
 	# Wizard hits dragon with Cold
 	dragon.health.apply_damage(10, PFCombatConstants.DamageType.COLD)
 	
-	updated_knowledge = db.get_player_knowledge(dragon.base_id)
+	updated_knowledge = database.get_player_knowledge(dragon.base_id)
 	assert_true(updated_knowledge.get(&"state_weaknesses", 0) == 1, "Weakness state should be 1 (KNOWN) after triggering actual weakness.")
 	
 	# TEST 4: Success clears false data
 	print("\nTest 4: Success clears remaining false data")
-	db.update_player_knowledge(dragon.base_id, {
+	database.update_player_knowledge(dragon.base_id, {
 		"state_saves": 2,
 		"false_data": JSON.stringify({"saves": {"fortitude": 10}})
 	})
-	var pre_success_knowledge = db.get_player_knowledge(dragon.base_id)
-	rk_action._grant_success_knowledge(db, dragon.base_id, pre_success_knowledge, 1)
+	var pre_success_knowledge = database.get_player_knowledge(dragon.base_id)
+	rk_action._grant_success_knowledge(database, dragon.base_id, pre_success_knowledge, 1)
 	
-	var final_knowledge = db.get_player_knowledge(dragon.base_id)
+	var final_knowledge = database.get_player_knowledge(dragon.base_id)
 	assert_true(final_knowledge.get(&"false_data", "{}") == "{}", "Success should clear all false data.")
 	assert_true(final_knowledge.get(&"state_name", 0) == 1, "Success should guarantee basic info is KNOWN.")
 	
@@ -96,3 +96,4 @@ func test_bestiary() -> void:
 
 func after_all():
 	PFContext.cleanup_shared_services()
+

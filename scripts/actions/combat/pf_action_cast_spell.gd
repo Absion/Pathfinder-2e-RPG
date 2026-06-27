@@ -30,7 +30,7 @@ func _init(p_spell: PFSpell, p_rank: int = -1, p_receptacle: PFSpellcastingRecep
 		
 	super._init("Cast " + spell.entity_name, initial_traits, action_cost)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	if not user.has_method(&"get") or not user.get(&"spellbook"):
 		print("    > [ERROR] %s cannot cast spells (no spellbook)." % user.entity_name)
 		return false

@@ -1,4 +1,4 @@
-
+﻿
 # pf_combat_grid.gd
 ## Renders the tactical battlefield and calculates PF2E diagonal distance math.
 class_name PFCombatGrid
@@ -115,17 +115,17 @@ func _setup_multimesh():
 
 func highlight_tiles(tiles: Array[Vector3], color_type: HighlightColor):
 	_highlighted_tiles = tiles
-	var mm = multimesh_instance.multimesh
-	mm.instance_count = tiles.size()
+	var multimesh = multimesh_instance.multimesh
+	multimesh.instance_count = tiles.size()
 	
 	var base_color = _materials[color_type].albedo_color
 	
 	for i in range(tiles.size()):
-		var t = Transform3D()
+		var transform = Transform3D()
 		# Snap absolutely to grid integers
-		t.origin = Vector3(round(tiles[i].x), 0, round(tiles[i].z))
-		mm.set_instance_transform(i, t)
-		mm.set_instance_color(i, base_color)
+		transform.origin = Vector3(round(tiles[i].x), 0, round(tiles[i].z))
+		multimesh.set_instance_transform(i, transform)
+		multimesh.set_instance_color(i, base_color)
 
 func clear_highlights():
 	_highlighted_tiles.clear()
@@ -133,8 +133,8 @@ func clear_highlights():
 
 @warning_ignore("integer_division")
 func draw_base_grid(width: int = 50, height: int = 50):
-	var mm = base_grid_instance.multimesh
-	mm.instance_count = width * height
+	var multimesh = base_grid_instance.multimesh
+	multimesh.instance_count = width * height
 	
 	var faint_color = Color(1.0, 1.0, 1.0, 0.08) # Very faint white
 	var i = 0
@@ -146,8 +146,8 @@ func draw_base_grid(width: int = 50, height: int = 50):
 		for z in range(-half_h, height - half_h):
 			var grid_transform = Transform3D()
 			grid_transform.origin = Vector3(x, 0, z)
-			mm.set_instance_transform(i, grid_transform)
-			mm.set_instance_color(i, faint_color)
+			multimesh.set_instance_transform(i, grid_transform)
+			multimesh.set_instance_color(i, faint_color)
 			i += 1
 
 func clear_base_grid():
@@ -160,11 +160,11 @@ func update_cursor(pos: Vector3):
 ## Pathfinder 2e Distance Rules (1 unit = 1 square = 5 feet)
 ## Diagonals: 1st diagonal is 5ft, 2nd is 10ft, 3rd is 5ft, 4th is 10ft...
 static func get_distance_pf2e(pos1: Vector3, pos2: Vector3) -> int:
-	var dx = abs(round(pos1.x) - round(pos2.x))
-	var dz = abs(round(pos1.z) - round(pos2.z))
+	var delta_x = abs(round(pos1.x) - round(pos2.x))
+	var delta_z = abs(round(pos1.z) - round(pos2.z))
 	
-	var min_d = min(dx, dz)
-	var max_d = max(dx, dz)
+	var min_d = min(delta_x, delta_z)
+	var max_d = max(delta_x, delta_z)
 	
 	var diagonal_steps = min_d
 	var straight_steps = max_d - min_d
@@ -215,7 +215,7 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 					break
 			if overlap: break
 			
-		# If we aren't overlapping the XZ coordinate, it's free.
+		# If we aren'transform overlapping the XZ coordinate, it's free.
 		if not overlap:
 			continue
 			
@@ -237,3 +237,4 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 		return true
 		
 	return false
+

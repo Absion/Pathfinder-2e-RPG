@@ -1,4 +1,4 @@
-extends GutTest
+﻿extends GutTest
 
 class_name TestAfflictions
 
@@ -18,8 +18,8 @@ func test_poison_progression():
 	pc.attributes.apply_ancestry_boost(&"con") # Con +1
 	# Her save is: Level (1) + Trained (2) + Con (1) = +4
 	
-	var db = PFDatabase.get_instance()
-	assert_not_null(db.get_affliction_data(&"giant_centipede_venom"), "Venom should exist in DB.")
+	var database = PFDatabase.get_instance()
+	assert_not_null(database.get_affliction_data(&"giant_centipede_venom"), "Venom should exist in DB.")
 	
 	# 1. Initial Exposure (Failed save -> Stage 1)
 	# Seed the RNG to guarantee a failure for the initial exposure.
@@ -81,3 +81,4 @@ func test_poison_progression():
 	assert_false(pc.has_condition("enfeebled"), "Sub-conditions should be cleaned up.")
 	
 	print("\nAll Affliction Tests Passed!")
+

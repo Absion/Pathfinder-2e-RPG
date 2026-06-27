@@ -6,8 +6,8 @@ extends PFAction
 var action_id: StringName
 
 func _init(p_action_id: StringName):
-	var db = PFDatabase.get_instance()
-	var data = db.get_action_data(p_action_id) if db else {}
+	var database = PFDatabase.get_instance()
+	var data = database.get_action_data(p_action_id) if database else {}
 	
 	var action_name = data.get(&"name", str(p_action_id))
 	var cost_str = data.get(&"cost", "1")
@@ -33,7 +33,7 @@ func _init(p_action_id: StringName):
 	super._init(action_name, traits_array, action_cost)
 	action_id = p_action_id
 
-func execute(user: PFActor, target: PFActor = null) -> Variant:
+func execute(user: PFActor, target: Variant = null) -> Variant:
 	if await check_trait_triggers(user):
 		print(" -> %s's action was disrupted!" % user.entity_name)
 		return false
@@ -57,3 +57,4 @@ func execute(user: PFActor, target: PFActor = null) -> Variant:
 			print(" -> %s gains the Cover condition." % user.entity_name)
 			
 	return true
+

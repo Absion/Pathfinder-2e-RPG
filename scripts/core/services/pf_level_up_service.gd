@@ -1,4 +1,4 @@
-# pf_level_up_service.gd
+﻿# pf_level_up_service.gd
 ## A Sandbox Builder for managing a character's pending level up transaction without mutating the character until confirmed.
 class_name PFLevelUpService
 extends RefCounted
@@ -25,12 +25,12 @@ func get_preview_stats() -> Dictionary:
 	return stats
 
 func get_available_feats(slot_type: StringName) -> Array[Dictionary]:
-	var db = PFDatabase.get_instance()
-	if not db: return []
+	var database = PFDatabase.get_instance()
+	if not database: return []
 	
 	# Fetch all feats from the database
-	db.query("SELECT * FROM feats")
-	var all_feats = db.query_result
+	database.query("SELECT * FROM feats")
+	var all_feats = database.query_result
 	var valid_feats: Array[Dictionary] = []
 	
 	for row in all_feats:
@@ -106,8 +106,8 @@ func _meets_prerequisites(prereqs_json: String) -> bool:
 	if prereq.has(&"requires_feat"):
 		var feat_id = prereq["requires_feat"]
 		var has_feat = false
-		for f in _actor.feats:
-			if str(f.id) == feat_id: has_feat = true
+		for feat in _actor.feats:
+			if str(feat.id) == feat_id: has_feat = true
 		for s in selected_feats.values():
 			if str(s.id) == feat_id: has_feat = true
 		if not has_feat: return false
@@ -166,9 +166,9 @@ func commit_transaction() -> void:
 	for i in range(slots.size()):
 		var slot_type = slots[i]
 		if selected_feats.has(i):
-			var f = selected_feats[i]
-			_actor.feats.append(f)
-			history_entry["feat_slots"][slot_type] = str(f.id)
+			var feat = selected_feats[i]
+			_actor.feats.append(feat)
+			history_entry["feat_slots"][slot_type] = str(feat.id)
 			
 	for skill in selected_skills:
 		_actor.sheet.upgrade_skill(skill, _actor.level)
@@ -182,3 +182,4 @@ func commit_transaction() -> void:
 	_actor.progression_history[_actor.level] = history_entry
 	
 	PFLevelUpManager.recalculate_spell_slots(_actor)
+

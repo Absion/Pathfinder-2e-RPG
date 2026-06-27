@@ -1,4 +1,4 @@
-# pf_stat.gd
+﻿# pf_stat.gd
 # Manages a single statistic (like AC or Fortitude Save) and calculates its final value.
 ## A tracked numerical statistic that calculates modifiers dynamically.
 class_name PFStat
@@ -11,8 +11,8 @@ func _init(p_base: int):
 	base_value = p_base
 
 # Adds a new buff/debuff to this stat.
-func add_modifier(mod: PFModifier) -> void:
-	modifiers.append(mod)
+func add_modifier(modifier: PFModifier) -> void:
+	modifiers.append(modifier)
 
 # Removes a modifier based on where it came from. 
 # Example: remove_modifier_by_source("Bless Spell") when the spell duration ends.
@@ -36,26 +36,26 @@ func get_total() -> int:
 	var lowest_item = 0
 
 	# Loop through all active modifiers
-	for mod in modifiers:
-		if mod.type == PFMathConstants.ModifierType.UNTYPED:
+	for modifier in modifiers:
+		if modifier.type == PFMathConstants.ModifierType.UNTYPED:
 			# Untyped modifiers (like a shield's penalty to speed) always stack
-			total += mod.value
+			total += modifier.value
 			
-		elif mod.type == PFMathConstants.ModifierType.CIRCUMSTANCE:
-			if mod.value > 0: 
+		elif modifier.type == PFMathConstants.ModifierType.CIRCUMSTANCE:
+			if modifier.value > 0: 
 				# maxi() returns the higher of two numbers. This ensures we only keep the highest bonus.
-				highest_circumstance = maxi(highest_circumstance, mod.value)
+				highest_circumstance = maxi(highest_circumstance, modifier.value)
 			else: 
 				# mini() returns the lower of two numbers (e.g., -2 is lower than -1).
-				lowest_circumstance = mini(lowest_circumstance, mod.value)
+				lowest_circumstance = mini(lowest_circumstance, modifier.value)
 				
-		elif mod.type == PFMathConstants.ModifierType.STATUS:
-			if mod.value > 0: highest_status = maxi(highest_status, mod.value)
-			else: lowest_status = mini(lowest_status, mod.value)
+		elif modifier.type == PFMathConstants.ModifierType.STATUS:
+			if modifier.value > 0: highest_status = maxi(highest_status, modifier.value)
+			else: lowest_status = mini(lowest_status, modifier.value)
 			
-		elif mod.type == PFMathConstants.ModifierType.ITEM:
-			if mod.value > 0: highest_item = maxi(highest_item, mod.value)
-			else: lowest_item = mini(lowest_item, mod.value)
+		elif modifier.type == PFMathConstants.ModifierType.ITEM:
+			if modifier.value > 0: highest_item = maxi(highest_item, modifier.value)
+			else: lowest_item = mini(lowest_item, modifier.value)
 
 	# Apply the highest bonus and worst penalty of each type to the total
 	total += highest_circumstance + lowest_circumstance
@@ -63,3 +63,4 @@ func get_total() -> int:
 	total += highest_item + lowest_item
 	
 	return total
+

@@ -67,7 +67,7 @@ func estimate(user: PFPlayerCharacter) -> Dictionary:
 		"success_chance_pct": chance
 	}
 
-func execute(user: PFActor, _target: PFActor = null) -> bool:
+func execute(user: PFActor, _target: Variant = null) -> bool:
 	if not user is PFPlayerCharacter:
 		return false
 		

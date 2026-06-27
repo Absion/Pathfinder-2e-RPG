@@ -1,4 +1,4 @@
-# pf_condition.gd
+﻿# pf_condition.gd
 ## An active effect or status applied to an actor.
 class_name PFCondition
 extends RefCounted
@@ -73,8 +73,9 @@ func on_turn_end(_owner: PFActor) -> void:
 	pass
 
 func get_modifier(context: StringName) -> int:
-	var ctx = str(context)
+	var context_string = str(context)
 	# Check if this condition targets the given context
-	if target_stat == ctx or target_stat == "all_checks_and_dcs" or (target_stat == "dex_based" and ctx in ["ac", "ref"]):
+	if target_stat == context_string or target_stat == "all_checks_and_dcs" or (target_stat == "dex_based" and context_string in ["ac", "ref"]):
 		return value * multiplier
 	return 0
+

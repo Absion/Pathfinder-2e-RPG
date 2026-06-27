@@ -1,4 +1,4 @@
-extends GutTest
+﻿extends GutTest
 
 
 
@@ -7,7 +7,7 @@ func test_rest_healing():
 	var player = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 2, 30, 0, 0, 0))
 	player.attributes.apply_background_boost(&"con")
 	player.attributes.apply_class_boost(&"con")
-	# CON mod should be +2
+	# CON modifier should be +2
 	
 	# Damage the player
 	player.take_damage(10)
@@ -42,12 +42,12 @@ func test_rest_minimum_healing():
 	# CON modifier -1, level 5
 	var player = autofree(PFPlayerCharacter.new("Ezren", [&"human", &"humanoid"], 5, 30, 0, 0, 0))
 	player.attributes.apply_voluntary_flaw(&"con") 
-	# CON mod should be -1 
+	# CON modifier should be -1 
 	
 	player.take_damage(10)
 	assert_eq(player.health.current_hp, 20)
 	
-	# Con mod (-1) acts as minimum 1. 1 * Level (5) = 5.
+	# Con modifier (-1) acts as minimum 1. 1 * Level (5) = 5.
 	player._on_rested_for_night()
 	
 	# Minimum healing logic: Level 5 * max(1, -1) = 5
@@ -80,3 +80,4 @@ func test_rest_sleeping_in_armor():
 	player.inventory.equip_item(chain_comfort)
 	player._on_rested_for_night()
 	assert_false(player.has_condition("fatigued"))
+

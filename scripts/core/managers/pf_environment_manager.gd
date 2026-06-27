@@ -1,4 +1,4 @@
-# pf_environment_manager.gd
+﻿# pf_environment_manager.gd
 ## Manages global environment state, temperature, terrain conditions, and aquatic status.
 ## Handles periodic effects like extreme cold or heat damage during exploration.
 class_name PFEnvironmentManager
@@ -19,10 +19,10 @@ func _init() -> void:
 	_instance = self
 
 func _ready() -> void:
-	var tm = PFTimeManager.get_instance()
-	if tm:
-		tm.time_advanced.connect(_on_time_advanced)
-		tm.rested_for_night.connect(_on_rested)
+	var time_manager = PFTimeManager.get_instance()
+	if time_manager:
+		time_manager.time_advanced.connect(_on_time_advanced)
+		time_manager.rested_for_night.connect(_on_rested)
 
 static func get_instance() -> PFEnvironmentManager:
 	return _instance
@@ -68,3 +68,4 @@ func _apply_temperature_damage(severity: PFEnvironmentConstants.EnvironmentDamag
 		var dmg_result = PFGameMath.get_environmental_damage(environment_level, severity)
 		print("    > %s takes %d %s damage from %s!" % [actor.entity_name, dmg_result.total, PFCombatConstants.DamageType.keys()[dmg_type].capitalize(), temp_name])
 		actor.take_damage(dmg_result.total, dmg_type, [&"environmental", &"weather"])
+

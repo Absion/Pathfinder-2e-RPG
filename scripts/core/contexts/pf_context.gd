@@ -1,4 +1,4 @@
-# pf_context.gd
+﻿# pf_context.gd
 ## Base class for global game states (combat, exploration, menus).
 class_name PFContext
 extends Node
@@ -67,12 +67,12 @@ static func cleanup_shared_services() -> void:
 
 ## Ask the TimeManager to rest the entire party.
 static func request_rest(hours: int = 8) -> void:
-	var tm = PFTimeManager.get_instance()
-	if tm:
+	var time_manager = PFTimeManager.get_instance()
+	if time_manager:
 		if hours >= 8:
-			tm.rest_for_night()
+			time_manager.rest_for_night()
 		else:
-			tm.advance_hours(hours)
+			time_manager.advance_hours(hours)
 	else:
 		print("    > [ERROR] PFTimeManager is not initialized!")
 
@@ -92,3 +92,4 @@ func enter_context(_args: Dictionary = {}) -> void:
 
 func exit_context() -> void:
 	pass
+

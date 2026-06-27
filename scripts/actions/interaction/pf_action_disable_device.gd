@@ -1,4 +1,4 @@
-﻿# pf_action_disable_device.gd
+# pf_action_disable_device.gd
 ## Allows a character to attempt to disable a hazard using a specific skill.
 class_name PFActionDisableDevice
 extends PFAction
@@ -10,7 +10,7 @@ func _init():
 	# Usually takes 2 actions
 	super._init("Disable a Device", [&"manipulate"], PFCombatConstants.ActionCost.TWO_ACTIONS)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	if not super.execute(user, target): return false
 	
 	if not target or not target is PFHazard:

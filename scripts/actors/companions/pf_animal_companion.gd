@@ -14,9 +14,9 @@ var sheet: PFProficiencySheet
 func _init(p_name: String, p_master: PFActor, db_id: StringName):
 	super._init(p_name, p_master, [&"animal"], p_master.level)
 	
-	var db = PFDatabase.get_instance()
-	if db:
-		base_data = db.get_animal_companion_data(db_id)
+	var database = PFDatabase.get_instance()
+	if database:
+		base_data = database.get_animal_companion_data(db_id)
 		
 		# Animal companions need proficiency tracking like players for their scaling rules
 		sheet = PFProficiencySheet.new()
@@ -56,7 +56,7 @@ func calculate_stats() -> void:
 	var perception_prof = PFMathConstants.ProficiencyRank.TRAINED
 	var signature_prof = PFMathConstants.ProficiencyRank.TRAINED
 	var attack_dice_multiplier = 1
-	var attack_damage_bonus = 0
+	var _attack_damage_bonus = 0
 	
 	size_id = StringName(base_data["size_id"])
 	
@@ -79,7 +79,7 @@ func calculate_stats() -> void:
 		con_mod += 1
 		wis_mod += 1
 		unarmored_prof = PFMathConstants.ProficiencyRank.MASTER
-		attack_damage_bonus = 1 # Often a generic small bonus
+		_attack_damage_bonus = 1 # Often a generic small bonus
 	elif stage == CompanionStage.SAVAGE:
 		str_mod += 2
 		dex_mod += 1
@@ -87,7 +87,7 @@ func calculate_stats() -> void:
 		wis_mod += 1
 		size_id = &"large" # Or whatever the rules say for scaling
 		unarmed_prof = PFMathConstants.ProficiencyRank.MASTER
-		attack_damage_bonus = 2
+		_attack_damage_bonus = 2
 	elif stage == CompanionStage.INDOMITABLE or stage == CompanionStage.SPECIALIZED:
 		str_mod += 2
 		dex_mod += 2
@@ -152,7 +152,7 @@ func calculate_stats() -> void:
 				if attack.has(&"traits"):
 					for t in attack["traits"]: traits_sn.append(StringName(t))
 					
-				var wpn = PFWeapon.new(
+				var weapon = PFWeapon.new(
 					attack["name"], traits_sn, 1, 0, 
 					PFEquipmentConstants.WeaponType.MELEE, 
 					PFEquipmentConstants.WeaponCategory.UNARMED, 
@@ -162,9 +162,9 @@ func calculate_stats() -> void:
 					attack["damage_type"] as PFCombatConstants.DamageType, 
 					PFEquipmentConstants.ItemMaterial.STANDARD, 0, 0
 				)
-				# TODO: Attach the flat attack_damage_bonus dynamically, usually we rely on STR mod but savage/nimble add raw +1/+2 flat
-				inventory.add_item(wpn)
-				inventory.wield_item(wpn, true) # Auto-wield its own body parts
+				# TODO: Attach the flat attack_damage_bonus dynamically, usually we rely on STR modifier but savage/nimble add raw +1/+2 flat
+				inventory.add_item(weapon)
+				inventory.wield_item(weapon, true) # Auto-wield its own body parts
 
 # --- MINION ACTIONS ---
 func support_benefit() -> void:
@@ -184,3 +184,4 @@ func advanced_maneuver() -> void:
 		print("    > %s uses Advanced Maneuver: %s" % [entity_name, base_data.get(&"advanced_maneuver", "None")])
 	else:
 		print("    > %s has no actions left for Advanced Maneuver." % entity_name)
+

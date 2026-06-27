@@ -28,9 +28,9 @@ func get_max_slots(rank: int) -> int:
 	return spells_per_rank.get(rank, 0)
 	
 func get_available_slots(rank: int) -> int:
-	var max_s = get_max_slots(rank)
-	var exp = expended_slots_per_rank.get(rank, 0)
-	return max(0, max_s - exp)
+	var max_slots = get_max_slots(rank)
+	var expended_slots = expended_slots_per_rank.get(rank, 0)
+	return max(0, max_slots - expended_slots)
 
 func expend_slot(rank: int) -> bool:
 	if get_available_slots(rank) > 0:

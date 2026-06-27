@@ -17,7 +17,7 @@ const BESTIARY_FIELDS = [
 func _init():
 	super._init("Recall Knowledge", [&"secret", &"concentrate"], PFCombatConstants.ActionCost.ONE_ACTION)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	if not super.execute(user, target): return false
 	
 	if not target or not target is PFNpc:
@@ -47,29 +47,29 @@ func execute(user: PFActor, target: PFActor = null) -> bool:
 	print("    > [Secret] %s rolls %s to Recall Knowledge on %s." % [user.entity_name, str(skill_used).capitalize(), target.entity_name])
 	
 	var degree = PFGameMath.get_degree_of_success(roll, dc)
-	var db = PFDatabase.get_instance()
-	if not db:
+	var database = PFDatabase.get_instance()
+	if not database:
 		print("    > [Recall Knowledge] Database unavailable!")
 		return false
 		
-	var current_knowledge = db.get_player_knowledge(monster_id)
+	var current_knowledge = database.get_player_knowledge(monster_id)
 	
 	match degree:
 		PFCombatConstants.DegreeOfSuccess.CRITICAL_SUCCESS:
 			print("    > [Recall Knowledge: CRIT SUCCESS] You recall significant details about %s!" % target.entity_name)
-			_grant_success_knowledge(db, monster_id, current_knowledge, 3)
+			_grant_success_knowledge(database, monster_id, current_knowledge, 3)
 		PFCombatConstants.DegreeOfSuccess.SUCCESS:
 			print("    > [Recall Knowledge: SUCCESS] You recall a useful piece of information about %s." % target.entity_name)
-			_grant_success_knowledge(db, monster_id, current_knowledge, 1)
+			_grant_success_knowledge(database, monster_id, current_knowledge, 1)
 		PFCombatConstants.DegreeOfSuccess.FAILURE:
 			print("    > [Recall Knowledge: FAILURE] You can't remember anything useful right now.")
 		PFCombatConstants.DegreeOfSuccess.CRITICAL_FAILURE:
 			print("    > [Recall Knowledge: CRIT FAILURE] You recall false information!")
-			_grant_false_knowledge(db, monster_id, target, current_knowledge)
+			_grant_false_knowledge(database, monster_id, target, current_knowledge)
 			
 	return true
 
-func _grant_success_knowledge(db: PFDatabase, monster_id: String, current_knowledge: Dictionary, unlock_count: int) -> void:
+func _grant_success_knowledge(database: PFDatabase, monster_id: String, current_knowledge: Dictionary, unlock_count: int) -> void:
 	var updates = {}
 	
 	# Clear false data if it exists
@@ -97,12 +97,12 @@ func _grant_success_knowledge(db: PFDatabase, monster_id: String, current_knowle
 		updates[unknown_fields[i]] = KNOWLEDGE_STATE_KNOWN
 		
 	if updates.size() > 0:
-		db.update_player_knowledge(monster_id, updates)
+		database.update_player_knowledge(monster_id, updates)
 		print("    > [Bestiary] Unlocked %d new fields for %s." % [updates.size() - (1 if updates.has(&"false_data") else 0), monster_id])
 	else:
 		print("    > [Bestiary] You already know everything about %s!" % monster_id)
 
-func _grant_false_knowledge(db: PFDatabase, monster_id: String, target: PFNpc, current_knowledge: Dictionary) -> void:
+func _grant_false_knowledge(database: PFDatabase, monster_id: String, target: PFNpc, current_knowledge: Dictionary) -> void:
 	var unknown_fields = []
 	for field in BESTIARY_FIELDS:
 		# Don't give fake names/descriptions/traits usually, stick to mechanical fields
@@ -125,7 +125,7 @@ func _grant_false_knowledge(db: PFDatabase, monster_id: String, target: PFNpc, c
 		target_field: KNOWLEDGE_STATE_FALSE,
 		"false_data": JSON.stringify(false_data)
 	}
-	db.update_player_knowledge(monster_id, updates)
+	database.update_player_knowledge(monster_id, updates)
 	print("    > [Bestiary] Generated false knowledge for %s on field %s." % [monster_id, target_field])
 
 func _generate_false_data_for_field(target: PFNpc, field: String, false_data: Dictionary) -> void:
@@ -188,3 +188,4 @@ func _determine_skill_for_target(target: PFActor) -> StringName:
 		
 	# Fallback
 	return &"society"
+

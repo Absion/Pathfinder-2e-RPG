@@ -1,32 +1,32 @@
-extends GutTest
-var db: PFDatabase
+﻿extends GutTest
+var database: PFDatabase
 
 func before_all() -> void:
 	PFContext.init_shared_services()
-	db = PFDatabase.get_instance()
+	database = PFDatabase.get_instance()
 	PFContext.environment_manager = autofree(PFEnvironmentManager.new())
 	
-	db._spells_cache[&"magic_missile"] = {
+	database._spells_cache[&"magic_missile"] = {
 		"name": "Magic Missile", "traits": "attack", "base_spell_rank": 1, 
 		"cast_time": "1 to 3", "range_ft": 120, "targets": "1 creature", "saving_throw": "", 
 		"duration": "", "is_cantrip": 0, "description": "Missile", "scaling_rules": 1, "scaling_dice": 1
 	}
-	db._spells_cache[&"fireball"] = {
+	database._spells_cache[&"fireball"] = {
 		"name": "Fireball", "traits": "fire", "base_spell_rank": 3, 
 		"cast_time": "2", "range_ft": 500, "targets": "20-foot burst", "saving_throw": "reflex", 
 		"duration": "", "is_cantrip": 0, "description": "Boom", "scaling_rules": 1, "scaling_dice": 2
 	}
-	db._spells_cache[&"grease"] = {
+	database._spells_cache[&"grease"] = {
 		"name": "Grease", "traits": "", "base_spell_rank": 1, 
 		"cast_time": "2", "range_ft": 30, "targets": "1 area", "saving_throw": "reflex", 
 		"duration": "1 minute", "is_cantrip": 0, "description": "Slippery", "scaling_rules": 0, "scaling_dice": 0
 	}
-	db._spells_cache[&"heal"] = {
+	database._spells_cache[&"heal"] = {
 		"name": "Heal", "traits": "healing", "base_spell_rank": 1, 
 		"cast_time": "1 to 3", "range_ft": 30, "targets": "1 creature", "saving_throw": "", 
 		"duration": "", "is_cantrip": 0, "description": "Heals", "scaling_rules": 1, "scaling_dice": 1
 	}
-	db._spells_cache[&"rare_heal"] = {
+	database._spells_cache[&"rare_heal"] = {
 		"name": "Rare Heal", "traits": "healing", "base_spell_rank": 1, 
 		"cast_time": "1 to 3", "range_ft": 30, "targets": "1 creature", "saving_throw": "", 
 		"duration": "", "is_cantrip": 0, "description": "Heals", "scaling_rules": 1, "scaling_dice": 1
@@ -41,13 +41,13 @@ func test_prepared_spellcasting():
 	caster.actor_class = char_class
 	caster.level = 1
 	var spellbook = PFSpellbook.new(caster)
-	var rep = PFSpellcastingReceptacle.new(&"test_class", char_class.spell_tradition, char_class.caster_type)
-	rep.spells_per_rank[1] = 2
-	spellbook.add_receptacle(rep)
+	var receptacle = PFSpellcastingReceptacle.new(&"test_class", char_class.spell_tradition, char_class.caster_type)
+	receptacle.spells_per_rank[1] = 2
+	spellbook.add_receptacle(receptacle)
 	caster.set(&"spellbook", spellbook)
 	
 	# Full Caster at level 1 gets 2 Rank 1 slots
-	assert_eq(rep.get_max_slots(1), 2)
+	assert_eq(receptacle.get_max_slots(1), 2)
 	
 	# Create a spell
 	var magic_missile = PFSpell.new(&"magic_missile")
@@ -72,7 +72,7 @@ func test_prepared_spellcasting():
 	var fireball = PFSpell.new(&"fireball")
 	fireball.base_spell_rank = 3
 	spellbook.learn_spell(fireball)
-	rep.spells_per_rank[3] = 1 # hack to give slot
+	receptacle.spells_per_rank[3] = 1 # hack to give slot
 	assert_false(spellbook.cast_spell(fireball, null, 3)) # Cannot cast, not prepared
 	
 	# 6. Cast magic missile once
@@ -93,10 +93,10 @@ func test_spontaneous_spellcasting():
 	caster.actor_class = char_class
 	caster.level = 3 # Level 3 full caster gets 3 Rank 1, 2 Rank 2
 	var spellbook = PFSpellbook.new(caster)
-	var rep = PFSpellcastingReceptacle.new(&"test_class", char_class.spell_tradition, char_class.caster_type)
-	rep.spells_per_rank[1] = 3
-	rep.spells_per_rank[2] = 2
-	spellbook.add_receptacle(rep)
+	var receptacle = PFSpellcastingReceptacle.new(&"test_class", char_class.spell_tradition, char_class.caster_type)
+	receptacle.spells_per_rank[1] = 3
+	receptacle.spells_per_rank[2] = 2
+	spellbook.add_receptacle(receptacle)
 	caster.set(&"spellbook", spellbook)
 	spellbook.restore_daily_slots()
 	
@@ -114,7 +114,7 @@ func test_spontaneous_spellcasting():
 	
 	# 1. Cast magic missile at rank 1 (success)
 	assert_true(spellbook.cast_spell(magic_missile, null, 1))
-	assert_eq(rep.get_available_slots(1), 2)
+	assert_eq(receptacle.get_available_slots(1), 2)
 	
 	# 2. Try to cast magic missile at rank 2 (fails, not in rank 2 repertoire and not signature)
 	assert_false(spellbook.cast_spell(magic_missile, null, 2))
@@ -130,11 +130,11 @@ func test_spontaneous_spellcasting():
 	
 	# 5. Cast magic missile at rank 2 (success because it is signature now)
 	assert_true(spellbook.cast_spell(magic_missile, null, 2))
-	assert_eq(rep.get_available_slots(2), 1)
+	assert_eq(receptacle.get_available_slots(2), 1)
 	
 	# 6. Cast fireball at rank 2
 	assert_true(spellbook.cast_spell(fireball, null, 2))
-	assert_eq(rep.get_available_slots(2), 0)
+	assert_eq(receptacle.get_available_slots(2), 0)
 	
 	# 7. Cast fireball again at rank 2 (fails, out of slots)
 	assert_false(spellbook.cast_spell(fireball, null, 2))
@@ -147,8 +147,8 @@ func test_learn_a_spell_action():
 	caster.actor_class = char_class
 	caster.level = 1
 	var spellbook = PFSpellbook.new(caster)
-	var rep = PFSpellcastingReceptacle.new(&"test_class", char_class.spell_tradition, char_class.caster_type)
-	spellbook.add_receptacle(rep)
+	var receptacle = PFSpellcastingReceptacle.new(&"test_class", char_class.spell_tradition, char_class.caster_type)
+	spellbook.add_receptacle(receptacle)
 	caster.set(&"spellbook", spellbook)
 	
 	caster.inventory.gold = 10 # Rank 1 costs 2 GP
@@ -189,9 +189,9 @@ func test_divine_spellcasting():
 	caster.actor_class = char_class
 	caster.level = 1
 	var spellbook = PFSpellbook.new(caster)
-	var rep = PFSpellcastingReceptacle.new(&"test_class", char_class.spell_tradition, char_class.caster_type)
-	rep.spells_per_rank[1] = 2
-	spellbook.add_receptacle(rep)
+	var receptacle = PFSpellcastingReceptacle.new(&"test_class", char_class.spell_tradition, char_class.caster_type)
+	receptacle.spells_per_rank[1] = 2
+	spellbook.add_receptacle(receptacle)
 	caster.set(&"spellbook", spellbook)
 	
 	# Common divine spell
@@ -216,3 +216,4 @@ func test_divine_spellcasting():
 
 func after_all():
 	PFContext.cleanup_shared_services()
+

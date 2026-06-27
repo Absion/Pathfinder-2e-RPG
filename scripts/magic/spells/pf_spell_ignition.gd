@@ -1,4 +1,4 @@
-# pf_spell_ignition.gd
+﻿# pf_spell_ignition.gd
 class_name PFIgnitionSpell
 extends PFSpell
 
@@ -34,5 +34,6 @@ func resolve_effect(_caster: PFActor, target: PFActor, degree: PFDice.Degree, ra
 		var persistent_dice = 1 + increments
 		print("    > Ignition ignites the target! They take %dd4 Persistent Fire damage." % persistent_dice)
 		
-		var pd = PFConditionPersistent.new(PFCombatConstants.DamageType.FIRE, persistent_dice, 4)
-		target.conditions.append(pd)
+		var persistent_damage = PFConditionPersistent.new(PFCombatConstants.DamageType.FIRE, persistent_dice, 4)
+		target.conditions.append(persistent_damage)
+

@@ -13,7 +13,7 @@ func _init(p_name: String, p_damage: int, p_type: PFCombatConstants.DamageType, 
 	damage_type = p_type
 	save_dc = p_dc
 	
-func execute(user: PFActor, _target: PFActor = null):
+func execute(user: PFActor, _target: Variant = null):
 	print("%s unleashes a Swarm Attack! (DC %d Reflex)" % [user.entity_name, save_dc])
 	
 	if not PFContext.active_turn_manager:

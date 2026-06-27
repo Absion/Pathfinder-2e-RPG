@@ -12,7 +12,7 @@ func _init(has_furious_focus: bool = false):
 	# Costs TWO actions, map_weight varies based on feat
 	super._init("Vicious Swing", [&"attack"], PFCombatConstants.ActionCost.TWO_ACTIONS, weight)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	if target == null:
 		return false
 		

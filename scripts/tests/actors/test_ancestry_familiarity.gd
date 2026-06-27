@@ -1,11 +1,11 @@
-extends GutTest
+﻿extends GutTest
 
 func before_all():
 	PFContext.init_shared_services()
-	var db = PFDatabase.get_instance()
-	if db == null:
-		db = PFDatabase.new()
-		add_child_autofree(db)
+	var database = PFDatabase.get_instance()
+	if database == null:
+		database = PFDatabase.new()
+		add_child_autofree(database)
 
 func test_ancestry_weapon_familiarity():
 	# Create an elf character
@@ -53,3 +53,4 @@ func test_ancestry_weapon_familiarity():
 
 func after_all():
 	PFContext.cleanup_shared_services()
+

@@ -1,4 +1,4 @@
-extends GutTest
+﻿extends GutTest
 
 class_name TestBulk
 
@@ -10,8 +10,8 @@ func test_main() -> void:
 	
 	# Setup mock actor
 	var pc = autofree(PFPlayerCharacter.new("Test Actor", [&"humanoid"], 1, 10, 0, 0, 0))
-	# Max bulk before encumbered is 5 + STR mod.
-	# Let's say STR mod is 0, so limit is 5.
+	# Max bulk before encumbered is 5 + STR modifier.
+	# Let's say STR modifier is 0, so limit is 5.
 	var limit = pc.inventory.get_encumbered_limit()
 	assert_eq(limit, 50, "Base encumbered limit should be 50")
 	
@@ -53,11 +53,11 @@ func test_main() -> void:
 
 func test_creature_size_bulk() -> void:
 	print("\n--- Running Creature Size Bulk Tests ---")
-	var db = PFDatabase.get_instance()
-	if db == null:
-		db = PFDatabase.new()
-		add_child_autofree(db)
-		db._ready()
+	var database = PFDatabase.get_instance()
+	if database == null:
+		database = PFDatabase.new()
+		add_child_autofree(database)
+		database._ready()
 		
 	var pc_medium = autofree(PFPlayerCharacter.new("Medium Actor", [&"humanoid"], 1, 10, 0, 0, 0))
 	pc_medium.size_id = &"medium"
@@ -92,3 +92,4 @@ func test_creature_size_bulk() -> void:
 	
 	# Tiny creature carrying medium item: Double bulk
 	assert_eq(pc_tiny.inventory.get_perceived_bulk(item_medium), 20, "Tiny creature carrying medium item (20)")
+

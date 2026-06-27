@@ -1,4 +1,4 @@
-# test_advanced_magic.gd
+﻿# test_advanced_magic.gd
 extends GutTest
 
 var counteract_manager: PFCounteractManager
@@ -31,10 +31,10 @@ func before_each():
 	caster.actor_class.caster_type = PFMagicConstants.CasterType.SPONTANEOUS
 	
 	var sb = PFSpellbook.new(caster)
-	var rep = PFSpellcastingReceptacle.new(&"mock", PFMagicConstants.MagicTradition.ARCANE, PFMagicConstants.CasterType.SPONTANEOUS)
-	rep.spells_per_rank[1] = 3
-	rep.restore_slots()
-	sb.add_receptacle(rep)
+	var receptacle = PFSpellcastingReceptacle.new(&"mock", PFMagicConstants.MagicTradition.ARCANE, PFMagicConstants.CasterType.SPONTANEOUS)
+	receptacle.spells_per_rank[1] = 3
+	receptacle.restore_slots()
+	sb.add_receptacle(receptacle)
 	caster.set(&"spellbook", sb)
 
 func after_each():
@@ -148,3 +148,4 @@ func test_focus_points():
 
 func after_all():
 	PFContext.cleanup_shared_services()
+

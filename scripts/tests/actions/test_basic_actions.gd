@@ -4,16 +4,16 @@ var turn_manager: PFTurnManager
 var reaction_manager: PFReactionManager
 var actor_a: PFActor
 var actor_b: PFActor
-var db: PFDatabase
+var database: PFDatabase
 
 func before_all() -> void:
 	if not Engine.get_main_loop().root.has_node("PFDatabase"):
-		db = PFDatabase.new()
-		db.name = "PFDatabase"
-		Engine.get_main_loop().root.add_child(db)
-		db._ready()
+		database = PFDatabase.new()
+		database.name = "PFDatabase"
+		Engine.get_main_loop().root.add_child(database)
+		database._ready()
 	else:
-		db = PFDatabase.get_instance()
+		database = PFDatabase.get_instance()
 
 func before_each():
 	turn_manager = autofree(PFTurnManager.new())

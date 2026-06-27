@@ -1,6 +1,6 @@
-extends GutTest
+﻿extends GutTest
 
-var db: PFDatabase
+var database: PFDatabase
 var game_root: PFGameRoot
 var actor: PFActor
 
@@ -10,8 +10,8 @@ func before_all():
 		push_error("MainLoop not available!")
 		
 	# Setup DB
-	db = PFDatabase.new()
-	Engine.get_main_loop().root.add_child(db)
+	database = PFDatabase.new()
+	Engine.get_main_loop().root.add_child(database)
 	
 	# Setup GameRoot
 	game_root = PFGameRoot.new()
@@ -24,9 +24,9 @@ func before_all():
 	game_root.transition_to_context("OverworldContext")
 
 func after_all():
-	if db and db.is_inside_tree():
-		db.get_parent().remove_child(db)
-		db.free()
+	if database and database.is_inside_tree():
+		database.get_parent().remove_child(database)
+		database.free()
 	if game_root and game_root.is_inside_tree():
 		game_root.get_parent().remove_child(game_root)
 		game_root.free()
@@ -55,3 +55,4 @@ func test_generic_action_logs_without_crash():
 	var sense_motive = PFActionGeneric.new(&"sense_motive")
 	sense_motive.execute(actor)
 	assert_eq(str(sense_motive.action_id), "sense_motive")
+

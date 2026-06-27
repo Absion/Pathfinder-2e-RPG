@@ -1,4 +1,4 @@
-# pf_action_refocus.gd
+﻿# pf_action_refocus.gd
 ## Exploration activity to regain a focus point.
 class_name PFActionRefocus
 extends PFAction
@@ -6,12 +6,12 @@ extends PFAction
 func _init():
 	super._init("Refocus", [&"concentrate", &"exploration"], PFCombatConstants.ActionCost.FREE, 0)
 
-func execute(user: PFActor, _target: PFActor = null) -> Variant:
+func execute(user: PFActor, _target: Variant = null) -> Variant:
 	print("    > %s spends 10 minutes Refocusing..." % user.entity_name)
 	
-	var tm = PFTimeManager.get_instance()
-	if tm:
-		tm.advance_minutes(10)
+	var time_manager = PFTimeManager.get_instance()
+	if time_manager:
+		time_manager.advance_minutes(10)
 		
 	if user.spellbook:
 		user.spellbook.refocus()
@@ -19,3 +19,4 @@ func execute(user: PFActor, _target: PFActor = null) -> Variant:
 		print("    > %s does not have a spellbook to refocus." % user.entity_name)
 		
 	return true
+

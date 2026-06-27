@@ -8,7 +8,7 @@ func _init(p_stored_action: PFAction):
 	super._init("Ready", [&"concentrate"], PFCombatConstants.ActionCost.TWO_ACTIONS)
 	stored_action = p_stored_action
 
-func execute(user: PFActor, target: PFActor = null) -> Variant:
+func execute(user: PFActor, target: Variant = null) -> Variant:
 	if stored_action == null:
 		print(" -> %s failed to Ready: No action specified." % user.entity_name)
 		return false

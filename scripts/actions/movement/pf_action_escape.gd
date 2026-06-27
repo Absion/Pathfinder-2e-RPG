@@ -6,7 +6,7 @@ extends PFAction
 func _init():
 	super._init("Escape", [&"attack"], PFCombatConstants.ActionCost.ONE_ACTION)
 
-func execute(user: PFActor, _target: PFActor = null) -> bool:
+func execute(user: PFActor, _target: Variant = null) -> bool:
 	if not super.execute(user, null): return false
 	
 	var highest_dc = 0

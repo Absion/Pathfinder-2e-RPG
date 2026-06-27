@@ -5,7 +5,7 @@ extends PFAction
 func _init():
 	super._init("Feint", [&"mental"], PFCombatConstants.ActionCost.ONE_ACTION, 1)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	if not target:
 		print("    > [ERROR] No target for Feint!")
 		return false

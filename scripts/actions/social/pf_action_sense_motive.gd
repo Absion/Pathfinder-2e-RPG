@@ -6,7 +6,7 @@ extends PFAction
 func _init():
 	super._init("Sense Motive", [&"concentrate", &"secret"], PFCombatConstants.ActionCost.ONE_ACTION)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	if not super.execute(user, target): return false
 	
 	if target == null:

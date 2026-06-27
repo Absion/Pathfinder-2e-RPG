@@ -6,7 +6,7 @@ extends PFAction
 func _init():
 	super._init("Raise a Shield", [], PFCombatConstants.ActionCost.ONE_ACTION, 0)
 
-func execute(user: PFActor, target: PFActor = null) -> bool:
+func execute(user: PFActor, target: Variant = null) -> bool:
 	# 1. Find a shield that is being wielded
 	# We look at held_main_hand, held_off_hand, and two_handed_item
 	var shield: PFShield = null

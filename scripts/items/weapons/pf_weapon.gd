@@ -1,4 +1,4 @@
-# pf_weapon.gd
+﻿# pf_weapon.gd
 ## Offensive equipment used to make strikes against targets.
 class_name PFWeapon
 extends PFItem
@@ -45,6 +45,8 @@ var ammunition_type: PFEquipmentConstants.AmmunitionType = PFEquipmentConstants.
 var is_improvised: bool = false
 var is_loaded: bool = false
 var attachment: PFAttachment = null
+var scope_attachment = null # Typed dynamically as PFFirearmCustomization
+var stabilizer_attachment = null # Typed dynamically as PFFirearmCustomization
 var adjustment = null # Will be typed PFAdjustment when created
 var property_runes: Array[PFEquipmentConstants.PropertyRune] = []
 
@@ -91,9 +93,9 @@ func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int =
 	# Parse thrown trait for range increment if not set
 	if range_increment == 0:
 		for t in traits:
-			var ts = String(t)
-			if ts.begins_with("thrown "):
-				var parts = ts.split(" ")
+			var trait_string = String(t)
+			if trait_string.begins_with("thrown "):
+				var parts = trait_string.split(" ")
 				if parts.size() > 1 and parts[1].is_valid_int():
 					range_increment = parts[1].to_int()
 
@@ -158,11 +160,11 @@ func set_versatile_type(new_type: PFCombatConstants.DamageType) -> void:
 	
 	if not is_valid:
 		for t in traits:
-			var ts = String(t).to_lower()
-			if ts.begins_with("modular"):
-				if new_type == PFCombatConstants.DamageType.BLUDGEONING and "b" in ts: is_valid = true
-				elif new_type == PFCombatConstants.DamageType.PIERCING and "p" in ts: is_valid = true
-				elif new_type == PFCombatConstants.DamageType.SLASHING and "s" in ts: is_valid = true
+			var trait_string = String(t).to_lower()
+			if trait_string.begins_with("modular"):
+				if new_type == PFCombatConstants.DamageType.BLUDGEONING and "b" in trait_string: is_valid = true
+				elif new_type == PFCombatConstants.DamageType.PIERCING and "p" in trait_string: is_valid = true
+				elif new_type == PFCombatConstants.DamageType.SLASHING and "s" in trait_string: is_valid = true
 	
 	if is_valid: active_damage_type = new_type
 	else: push_error("Weapon lacks required versatile or modular trait.")
@@ -175,9 +177,9 @@ func can_be_thrown() -> bool:
 
 func get_thrown_range() -> int:
 	for t in traits:
-		var ts = String(t).to_lower()
-		if ts.begins_with("thrown_"):
-			var parts = ts.split("_")
+		var trait_string = String(t).to_lower()
+		if trait_string.begins_with("thrown_"):
+			var parts = trait_string.split("_")
 			if parts.size() > 1 and parts[1].is_valid_int():
 				return parts[1].to_int()
 	return 0
@@ -193,3 +195,4 @@ static func create_improvised(base_item: PFItem, damage_type: PFCombatConstants.
 		weapon.range_increment = 10
 		
 	return weapon
+

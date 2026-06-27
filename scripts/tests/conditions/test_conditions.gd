@@ -1,20 +1,20 @@
-# test_conditions.gd
+﻿# test_conditions.gd
 class_name TestConditions
 extends GutTest
 
-var db: PFDatabase
+var database: PFDatabase
 
 func before_all():
-	db = PFDatabase.get_instance()
-	if db == null:
-		db = PFDatabase.new()
-		db.name = "PFDatabase"
-		Engine.get_main_loop().root.add_child(db)
-		db._ready()
+	database = PFDatabase.get_instance()
+	if database == null:
+		database = PFDatabase.new()
+		database.name = "PFDatabase"
+		Engine.get_main_loop().root.add_child(database)
+		database._ready()
 
 func after_all():
-	if is_instance_valid(db):
-		pass # db.queue_free()
+	if is_instance_valid(database):
+		pass # database.queue_free()
 
 func test_condition_stacking():
 	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
@@ -131,3 +131,4 @@ func test_npc_dying_rules():
 	assert_false(goblin.has_condition("dead"))
 	assert_true(goblin.has_condition("unconscious"))
 	assert_true(goblin.inventory.is_lootable())
+

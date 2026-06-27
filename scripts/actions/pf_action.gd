@@ -1,4 +1,4 @@
-﻿# pf_action.gd
+# pf_action.gd
 # Represents any action a character can take. Inherits from PFEntity so it has traits!
 # Now includes 'map_weight' to control exactly how many MAP stacks an action generates.
 ## Base class representing a single discrete action an actor can take in combat.
@@ -16,7 +16,7 @@ func _init(p_name: String, p_traits: Array[StringName], p_cost: PFCombatConstant
 	cost = p_cost
 	map_weight = p_map_weight
 
-func execute(user: PFActor, _target: PFActor = null) -> Variant:
+func execute(user: PFActor, _target: Variant = null) -> Variant:
 	print("%s performs %s!" % [user.entity_name, entity_name])
 	return true
 

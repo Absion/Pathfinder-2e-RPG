@@ -1,4 +1,4 @@
-# pf_spell.gd
+﻿# pf_spell.gd
 ## Represents a magical spell that can be cast by an actor.
 class_name PFSpell
 extends PFEntity
@@ -22,8 +22,8 @@ var scaling_rules: int = 0
 var scaling_dice: int = 0
 
 func _init(p_id: StringName):
-	var db = PFDatabase.get_instance()
-	var s_data = db.get_spell_data(p_id)
+	var database = PFDatabase.get_instance()
+	var s_data = database.get_spell_data(p_id)
 	
 	if s_data.is_empty():
 		entity_name = "Unknown Spell"
@@ -59,8 +59,8 @@ func _init(p_id: StringName):
 	script_path = str(s_data.get(&"script_path", ""))
 
 static func create(p_id: StringName) -> PFSpell:
-	var db = PFDatabase.get_instance()
-	var s_data = db.get_spell_data(p_id)
+	var database = PFDatabase.get_instance()
+	var s_data = database.get_spell_data(p_id)
 	
 	if s_data.has(&"script_path") and s_data["script_path"] != "":
 		var custom_script = load(s_data["script_path"])
@@ -125,3 +125,4 @@ func resolve_effect(_caster: PFActor, target: PFActor, degree: PFDice.Degree, ra
 		total_damage = floor(total_damage * multiplier)
 		print("    > %s deals %d %s damage to %s (Multiplier: %s)" % [entity_name, total_damage, PFCombatConstants.DamageType.keys()[damage_type], target.entity_name, multiplier])
 		target.take_damage(total_damage, damage_type)
+

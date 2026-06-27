@@ -1,16 +1,16 @@
-# test_saving_throws.gd
+﻿# test_saving_throws.gd
 extends GutTest
 
-var db: PFDatabase
+var database: PFDatabase
 
 func before_all() -> void:
 	if not Engine.get_main_loop().root.has_node("PFDatabase"):
-		db = PFDatabase.new()
-		db.name = "PFDatabase"
-		Engine.get_main_loop().root.add_child(db)
-		db._ready()
+		database = PFDatabase.new()
+		database.name = "PFDatabase"
+		Engine.get_main_loop().root.add_child(database)
+		database._ready()
 	else:
-		db = PFDatabase.get_instance()
+		database = PFDatabase.get_instance()
 
 func after_all():
 	# don't close here if we are reusing it across tests
@@ -69,3 +69,4 @@ func test_spell_dc_calculation():
 	# Expected: 10 + Level (3) + Expert (4) + Int (4) = 21
 	var dc = pc.get_spell_dc()
 	assert_eq(dc, 21)
+

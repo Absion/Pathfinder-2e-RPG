@@ -1,27 +1,27 @@
-extends GutTest
+﻿extends GutTest
 
-var db: PFDatabase
+var database: PFDatabase
 var caster: PFActor
 var target: PFActor
 
 func before_all() -> void:
 	PFContext.init_shared_services()
-	db = PFDatabase.get_instance()
+	database = PFDatabase.get_instance()
 		
 	# Insert mock spells directly into the cache to avoid schema limitations during testing
-	db._spells_cache[&"mock_ignition"] = {
+	database._spells_cache[&"mock_ignition"] = {
 		"name": "Ignition", "traits": "attack,fire,cantrip", "base_spell_rank": 1, 
 		"cast_time": "2", "range_ft": 30, "targets": "1 creature", "saving_throw": "", 
 		"duration": "", "is_cantrip": 1, "description": "Fire damage",
 		"scaling_rules": 1, "scaling_dice": 1
 	}
-	db._spells_cache[&"mock_fireball"] = {
+	database._spells_cache[&"mock_fireball"] = {
 		"name": "Fireball", "traits": "fire", "base_spell_rank": 3, 
 		"cast_time": "2", "range_ft": 500, "targets": "20-foot burst", "saving_throw": "reflex", 
 		"duration": "", "is_cantrip": 0, "description": "Fireball boom",
 		"scaling_rules": 1, "scaling_dice": 2
 	}
-	db._spells_cache[&"mock_lay_on_hands"] = {
+	database._spells_cache[&"mock_lay_on_hands"] = {
 		"name": "Lay on Hands", "traits": "focus,healing", "base_spell_rank": 1, 
 		"cast_time": "1", "range_ft": 0, "targets": "1 willing creature", "saving_throw": "", 
 		"duration": "", "is_cantrip": 0, "description": "Healing",
@@ -42,12 +42,12 @@ func before_each() -> void:
 	caster.actor_class = mock_class
 	
 	var sb = PFSpellbook.new(caster)
-	var rep = PFSpellcastingReceptacle.new(&"mock", PFMagicConstants.MagicTradition.ARCANE, PFMagicConstants.CasterType.PREPARED)
-	rep.spells_per_rank[1] = 2
-	rep.spells_per_rank[3] = 2
-	rep.spells_per_rank[4] = 1
-	rep.restore_slots()
-	sb.add_receptacle(rep)
+	var receptacle = PFSpellcastingReceptacle.new(&"mock", PFMagicConstants.MagicTradition.ARCANE, PFMagicConstants.CasterType.PREPARED)
+	receptacle.spells_per_rank[1] = 2
+	receptacle.spells_per_rank[3] = 2
+	receptacle.spells_per_rank[4] = 1
+	receptacle.restore_slots()
+	sb.add_receptacle(receptacle)
 	caster.set(&"spellbook", sb)
 	sb.max_focus_points = 2
 	sb.focus_points = 2
@@ -138,3 +138,4 @@ func test_focus_points() -> void:
 
 func after_all():
 	PFContext.cleanup_shared_services()
+

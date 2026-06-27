@@ -1,4 +1,4 @@
-# pf_troop.gd
+﻿# pf_troop.gd
 ## A singular entity composed of many intelligent creatures. Features specialized health tracking and area attacks.
 class_name PFTroop
 extends PFNpc
@@ -90,12 +90,12 @@ func _remove_segment() -> void:
 			
 			for i in range(active_segments.size()):
 				var world_pos = anchor + active_segments[i]
-				var d = world_pos.distance_to(target_loc)
-				if d < closest_dist:
-					closest_dist = d
+				var distance = world_pos.distance_to(target_loc)
+				if distance < closest_dist:
+					closest_dist = distance
 					closest_idx = i
 					ties = [i]
-				elif is_equal_approx(d, closest_dist):
+				elif is_equal_approx(distance, closest_dist):
 					ties.append(i)
 					
 			if ties.size() > 1:
@@ -106,3 +106,4 @@ func _remove_segment() -> void:
 			# Fallback: random
 			var random_idx = randi() % active_segments.size()
 			active_segments.remove_at(random_idx)
+
