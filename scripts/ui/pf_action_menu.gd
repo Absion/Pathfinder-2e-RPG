@@ -260,14 +260,36 @@ func _apply_position():
 			margin_container.add_theme_constant_override("margin_right", 40)
 			margin_container.add_theme_constant_override("margin_bottom", 40)
 
+func _disconnect_actor(actor: PFActor):
+	if actor:
+		if actor.health.hp_changed.is_connected(_on_actor_state_changed_2):
+			actor.health.hp_changed.disconnect(_on_actor_state_changed_2)
+		if actor.health.temp_hp_changed.is_connected(_on_actor_state_changed_1):
+			actor.health.temp_hp_changed.disconnect(_on_actor_state_changed_1)
+		if actor.action_economy.actions_changed.is_connected(_on_actor_state_changed_1):
+			actor.action_economy.actions_changed.disconnect(_on_actor_state_changed_1)
+		if actor.action_economy.reactions_changed.is_connected(_on_actor_state_changed_1):
+			actor.action_economy.reactions_changed.disconnect(_on_actor_state_changed_1)
+
 func bind_to_actor(actor: PFActor):
+	if bound_actor:
+		_disconnect_actor(bound_actor)
+
 	bound_actor = actor
+
+	if bound_actor:
+		bound_actor.health.hp_changed.connect(_on_actor_state_changed_2)
+		bound_actor.health.temp_hp_changed.connect(_on_actor_state_changed_1)
+		bound_actor.action_economy.actions_changed.connect(_on_actor_state_changed_1)
+		bound_actor.action_economy.reactions_changed.connect(_on_actor_state_changed_1)
+
 	_update_ui()
 
-func _process(_delta):
-	# Continuously poll actor stats so the UI always matches perfectly
-	if bound_actor:
-		_update_ui()
+func _on_actor_state_changed_1(_arg1):
+	_update_ui()
+
+func _on_actor_state_changed_2(_arg1, _arg2):
+	_update_ui()
 
 func _update_ui():
 	name_label.text = bound_actor.entity_name
