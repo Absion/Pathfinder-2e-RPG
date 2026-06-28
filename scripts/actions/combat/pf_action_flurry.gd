@@ -53,7 +53,7 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 	print("%s unleashes a Flurry of Blows using their %s!" % [user.entity_name, weapon.entity_name])
 	
 	var subordinate_strike = PFActionStrike.new(weapon) 
-	user.execute_subordinate_action(subordinate_strike, target)
-	user.execute_subordinate_action(subordinate_strike, target)
+	await user.execute_subordinate_action(subordinate_strike, target)
+	await user.execute_subordinate_action(subordinate_strike, target)
 	
 	return true
