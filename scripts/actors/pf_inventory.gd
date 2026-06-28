@@ -415,11 +415,15 @@ func get_total_wealth_in_copper() -> int:
 	
 	for item in items: total_cp += item.price_cp
 	for item in worn_items: total_cp += item.price_cp
-	for item in containers: total_cp += item.price_cp
 	
 	if held_main_hand: total_cp += held_main_hand.price_cp
 	if held_off_hand: total_cp += held_off_hand.price_cp
 	if two_handed_item: total_cp += two_handed_item.price_cp
+	
+	for container in containers:
+		if "stored_items" in container:
+			for stored_item in container.get(&"stored_items"):
+				total_cp += stored_item.price_cp
 	
 	return total_cp
 

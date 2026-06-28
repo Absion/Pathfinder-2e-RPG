@@ -56,3 +56,23 @@ func test_add_and_consolidate_coins() -> void:
 	
 	# Should be 1 Bulk (10 units)
 	assert_eq(pc.inventory.get_coin_bulk(), 10, "1009 coins should be 1 Bulk")
+
+func test_container_wealth() -> void:
+	var pc = autofree(PFPlayerCharacter.new("Banker", [&"humanoid"], 1, 10, 0, 0, 0))
+	add_child_autofree(pc)
+	
+	var PFContainerClass = load("res://scripts/items/pf_container.gd")
+	var backpack = PFContainerClass.new()
+	backpack.entity_name = "Backpack"
+	backpack.price_cp = 100 # Backpack costs 100 CP
+	
+	pc.inventory.add_item(backpack)
+	pc.inventory.containers.append(backpack)
+	
+	assert_eq(pc.inventory.get_total_wealth_in_copper(), 100, "Wealth should be exactly 100 CP (no double counting)")
+	
+	var sword = PFWeapon.new("Sword", [&"martial"])
+	sword.price_cp = 150
+	
+	backpack.add_item(sword)
+	assert_eq(pc.inventory.get_total_wealth_in_copper(), 250, "Wealth should include items stored in containers")
