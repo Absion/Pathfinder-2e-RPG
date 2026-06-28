@@ -1,4 +1,4 @@
-﻿# pf_action_strike.gd
+# pf_action_strike.gd
 # The core attack action for the engine.
 ## Standard offensive attack action using an equipped weapon or unarmed attack.
 class_name PFActionStrike
@@ -86,7 +86,9 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 
 	# Range & Volley Penalties
 	var range_penalty = 0
-	var dist_ft = user.global_position.distance_to(target.global_position)
+	var dist_ft = 0.0
+	if user.is_inside_tree() and target.is_inside_tree():
+		dist_ft = user.global_position.distance_to(target.global_position)
 	
 	if weapon.weapon_type == PFEquipmentConstants.WeaponType.MELEE and not weapon.has_trait(&"thrown"):
 		var base_reach = 5
@@ -211,6 +213,15 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 			print("    > [CRITICAL FAILURE] Cobbled weapon misfires and becomes broken!")
 			weapon.current_hp = mini(weapon.current_hp, weapon.broken_threshold)
 			
+		# Splash damage applies on a normal miss
+		if degree == PFMathConstants.DegreeOfSuccess.FAIL and weapon.has_trait(&"splash"):
+			var miss_splash_dmg = weapon.get("splash_damage")
+			if miss_splash_dmg == null:
+				miss_splash_dmg = weapon.dice_amount
+			print("    > Splash trait! %d splash damage added to target on miss." % miss_splash_dmg)
+			target.health.apply_damage(miss_splash_dmg, weapon.active_damage_type)
+			
+		_handle_thrown_consumption(user, target, weapon)
 		return true
 
 	# ---------------------------------------------------------
@@ -333,14 +344,10 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 
 	var splash_dmg = 0
 	if has_splash:
-		for t in weapon.traits:
-			var ts = String(t)
-			if ts.begins_with("splash "):
-				var parts = ts.split(" ")
-				if parts.size() > 1 and parts[1].is_valid_int():
-					splash_dmg = parts[1].to_int()
-		if splash_dmg == 0:
-			splash_dmg = weapon.dice_amount # Default
+		if "splash_damage" in weapon:
+			splash_dmg = weapon.splash_damage
+		else:
+			splash_dmg = weapon.dice_amount # Default fallback
 
 	if has_splash and degree != PFMathConstants.DegreeOfSuccess.CRIT_FAIL:
 		print("    > Splash trait! %d splash damage added to target." % splash_dmg)
@@ -444,11 +451,20 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 					print("    > Splash hits %s for %d splash damage!" % [splash_target.entity_name, splash_dmg])
 					splash_target.take_damage(splash_dmg, final_damage_type, weapon.traits)
 			
-	if weapon.has_trait(&"injection") and weapon.injection_payload != null:
-		print("    > Injection Trait triggers! Delivering payload: %s" % weapon.injection_payload.entity_name)
-		# TODO: We would apply the poison/potion effect to the target here
+	if weapon.injection_payload != null:
+		if weapon.has_trait(&"injection"):
+			print("    > Injection Trait triggers! Delivering payload: %s" % weapon.injection_payload.entity_name)
+		
+		if weapon.injection_payload.has_method("_apply_affliction"):
+			var poison = weapon.injection_payload
+			print("    > The %s delivers %s into %s!" % [weapon.entity_name, poison.entity_name, target.entity_name])
+			poison._apply_affliction(target)
+		else:
+			print("    > The %s delivers its payload into %s!" % [weapon.entity_name, target.entity_name])
+			
 		weapon.injection_payload = null
 		
+	_handle_thrown_consumption(user, target, weapon)
 	return true
 
 func _apply_critical_specialization(user: PFActor, target: PFActor) -> void:
@@ -515,3 +531,21 @@ func _apply_critical_specialization(user: PFActor, target: PFActor) -> void:
 		_:
 			print("    > (No critical specialization effect implemented for this group yet).")
 
+func _handle_thrown_consumption(user: PFActor, target: PFActor, thrown_weapon: PFWeapon) -> void:
+	if not thrown_weapon.has_trait(&"thrown"):
+		return
+		
+	if thrown_weapon.has_trait(&"returning"):
+		print("    > The returning rune instantly flies the %s back into %s's hand!" % [thrown_weapon.entity_name, user.entity_name])
+		return
+		
+	user.inventory.unequip_item(thrown_weapon)
+	user.inventory.items.erase(thrown_weapon)
+	
+	if thrown_weapon.has_trait(&"consumable"):
+		print("    > %s was consumed on impact." % [thrown_weapon.entity_name])
+	else:
+		print("    > %s was thrown and drops to the ground in %s's space." % [thrown_weapon.entity_name, target.entity_name])
+		if target and target.inventory:
+			target.inventory.add_item(thrown_weapon)
+		thrown_weapon.carry_state = PFEquipmentConstants.CarryState.DROPPED

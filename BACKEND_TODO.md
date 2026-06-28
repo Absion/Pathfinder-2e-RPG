@@ -38,15 +38,15 @@ This phase relies entirely on Phase 1's Cover mechanics.
 
 ## Phase 7: Deep Character Progression
 - [x] **Archetypes / Multiclassing**: Logic to select Dedication feats and merge spell slots across multiple traditions.
-- [ ] **Codas**: Instrument attachments that grant bards unique abilities and spells.
-- [ ] **Spellhearts**: Magical attachments for armor/weapons that grant cantrips and passive effects.
-- [ ] **Alchemical Items**: Handling bombs, elixirs, tools, and poisons with their specific craft/use rules.
-- [ ] **Banners**: Aura-emitting held items that grant persistent bonuses to allies.
-- [ ] **Grafts**: Body modifications and augmentations.
-- [ ] **Grimoires**: Specialized spellbooks that grant benefits when preparing spells from them.
-- [ ] **Firearm Customizations**: Scopes, bayonets, and custom grips.
-- [ ] **Cursed Items**: Items with negative effects that cannot be easily unequipped.
-- [ ] **Tattoos**: Magical skin modifications with item investiture logic.
+- [x] **Codas**: Instrument attachments that grant bards unique abilities and spells.
+- [x] **Spellhearts**: Magical attachments for armor/weapons that grant cantrips and passive effects.
+- [x] **Alchemical Items**: Handling bombs, elixirs, tools, and poisons with their specific craft/use rules.
+- [x] **Banners**: Aura-emitting held items that grant persistent bonuses to allies.
+- [x] **Grafts**: Body modifications and augmentations.
+- [x] **Grimoires**: Specialized spellbooks that grant benefits when preparing spells from them.
+- [x] **Firearm Customizations**: Scopes, bayonets, and custom grips.
+- [x] **Cursed Items**: Items with negative effects that cannot be easily unequipped.
+- [x] **Tattoos**: Magical skin modifications with item investiture logic.
 
 ## Phase 8: Game Loop & Daily Preparation
 - [ ] **Daily Preparation Manager**: Create a unified manager (`PFDailyPrepManager`) for the Morning Rest cycle. 

@@ -1,4 +1,4 @@
-﻿# pf_player_character.gd
+# pf_player_character.gd
 ## A player-controlled character built using standard proficiency matrix mathematics.
 class_name PFPlayerCharacter
 extends PFActor
@@ -361,7 +361,7 @@ func get_strike_bonus(weapon: PFWeapon) -> int:
 	
 	if weapon.is_broken():
 		base_bonus -= 2
-	return base_bonus + get_condition_modifier(&"attack")
+	return base_bonus + attributes.attack_modifiers.get_total() + get_condition_modifier(&"attack")
 
 func get_class_dc() -> int:
 	if not actor_class:
@@ -470,12 +470,11 @@ func get_strike_damage_bonus(weapon: PFWeapon) -> int:
 		dmg_bonus += 1
 		
 	if weapon.has_trait(&"twin"):
-		var inventory = get("inventory") as PFInventory
 		if inventory and inventory.main_hand_item and inventory.off_hand_item:
 			var main = inventory.main_hand_item as PFWeapon
 			var off = inventory.off_hand_item as PFWeapon
 			if main and off and main.base_name == off.base_name:
-				dmg_bonus += weapon.dice_amount # +1 per damage die, not just +1. Wait, let me check the Twin trait... wait, Twin says "+1 circumstance bonus per damage die". Let's do that!
+				dmg_bonus += weapon.dice_amount
 	
 	if weapon.is_broken():
 		dmg_bonus -= 2
