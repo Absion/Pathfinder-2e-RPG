@@ -93,6 +93,7 @@ func _ready():
 	conditions_panel.theme_type_variation = &"ConditionPanel"
 	conditions_panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	conditions_panel.tooltip_text = "View Conditions"
+	conditions_panel.focus_mode = Control.FOCUS_ALL
 	mid_vbox.add_child(conditions_panel)
 	
 	conditions_hbox = HBoxContainer.new()
@@ -229,7 +230,9 @@ func _close_submenu():
 	main_menu_vbox.show()
 
 func _on_conditions_gui_input(event: InputEvent):
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+	var is_click = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	var is_key = event is InputEventKey and event.pressed and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)
+	if is_click or is_key:
 		print("Expanded condition view!")
 
 func _apply_position():
