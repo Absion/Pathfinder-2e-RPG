@@ -1,4 +1,4 @@
-﻿# test_weapon_logic.gd
+# test_weapon_logic.gd
 class_name TestWeaponLogic
 extends GutTest
 
@@ -17,6 +17,7 @@ func before_all() -> void:
 		database = PFDatabase.get_instance()
 
 func before_each() -> void:
+	PFContext.init_shared_services()
 	PFContext.detection_manager = null
 	attacker = autofree(PFPlayerCharacter.new("Attacker", [], 1, 50, 0, 0, 0))
 	defender = autofree(PFPlayerCharacter.new("Defender", [], 1, 50, 0, 0, 0))
@@ -146,3 +147,6 @@ func test_specific_magic_weapon_runes():
 	assert_eq(spec_weapon.potency_bonus, 2)
 	assert_eq(spec_weapon.dice_amount, 2)
 
+
+func after_each() -> void:
+	PFContext.cleanup_shared_services()

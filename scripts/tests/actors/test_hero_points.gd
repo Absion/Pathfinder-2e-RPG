@@ -2,6 +2,12 @@ extends GutTest
 
 
 
+func before_each():
+	PFContext.init_shared_services()
+
+func after_each():
+	PFContext.cleanup_shared_services()
+
 func test_hero_points():
 	# Player starts with 1 hero point
 	var player = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"humanoid"], 1, 20, 0, 0, 0))
@@ -55,3 +61,4 @@ func test_heroic_reroll():
 	
 	# Out of points, should return -1
 	assert_eq(player.heroic_reroll(), -1)
+

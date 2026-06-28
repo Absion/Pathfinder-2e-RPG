@@ -1,4 +1,4 @@
-﻿
+
 # pf_combat_grid.gd
 ## Renders the tactical battlefield and calculates PF2E diagonal distance math.
 class_name PFCombatGrid
@@ -121,10 +121,10 @@ func highlight_tiles(tiles: Array[Vector3], color_type: HighlightColor):
 	var base_color = _materials[color_type].albedo_color
 	
 	for i in range(tiles.size()):
-		var transform = Transform3D()
+		var t = Transform3D()
 		# Snap absolutely to grid integers
-		transform.origin = Vector3(round(tiles[i].x), 0, round(tiles[i].z))
-		multimesh.set_instance_transform(i, transform)
+		t.origin = Vector3(round(tiles[i].x), 0, round(tiles[i].z))
+		multimesh.set_instance_transform(i, t)
 		multimesh.set_instance_color(i, base_color)
 
 func clear_highlights():

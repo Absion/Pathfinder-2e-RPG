@@ -1,4 +1,4 @@
-﻿# test_advanced_magic.gd
+# test_advanced_magic.gd
 extends GutTest
 
 var counteract_manager: PFCounteractManager

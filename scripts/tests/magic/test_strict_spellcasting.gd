@@ -1,4 +1,4 @@
-﻿extends GutTest
+extends GutTest
 var database: PFDatabase
 
 func before_all() -> void:

@@ -6,6 +6,7 @@ var shield: PFShield
 var potion: PFConsumable
 
 func before_each():
+	PFContext.init_shared_services()
 	actor = PFPlayerCharacter.new("Fighter", [], 1, 15, 0, 0, 0)
 	
 	sword = PFWeapon.new("Longsword", [&"versatile-p"])
@@ -27,6 +28,7 @@ func before_each():
 	actor.inventory.equip_item(shield)
 
 func after_each():
+	PFContext.cleanup_shared_services()
 	actor.queue_free()
 
 func test_draw_weapon():
@@ -133,3 +135,41 @@ func test_change_grip():
 	await action_remove_grip.execute(actor)
 	assert_eq(actor.inventory.held_main_hand, sword, "Sword should be back in main hand")
 	assert_null(actor.inventory.two_handed_item, "2H slot should be empty")
+
+func test_container_bulk() -> void:
+	var ActionInteract = load("res://scripts/actions/combat/pf_action_interact.gd")
+	var PFContainerClass = load("res://scripts/items/pf_container.gd")
+	var backpack = PFContainerClass.new()
+	backpack.entity_name = "Backpack"
+	backpack.bulk_value = 10 # 1 Bulk
+	backpack.bulk_capacity = 40 # holds up to 4 bulk
+	backpack.bulk_reduction_value = 20 # ignores first 2 bulk
+	
+	actor.inventory.add_item(backpack)
+	actor.inventory.containers.append(backpack) # Register as container
+	
+	var initial_bulk = actor.inventory.get_total_bulk()
+	
+	var rock = PFItem.new()
+	rock.bulk_value = 20 # 2 Bulk
+	rock.entity_name = "Heavy Rock"
+	
+	assert_true(backpack.add_item(rock), "Should fit in backpack")
+	assert_eq(backpack.get_contents_bulk(), 20, "Contents should be 20")
+	
+	var new_bulk = actor.inventory.get_total_bulk()
+	assert_eq(new_bulk, initial_bulk, "Bulk should not increase since the rock is 2 Bulk and backpack ignores 2 Bulk")
+	
+	var rock2 = PFItem.new()
+	rock2.bulk_value = 10 # 1 Bulk
+	assert_true(backpack.add_item(rock2), "Should fit")
+	
+	var final_bulk = actor.inventory.get_total_bulk()
+	assert_eq(final_bulk, initial_bulk + 10, "Bulk should increase by 1 Bulk")
+	
+	# Test retrieving
+	var retrieve_action = ActionInteract.new(ActionInteract.InteractType.RETRIEVE, rock)
+	await retrieve_action.execute(actor)
+	
+	assert_eq(backpack.stored_items.size(), 1, "Backpack should have 1 item left")
+	assert_eq(actor.inventory.held_main_hand, rock, "Rock should be held")

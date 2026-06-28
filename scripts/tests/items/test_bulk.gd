@@ -1,9 +1,15 @@
-﻿extends GutTest
+extends GutTest
 
 class_name TestBulk
 
 func get_test_name() -> String:
 	return "Bulk System and Encumbrance Tests"
+
+func before_each():
+	PFContext.init_shared_services()
+
+func after_each():
+	PFContext.cleanup_shared_services()
 
 func test_main() -> void:
 	print("\n--- Running Bulk System Tests ---")

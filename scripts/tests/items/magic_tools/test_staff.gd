@@ -1,9 +1,10 @@
-﻿extends GutTest
+extends GutTest
 
 var actor: PFPlayerCharacter
 var time_manager: PFTimeManager
 
 func before_each():
+	PFContext.init_shared_services()
 	actor = autofree(PFPlayerCharacter.new("Wizard", [&"human", &"humanoid"], 5, 40, 5, 5, 7, 25))
 	var c_data = {
 		"name": "Wizard",
@@ -88,3 +89,6 @@ func test_staff_spontaneous_cast():
 	assert_eq(staff.get_current_charges(), 2, "Should deduct 1 charge")
 	assert_eq(receptacle.get_available_slots(3), 1, "Should deduct 1 rank 3 spell slot")
 
+
+func after_each():
+	PFContext.cleanup_shared_services()

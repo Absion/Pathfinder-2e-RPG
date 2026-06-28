@@ -1,6 +1,20 @@
-﻿extends GutTest
+extends GutTest
 
+var prep_manager: PFDailyPrepManager
+var time_manager: PFTimeManager
 
+func before_each() -> void:
+	PFContext.init_shared_services()
+	prep_manager = PFDailyPrepManager.new()
+	prep_manager.name = "PFDailyPrepManager"
+	add_child_autofree(prep_manager)
+	
+	time_manager = PFTimeManager.new()
+	time_manager.name = "PFTimeManager"
+	add_child_autofree(time_manager)
+
+func after_each() -> void:
+	PFContext.cleanup_shared_services()
 
 func test_rest_healing():
 	# Player level 2, CON modifier +2, max hp 30.
@@ -80,4 +94,5 @@ func test_rest_sleeping_in_armor():
 	player.inventory.equip_item(chain_comfort)
 	player._on_rested_for_night()
 	assert_false(player.has_condition("fatigued"))
+
 

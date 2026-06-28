@@ -39,6 +39,8 @@ func is_lootable() -> bool:
 		
 	return false
 
+
+
 # ---------------------------------------------------------
 # ITEM MANAGEMENT
 # ---------------------------------------------------------
@@ -48,6 +50,19 @@ func add_item(item: PFItem) -> void:
 	item.carry_state = PFEquipmentConstants.CarryState.STOWED
 	print("    > %s added %s to their inventory." % [owner.entity_name, item.entity_name])
 	_emit_inventory_update()
+
+func remove_item(item: PFItem) -> void:
+	if items.has(item):
+		items.erase(item)
+		if item in worn_items:
+			unequip_item(item)
+		if held_main_hand == item:
+			release_item(true)
+		if held_off_hand == item:
+			release_item(false)
+		if two_handed_item == item:
+			two_handed_item = null
+		_emit_inventory_update()
 
 func equip_item(item: PFItem) -> void:
 	# If the item requires investment, verify it is invested first
@@ -284,6 +299,11 @@ func invest_item(item: PFItem) -> void:
 		invested_items.append(item)
 		print("    > %s invested %s." % [owner.entity_name, item.entity_name])
 
+func uninvest_item(item: PFItem) -> void:
+	if invested_items.has(item):
+		invested_items.erase(item)
+		print("    > %s uninvested %s." % [owner.entity_name, item.entity_name])
+
 func wield_item(item: PFItem, main_hand: bool = true) -> void:
 	# Enforce investment
 	if item.requires_investment and not invested_items.has(item):
@@ -421,6 +441,55 @@ static func format_copper_to_string(total_cp: int) -> String:
 	
 	return ", ".join(parts)
 
+func remove_coins_by_copper_value(cost_cp: int) -> bool:
+	var total = get_total_coin_value_in_copper()
+	if total < cost_cp:
+		print("    > [ERROR] %s cannot afford %d cp! (Has %d cp)" % [owner.entity_name, cost_cp, total])
+		return false
+		
+	# Simple greedy algorithm for now: just subtract from copper, and if negative, break down higher coins
+	copper -= cost_cp
+	_consolidate_coins()
+	
+	_emit_inventory_update()
+	return true
+
+func _consolidate_coins() -> void:
+	# First, resolve any negative copper
+	while copper < 0:
+		if silver > 0:
+			silver -= 1
+			copper += 10
+		elif gold > 0:
+			gold -= 1
+			silver += 9
+			copper += 10
+		elif platinum > 0:
+			platinum -= 1
+			gold += 9
+			silver += 9
+			copper += 10
+			
+	while silver < 0:
+		if gold > 0:
+			gold -= 1
+			silver += 10
+		elif platinum > 0:
+			platinum -= 1
+			gold += 9
+			silver += 10
+			
+	while gold < 0:
+		if platinum > 0:
+			platinum -= 1
+			gold += 10
+
+@warning_ignore("integer_division")
+func get_coin_bulk() -> int:
+	# Every 1000 coins = 1 Bulk
+	var total_coins = platinum + gold + silver + copper
+	return int(total_coins / 1000.0) * 10 # Since 1 Bulk = 10 units internally
+
 # ---------------------------------------------------------
 # BULK CALCULATIONS
 # ---------------------------------------------------------
@@ -462,14 +531,21 @@ func get_total_bulk() -> int:
 	if two_handed_item: total_bulk_units += get_perceived_bulk(two_handed_item)
 		
 	for container in containers:
-		total_bulk_units += get_perceived_bulk(container)
-		# Subtract the container's bulk reduction
-		total_bulk_units += maxi(0, _calculate_container_contents(container) - container.bulk_reduction_value)
+		if "bulk_reduction_value" in container:
+			# Only add the contents' bulk, minus the reduction value
+			total_bulk_units += maxi(0, _calculate_container_contents(container) - container.bulk_reduction_value)
+		else:
+			total_bulk_units += _calculate_container_contents(container)
+		
+	total_bulk_units += get_coin_bulk()
 		
 	return total_bulk_units
 
 func _emit_inventory_update() -> void:
-	inventory_changed.emit(get_total_bulk(), is_encumbered())
+	var encumbered = is_encumbered()
+	inventory_changed.emit(get_total_bulk(), encumbered)
+	
+
 
 func _calculate_container_contents(container: PFItem) -> int:
 	if not "stored_items" in container: return 0

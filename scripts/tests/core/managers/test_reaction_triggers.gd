@@ -1,4 +1,4 @@
-﻿extends GutTest
+extends GutTest
 
 var turn_manager: PFTurnManager
 var reaction_manager: PFReactionManager
@@ -16,6 +16,7 @@ func before_all() -> void:
 		database = PFDatabase.get_instance()
 
 func before_each():
+	PFContext.init_shared_services()
 	turn_manager = autofree(PFTurnManager.new())
 	add_child_autofree(turn_manager)
 	
@@ -35,6 +36,7 @@ func before_each():
 	turn_manager.add_combatant(actor_b)
 
 func after_each():
+	PFContext.cleanup_shared_services()
 	PFContext.reaction_manager = null
 
 func test_action_trigger_disruption():
@@ -79,4 +81,5 @@ func test_move_trait_trigger():
 	# She should have successfully stood up, but Bob also reacted
 	assert_true(success)
 	assert_true(reacted[0])
+
 

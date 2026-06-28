@@ -1,4 +1,4 @@
-﻿# test_conditions.gd
+# test_conditions.gd
 class_name TestConditions
 extends GutTest
 
@@ -15,6 +15,12 @@ func before_all():
 func after_all():
 	if is_instance_valid(database):
 		pass # database.queue_free()
+
+func before_each():
+	PFContext.init_shared_services()
+
+func after_each():
+	PFContext.cleanup_shared_services()
 
 func test_condition_stacking():
 	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
@@ -131,4 +137,5 @@ func test_npc_dying_rules():
 	assert_false(goblin.has_condition("dead"))
 	assert_true(goblin.has_condition("unconscious"))
 	assert_true(goblin.inventory.is_lootable())
+
 

@@ -112,6 +112,10 @@ func execute(user: PFActor, _target: Variant = null) -> Variant:
 			user.inventory.hold_item(target_item, main_hand)
 			if interact_type == InteractType.DRAW:
 				user.inventory.worn_items.erase(target_item)
+			elif interact_type == InteractType.RETRIEVE:
+				for container in user.inventory.containers:
+					if container.has_method("remove_item") and container.remove_item(target_item):
+						break
 		InteractType.STOW:
 			# Held -> Worn/Stowed
 			user.inventory.release_item(main_hand)

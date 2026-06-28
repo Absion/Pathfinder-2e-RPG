@@ -1,4 +1,4 @@
-﻿# test_level_up_manager.gd
+# test_level_up_manager.gd
 class_name TestLevelUpManager
 extends GutTest
 

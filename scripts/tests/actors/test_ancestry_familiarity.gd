@@ -1,4 +1,4 @@
-﻿extends GutTest
+extends GutTest
 
 func before_all():
 	PFContext.init_shared_services()

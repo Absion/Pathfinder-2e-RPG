@@ -4,10 +4,14 @@ var actor1: PFActor
 var actor2: PFActor
 
 func before_each():
-	actor1 = autofree(PFPlayerCharacter.new("Alchemist", [&"humanoid"] as Array[StringName], 1, 15, 10, 10, 10))
-	actor2 = autofree(PFPlayerCharacter.new("Goblin", [&"humanoid", &"goblin"] as Array[StringName], 1, 15, 10, 10, 10))
-	add_child_autofree(actor1)
-	add_child_autofree(actor2)
+	PFContext.init_shared_services()
+	actor1 = PFPlayerCharacter.new("Alchemist", [&"humanoid"] as Array[StringName], 1, 15, 10, 10, 10)
+	actor2 = PFPlayerCharacter.new("Goblin", [&"humanoid", &"goblin"] as Array[StringName], 1, 15, 10, 10, 10)
+
+func after_each():
+	PFContext.cleanup_shared_services()
+	if is_instance_valid(actor1): actor1.free()
+	if is_instance_valid(actor2): actor2.free()
 
 func test_bomb_splash_damage_on_hit():
 	var bomb = autofree(PFAlchemicalBomb.new("alchemists_fire", "Alchemist's Fire", [&"alchemical", &"bomb", &"consumable", &"splash", &"fire", &"thrown"] as Array[StringName], 1, 3.0, PFCombatConstants.DamageType.FIRE))

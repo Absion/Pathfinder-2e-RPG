@@ -1,4 +1,4 @@
-﻿extends GutTest
+extends GutTest
 
 var database: PFDatabase
 
@@ -114,4 +114,5 @@ func test_initiative_modifiers():
 
 func after_all():
 	PFContext.cleanup_shared_services()
+
 

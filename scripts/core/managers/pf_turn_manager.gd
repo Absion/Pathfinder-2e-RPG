@@ -149,6 +149,8 @@ func next_turn() -> void:
 	if spells_sustained_this_turn.has(current_actor):
 		spells_sustained_this_turn[current_actor].clear()
 		
+	var cond_mgr = PFConditionManager.get_instance()
+	if cond_mgr: cond_mgr.tick_turn_ended(current_actor)
 	turn_ended.emit(current_actor)
 	
 	# Advance index
@@ -171,6 +173,8 @@ func _start_current_turn() -> void:
 	if current_actor.has_method(&"start_turn"):
 		current_actor.start_turn()
 		
+	var cond_mgr = PFConditionManager.get_instance()
+	if cond_mgr: cond_mgr.tick_turn_started(current_actor)
 	turn_started.emit(current_actor)
 
 func get_current_actor() -> PFActor:
@@ -185,6 +189,8 @@ func push_sub_turn(actor: PFActor) -> void:
 	if not in_encounter: return
 	sub_turn_stack.push_back(actor)
 	print("--- %s begins a Sub-Turn! ---" % actor.entity_name)
+	var cond_mgr = PFConditionManager.get_instance()
+	if cond_mgr: cond_mgr.tick_turn_started(actor)
 	turn_started.emit(actor)
 	
 func pop_sub_turn() -> void:
@@ -195,11 +201,14 @@ func pop_sub_turn() -> void:
 	if actor.has_method(&"end_turn"):
 		actor.end_turn()
 		
+	var cond_mgr = PFConditionManager.get_instance()
+	if cond_mgr: cond_mgr.tick_turn_ended(actor)
 	turn_ended.emit(actor)
 	
 	var current = get_current_actor()
 	if current:
 		print("--- Resuming %s's turn. ---" % current.entity_name)
+		if cond_mgr: cond_mgr.tick_turn_started(current)
 		turn_started.emit(current)
 
 func get_allies(actor: PFActor) -> Array[PFActor]:

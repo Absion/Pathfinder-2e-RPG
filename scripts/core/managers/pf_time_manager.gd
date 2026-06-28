@@ -7,6 +7,7 @@ extends Node
 signal time_advanced(seconds: int)
 signal day_passed()
 signal rested_for_night()
+signal long_term_rested()
 
 const SECONDS_PER_ROUND = 6
 const SECONDS_PER_MINUTE = 60
@@ -54,6 +55,12 @@ func rest_for_night() -> void:
 	print("The party rests for 8 hours...")
 	advance_hours(8)
 	rested_for_night.emit()
+
+## Simulates a 24-hour long term rest (downtime bed rest).
+func rest_long_term() -> void:
+	print("The party engages in long-term rest for 24 hours...")
+	advance_hours(24)
+	long_term_rested.emit()
 
 func _check_day_rollover() -> void:
 	if current_time_seconds >= SECONDS_PER_DAY:

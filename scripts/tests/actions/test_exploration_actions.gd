@@ -1,4 +1,4 @@
-﻿extends GutTest
+extends GutTest
 
 var database: PFDatabase
 var game_root: PFGameRoot
@@ -32,6 +32,7 @@ func after_all():
 		game_root.free()
 
 func before_each():
+	PFContext.init_shared_services()
 	actor = autofree(PFActor.new("Valeros", [&"human", &"humanoid"], 1, 20))
 	add_child_autofree(actor)
 
@@ -56,3 +57,6 @@ func test_generic_action_logs_without_crash():
 	sense_motive.execute(actor)
 	assert_eq(str(sense_motive.action_id), "sense_motive")
 
+
+func after_each():
+	PFContext.cleanup_shared_services()

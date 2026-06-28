@@ -3,6 +3,7 @@ extends "res://addons/gut/test.gd"
 var aura_manager: PFAuraManager
 
 func before_each():
+	PFContext.init_shared_services()
 	aura_manager = PFAuraManager.new()
 
 func test_banner_emits_aura():
@@ -21,3 +22,6 @@ func test_banner_emits_aura():
 	
 	banner.on_unequipped(actor)
 	assert_eq(aura_manager.active_auras.size(), 0)
+
+func after_each():
+	PFContext.cleanup_shared_services()

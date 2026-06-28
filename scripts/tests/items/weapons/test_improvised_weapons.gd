@@ -1,9 +1,10 @@
-﻿extends GutTest
+extends GutTest
 
 var attacker: PFActor
 var target: PFActor
 
 func before_each():
+	PFContext.init_shared_services()
 	attacker = autofree(PFPlayerCharacter.new("Scavenger", [&"humanoid"], 1, 20, 0, 0, 0))
 	target = autofree(PFPlayerCharacter.new("Target", [&"humanoid"], 1, 20, 0, 0, 0))
 	add_child_autofree(attacker)
@@ -47,3 +48,6 @@ func test_scavenge_road():
 	assert_true(held.has_trait(&"thrown"))
 	assert_eq(held.range_increment, 10)
 
+
+func after_each():
+	PFContext.cleanup_shared_services()

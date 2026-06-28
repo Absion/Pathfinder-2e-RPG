@@ -1,13 +1,20 @@
-﻿extends GutTest
+extends GutTest
+
+func before_each():
+	PFContext.init_shared_services()
+
+func after_each():
+	PFContext.cleanup_shared_services()
 
 func test_action_toggle_condition():
 	var database = PFDatabase.get_instance()
 	if not database:
-		database = PFDatabase.new()
+		database = autofree(PFDatabase.new())
 		database.name = "PFDatabase"
-		get_tree().root.add_child(database)
+		add_child_autofree(database)
 		
 	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human"], 1, 20, 2, 2, 2))
+	add_child_autofree(hero)
 	var drop_prone_action = PFActionToggleCondition.new(&"drop_prone")
 	
 	# Initial state

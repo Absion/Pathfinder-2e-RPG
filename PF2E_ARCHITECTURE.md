@@ -59,6 +59,8 @@ All items inherit from `PFEntity` -> `PFItem`.
 * **Durability:** Items track `hardness`, `max_hp`, `current_hp`, and `broken_threshold`.
 * **Runes:** Weapons and Armors handle runes via `.apply_fundamental_runes()`. Shields handle them via `.apply_reinforcing_rune()`. Applying a rune automatically recalculates the item's level, copper price, max HP/Hardness, and dynamically updates its `entity_name` (e.g., prepending "+1 Striking").
 * **Shield Block:** Shield damage blocking logic resides in `PFShield.can_block(damage_type)`, checking against an array of `blockable_damage_types`.
+* **Consumables & Alchemy:** All consumables extend `PFConsumable`. Specialized alchemical classes (`PFAlchemicalBomb`, `PFAlchemicalElixir`, `PFAlchemicalPoison`) handle their distinct mechanics natively. For example, a `PFActionApplyPoison` moves the poison to a weapon's `injection_payload` which guarantees delivery upon a successful Strike.
+* **Attachments:** Grafts, Spellhearts, Codas, and Firearm Customizations are handled as distinct subclasses that attach to standard entities or actors, granting conditional passive abilities, spells, or alternate strikes without requiring rigid subclasses of the base items.
 
 ---
 
@@ -67,7 +69,9 @@ The Engine strictly handles physical sizes and weights without manually adjustin
 * **Item Sizing:** All items have a physical `size_id` (e.g., `"medium"`, `"large"`). Larger items scale mathematically based on the definitions in the database. Buying prices remain standard.
 * **Perceived Bulk:** An actor's size dynamically alters how they experience an item's weight. A `"large"` PC inherently divides the bulk of standard-sized items by 10, experiencing them as `1L` (Light bulk).
 * **Equipment Bounds:** `PFInventory` enforces physical restraints. Armor must be the *exact* size of the wearer (Small and Medium are mathematically interchangeable). Weapons can be wielded if they are 1 size larger, but the Engine dynamically injects the `clumsy 1` condition natively onto the wielder.
-* **Encumbrance Limits:** Players have strict `can_carry()` and `can_drag()` limits derived from `10 + STR`.
+* **Encumbrance Threshold:** When total bulk crosses `(5 + STR modifier)`, the actor automatically receives the `Encumbered` and `Clumsy 1` conditions via the condition manager.
+* **Containers & Nested Bulk:** Containers like backpacks dynamically reduce the total bulk of items stored within them. `PFInventory.get_total_bulk()` recursively calculates this by summing all items and applying container reductions.
+* **Investiture:** Actors can only invest up to 10 magic items. This is enforced directly within `PFInventory.invest_item()`.
 
 ---
 
@@ -214,6 +218,7 @@ For traits that alter foundational math (e.g., Agile, Finesse), the `traits` dat
 Conditions that apply numerical buffs or debuffs (e.g., Frightened, Clumsy, Inspire Courage) are fully parameterized in the `conditions` table.
 * **Columns:** `modifier_type` (Status, Circumstance, Item), `target_stat` (AC, Will, Str_Checks, All), and `multiplier`.
 * The `PFProficiencySheet` dynamically reads these columns and applies the math automatically. No condition-specific GDScript is written for numerical modifiers.
+* **PFAttributesComponent & PFStat:** Under the hood, stats like `ac_modifiers`, `attack_modifiers`, and saving throws are managed by `PFStat` objects inside the `PFAttributesComponent`. A `PFStat` holds an array of `PFModifier`s, automatically stacking rules (like only keeping the highest circumstance bonus). Tests should use `add_modifier(PFModifier)` to simulate buffs/debuffs or force hits rather than hacking a monster's base AC directly.
 
 ### Pattern 3: The Strategy Pattern (Complex Behaviors)
 For conditions or traits that inject new behaviors, turn-based triggers, or action restrictions (e.g., Persistent Damage, Fascinated, Stunned), the database utilizes a `script_path` column.
@@ -222,7 +227,20 @@ For conditions or traits that inject new behaviors, turn-based triggers, or acti
 
 ---
 
-## 16. AI Code Generation Directives
+## 16. Engine Subsystems (Core Managers)
+The backend operates heavily on specialized, stateless managers to process game logic rules correctly. AI agents should utilize these managers instead of cramming logic into `PFActor` or context nodes.
+* **`PFLevelUpManager`**: Handles all character progression, sandbox-validating choices, and creating audit logs for Retraining.
+* **`PFTimeManager`**: Advances the calendar and coordinates time passing.
+* **`PFTurnManager`**: Oversees combat encounters, rolling initiative, handling turn order, and distributing turn start/end signals to the ConditionManager.
+* **`PFDowntimeManager`**: Tracks and executes daily downtime activities (Earn Income, Crafting, Retraining).
+* **`PFDailyPrepManager`**: Handles long-term rests, daily spell/focus point recovery, and temporary item generation/clearing (like Alchemist infusions).
+* **`PFConditionManager`**: Dedicated logic for safely applying, ticking down, or resolving conditions on actors.
+* **`PFReactionManager`**: Broadcasts reaction events (e.g. `BEFORE_TAKE_DAMAGE`, `ON_MOVE`) and handles interruption prioritization (e.g. Shield Block, Attack of Opportunity).
+* **`PFDetectionManager`**: Optimized Matrix tracking Stealth, unobserved status, cover, and line of sight.
+
+---
+
+## 17. AI Code Generation Directives
 When generating GDScript for this project, you MUST adhere to the following rules:
 1. **Never use `.tres` for data.** If asked to create a new weapon, spell, or class, write the SQL `INSERT` statement for `pf_database.gd`, do NOT generate a Godot Resource.
 2. **Never hardcode strings or core definitions.** Do not generate GDScript containing hardcoded dialogue, item lore, UI strings, or core mechanic tags (like Sizes or Traits). All systemic rules and narrative text MUST be queried from the SQLite database.
@@ -242,14 +260,14 @@ When generating GDScript for this project, you MUST adhere to the following rule
 
 ---
 
-## 17. Memory Management & Orphans
+## 18. Memory Management & Orphans
 To maintain engine stability and avoid memory leaks during both runtime and Gut testing, strict memory management rules apply:
 1. **Gut Test Cleanup (Orphans):** Gut tracks all orphaned nodes. If you instantiate a `Node` (e.g., `PFNpc.new()`) inside a test, you must wrap it in `autofree()`. If you need to add it to the scene tree, use `add_child_autofree()`.
 2. **Singleton State Bleed:** Services initialized via `PFContext.init_shared_services()` persist. They MUST be cleaned up using `PFContext.cleanup_shared_services()` in a test's `after_all()` block. 
 3. **Synchronous Teardown:** When tearing down singletons or tests, use `.free()` after `remove_child()`. Do not use `.queue_free()` for test teardowns, as Gut checks orphans synchronously before the frame ends, leading to false positives and potential Signal 11 crashes if deferred methods fire on freed objects.
 4. **Avoid RefCounted Cycles:** Godot handles `RefCounted` objects via reference counting, not a garbage collector. If Object A holds a strong reference to Object B, and Object B holds a strong reference to Object A, a cyclic reference occurs and the memory will leak forever. If two `RefCounted` objects must know about each other, one side MUST use a `WeakRef` (e.g., `weakref(parent_object)`) to break the cycle.ne.
 
-## 18. Testing & Validation
+## 19. Testing & Validation
 ### Unit Testing Philosophy
 - **Component-Level Isolation**: Test files must be scoped to a single script or specific component (e.g., 	est_coda.gd for pf_coda.gd, 	est_firearm_customization.gd for pf_firearm_customization.gd). Do NOT create monolithic test files (like 	est_phase_7.gd).
 - **Runtime Compilation Checks**: Because GDScript is dynamically compiled at runtime, unit tests MUST instantiate the exact objects and perform actions that trigger core logic paths. This is required to catch signature mismatches (like execute(PFActor) vs execute(Variant)) and type narrowing/conversion errors that the static language server complains about but the headless test runner normally ignores until execution.

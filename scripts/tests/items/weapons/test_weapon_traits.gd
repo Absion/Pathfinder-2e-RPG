@@ -8,6 +8,7 @@ var nonlethal_weapon: PFWeapon
 var parry_weapon: PFWeapon
 
 func before_each():
+	PFContext.init_shared_services()
 	PFContext.detection_manager = null
 	attacker = autofree(PFPlayerCharacter.new("Attacker", [&"humanoid"], 1, 20, 0, 0, 0))
 	defender = autofree(PFPlayerCharacter.new("Defender", [&"humanoid"], 1, 20, 0, 0, 0))
@@ -76,3 +77,6 @@ func test_parry_action():
 	
 	var new_ac = attacker.get_ac()
 	assert_eq(new_ac, initial_ac + 1)
+
+func after_each():
+	PFContext.cleanup_shared_services()

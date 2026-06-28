@@ -1,4 +1,4 @@
-﻿extends GutTest
+extends GutTest
 
 var database: PFDatabase
 var caster: PFActor
@@ -139,3 +139,6 @@ func test_focus_points() -> void:
 func after_all():
 	PFContext.cleanup_shared_services()
 
+
+func after_each() -> void:
+	PFContext.cleanup_shared_services()

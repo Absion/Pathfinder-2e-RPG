@@ -1,8 +1,9 @@
-﻿extends GutTest
+extends GutTest
 
 var actor: PFPlayerCharacter
 
 func before_each():
+	PFContext.init_shared_services()
 	actor = autofree(PFPlayerCharacter.new("Wizard", [&"human", &"humanoid"], 5, 40, 5, 5, 7, 25))
 	var c_data = {
 		"name": "Wizard",
@@ -66,3 +67,6 @@ func test_wand_overcharge_failure():
 	assert_false(result, "Overcharge should fail on a 5")
 	assert_true(wand.wand_destroyed, "Wand should be destroyed on failure")
 
+
+func after_each():
+	PFContext.cleanup_shared_services()

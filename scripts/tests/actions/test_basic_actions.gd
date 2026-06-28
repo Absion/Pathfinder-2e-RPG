@@ -16,6 +16,7 @@ func before_all() -> void:
 		database = PFDatabase.get_instance()
 
 func before_each():
+	PFContext.init_shared_services()
 	turn_manager = autofree(PFTurnManager.new())
 	add_child_autofree(turn_manager)
 	
@@ -36,11 +37,8 @@ func before_each():
 	turn_manager.add_combatant(actor_b)
 
 func after_each():
-	turn_manager.queue_free()
-	reaction_manager.queue_free()
+	PFContext.cleanup_shared_services()
 	PFContext.reaction_manager = null
-	actor_a.queue_free()
-	actor_b.queue_free()
 
 func test_interact_action():
 	var item = PFItem.new()
@@ -105,3 +103,4 @@ func test_ready_action_executes_stored_action():
 	# The strike should have happened. Let's just verify it didn't crash.
 	# We can't easily check Bob's HP here because Strike might miss, but the event should resolve.
 	assert_true(event_data.has(&"disrupted"))
+

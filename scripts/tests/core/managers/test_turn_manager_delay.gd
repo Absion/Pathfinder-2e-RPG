@@ -6,6 +6,7 @@ var actor_b: PFActor
 var actor_c: PFActor
 
 func before_each():
+	PFContext.init_shared_services()
 	turn_manager = autofree(PFTurnManager.new())
 	add_child_autofree(turn_manager)
 	
@@ -27,10 +28,7 @@ func before_each():
 	turn_manager.combatants[2].initiative_roll = 10 # Charlie
 
 func after_each():
-	turn_manager.queue_free()
-	actor_a.queue_free()
-	actor_b.queue_free()
-	actor_c.queue_free()
+	PFContext.cleanup_shared_services()
 
 func test_delay_turn():
 	turn_manager.start_encounter()

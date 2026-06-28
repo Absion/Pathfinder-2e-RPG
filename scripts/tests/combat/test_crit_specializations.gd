@@ -1,9 +1,10 @@
-﻿extends GutTest
+extends GutTest
 
 var attacker: PFActor
 var target: PFActor
 
 func before_each():
+	PFContext.init_shared_services()
 	attacker = autofree(PFPlayerCharacter.new("Attacker", [&"humanoid"], 1, 20, 0, 0, 0))
 	target = autofree(PFPlayerCharacter.new("Target", [&"humanoid"], 1, 20, 0, 0, 0))
 	add_child_autofree(attacker)
@@ -14,6 +15,9 @@ func before_each():
 
 func _has_crit_spec(_group) -> bool:
 	return true
+
+func after_each():
+	PFContext.cleanup_shared_services()
 
 func test_flail_crit_spec():
 	var flail = PFWeapon.new("Flail", [], 1, 1.0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.MARTIAL, PFEquipmentConstants.WeaponGroup.FLAIL, 1, 6, PFCombatConstants.DamageType.BLUDGEONING)

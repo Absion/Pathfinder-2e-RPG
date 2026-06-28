@@ -119,6 +119,16 @@ classDiagram
         +int reactions_remaining
     }
     PFComponent <|-- PFActionComponent
+    
+    class PFAttributesComponent {
+        <<Component>>
+        +int str_mod
+        +int dex_mod
+        +PFStat ac_modifiers
+        +PFStat attack_modifiers
+        +PFStat dc_modifiers
+    }
+    PFComponent <|-- PFAttributesComponent
 
     class PFProficiencySheet {
         <<Component (RefCounted)>>
@@ -156,12 +166,14 @@ classDiagram
     class PFItem {
         +int bulk
         +int price_cp
+        +CarryState carry_state
     }
     PFEntity <|-- PFItem
     
     class PFWeapon {
         +int damage_dice
         +int damage_faces
+        +bool can_be_thrown()
     }
     PFItem <|-- PFWeapon
 
@@ -178,6 +190,28 @@ classDiagram
     }
     PFItem <|-- PFShield
     
+    class PFConsumable {
+        +int charges
+        +String consumable_type
+        +on_consume(consumer) bool
+    }
+    PFItem <|-- PFConsumable
+    
+    class PFAlchemicalBomb {
+        +int splash_damage
+    }
+    PFConsumable <|-- PFAlchemicalBomb
+    
+    class PFAlchemicalElixir {
+        +bool is_mutagen
+    }
+    PFConsumable <|-- PFAlchemicalElixir
+    
+    class PFAlchemicalPoison {
+        +String delivery_method
+    }
+    PFConsumable <|-- PFAlchemicalPoison
+
     %% Actions
     class PFAction {
         +ActionCost cost
@@ -186,7 +220,7 @@ classDiagram
     }
     PFEntity <|-- PFAction
     
-    %% Conditions
+    %% Conditions & Stats
     class PFCondition {
         <<RefCounted>>
         +String condition_id
@@ -195,6 +229,22 @@ classDiagram
         +get_modifier(context) int
     }
     PFActor *-- PFCondition : holds
+    
+    class PFStat {
+        <<RefCounted>>
+        +Array modifiers
+        +add_modifier(PFModifier)
+        +get_total() int
+    }
+    
+    class PFModifier {
+        <<RefCounted>>
+        +int value
+        +ModifierType type
+        +String source
+    }
+    PFStat *-- PFModifier : contains
+    PFAttributesComponent *-- PFStat : manages
 
     %% Contexts
     class PFContext {
@@ -267,6 +317,30 @@ classDiagram
         +process_downtime_day()
     }
     
+    class PFDailyPrepManager {
+        <<Manager>>
+        +rest_actor(actor, is_long_term_rest)
+        +prepare_spell(actor, spell, rank, receptacle)
+        +commit_daily_prep(actor)
+    }
+
+    class PFConditionManager {
+        <<Manager>>
+        +tick_turn_started(actor)
+        +tick_turn_ended(actor)
+    }
+    
+    class PFTurnManager {
+        <<Manager>>
+        +start_encounter()
+        +next_turn()
+    }
+    
+    class PFReactionManager {
+        <<Manager>>
+        +notify_event(trigger, actor, data)
+    }
+
     class PFDetectionManager {
         <<Manager>>
         +check_detection_level(seeker, target)
@@ -280,6 +354,10 @@ classDiagram
 
     PFTimeManager --> PFDowntimeManager : Triggers daily ticks
     PFDowntimeManager --> PFLevelUpManager : Validates Retraining Time
+    PFTimeManager --> PFDailyPrepManager : Coordinates rest duration
+    PFDailyPrepManager --> PFConditionManager : Reduces conditions on rest
+    PFTurnManager --> PFConditionManager : Triggers turn start/end updates
+    PFTurnManager --> PFReactionManager : Refreshes reaction economy
 ```
 
 ### 1. Leveling & Progression System
@@ -294,5 +372,8 @@ Instead of isolated dice rolls, the **Recall Knowledge** action hooks directly i
 * **Procedural Lies:** On a Critical Failure, the engine dynamically generates procedurally accurate fake stats (e.g., swapping Fortitude with Reflex, or generating a fake weakness) and caches it in the database. 
 * **Un-Discovery:** If you attack the monster expecting a fake weakness and it doesn't trigger, the engine realizes the lie and wipes the misinformation from the Bestiary!
 
-### 4. Time & Downtime Management
-A fully functional Paizo downtime loop. `PFTimeManager` advances the campaign calendar, triggering daily hook ticks on the `PFDowntimeManager`. Characters set to `is_busy` will automatically complete Crafting, Earn Income (depositing money straight to inventory), or Retraining actions while the rest of the party explores the overworld!
+### 4. Time, Downtime, and Daily Preparations
+A fully functional Paizo downtime loop and rest cycle. `PFTimeManager` advances the campaign calendar, triggering daily hook ticks on the `PFDowntimeManager`. Characters set to `is_busy` will automatically complete Crafting, Earn Income, or Retraining. The `PFDailyPrepManager` coordinates resting (full night and long-term), spell slot recovery, focus point replenishment, staff preparation, and temporal crafting (Alchemist infusions), correctly tracking items until the next rest cycle.
+
+### 5. Inventory and Encumbrance
+The `PFInventory` system handles complex nested inventory logic. It calculates physical bulk, natively supporting container reductions, and automatically applies the `Encumbered` and `Clumsy` conditions dynamically via the `PFConditionManager` when a character's limits are exceeded. It also tracks the 10-item limit for invested magical gear and seamlessly converts wealth tracking (CP, SP, GP, PP) into dynamic coin bulk calculations.

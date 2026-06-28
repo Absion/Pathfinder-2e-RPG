@@ -6,6 +6,7 @@ var weapon: PFWeapon
 var shield: PFShield
 
 func before_each():
+	PFContext.init_shared_services()
 	user = PFPlayerCharacter.new("Attacker", [], 1, 15, 0, 0, 0)
 	weapon = PFWeapon.new("Sunder Sword", [&"versatile-p"])
 	weapon.die_faces = 8
@@ -25,6 +26,7 @@ func before_each():
 	target.inventory.hold_item(shield, false)
 
 func after_each():
+	PFContext.cleanup_shared_services()
 	user.queue_free()
 	target.queue_free()
 

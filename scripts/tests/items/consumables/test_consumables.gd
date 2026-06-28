@@ -4,6 +4,7 @@ var actor: PFActor
 var potion
 
 func before_each():
+	PFContext.init_shared_services()
 	actor = PFPlayerCharacter.new("Fighter", [], 1, 15, 0, 0, 0)
 	actor.health.current_hp = 1 # Nearly dead
 	
@@ -16,7 +17,8 @@ func before_each():
 	actor.inventory.hold_item(potion, true)
 
 func after_each():
-	actor.queue_free()
+	PFContext.cleanup_shared_services()
+	if is_instance_valid(actor): actor.free()
 
 func test_drink_potion():
 	var ActionDrink = load("res://scripts/actions/combat/pf_action_drink.gd")

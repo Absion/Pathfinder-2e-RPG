@@ -8,6 +8,7 @@ var ActionSwarmAttack = preload("res://scripts/actions/combat/pf_action_swarm_at
 var ActionStride = preload("res://scripts/actions/movement/pf_action_stride.gd")
 
 func before_each():
+	PFContext.init_shared_services()
 	combat_context = PFCombatContext.new()
 	add_child_autofree(combat_context)
 	combat_context.enter_context()
@@ -23,6 +24,7 @@ func before_each():
 	combat_context.turn_manager.add_combatant(swarm, true)
 
 func after_each():
+	PFContext.cleanup_shared_services()
 	combat_context.exit_context()
 	hero.free()
 	swarm.free()

@@ -1,4 +1,4 @@
-﻿# test_attachments.gd
+# test_attachments.gd
 class_name TestAttachments
 extends GutTest
 
@@ -16,6 +16,7 @@ func before_all() -> void:
 		database = PFDatabase.get_instance()
 
 func before_each() -> void:
+	PFContext.init_shared_services()
 	attacker = autofree(PFPlayerCharacter.new("Attacker", [], 1, 50, 0, 0, 0))
 
 func test_attaching_scope_to_crossbow() -> void:
@@ -80,3 +81,6 @@ func test_db_fetching_attachment() -> void:
 	assert_eq(bayonet.granted_weapon.entity_name, "Bayonet Attack")
 	assert_true(bayonet.granted_weapon.has_trait(&"agile"))
 
+
+func after_each() -> void:
+	PFContext.cleanup_shared_services()

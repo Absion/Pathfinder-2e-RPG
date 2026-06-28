@@ -11,6 +11,7 @@ var base_level: int
 var carry_state: PFEquipmentConstants.CarryState = PFEquipmentConstants.CarryState.DROPPED
 var stowed_container: PFItem = null # If STOWED, what container is it in?
 var is_weapon: bool = false
+var is_temporary: bool = false # Used for daily crafted items like infusions
 
 var size_id: StringName = &"medium"
 

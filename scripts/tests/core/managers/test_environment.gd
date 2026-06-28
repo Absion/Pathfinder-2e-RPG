@@ -1,4 +1,4 @@
-﻿# test_environment.gd
+# test_environment.gd
 extends GutTest
 
 func before_all():

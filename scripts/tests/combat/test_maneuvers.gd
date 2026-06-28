@@ -5,6 +5,7 @@ var defender: PFActor
 var trip_weapon: PFWeapon
 
 func before_each():
+	PFContext.init_shared_services()
 	attacker = autofree(PFPlayerCharacter.new("Attacker", [&"humanoid"], 1, 20, 0, 0, 0))
 	defender = autofree(PFPlayerCharacter.new("Defender", [&"humanoid"], 1, 20, 0, 0, 0))
 	add_child_autofree(attacker)
@@ -32,3 +33,6 @@ func test_shove():
 	var shove_action = PFActionManeuver.new(PFActionManeuver.ManeuverType.SHOVE)
 	var success = shove_action.execute(attacker, defender)
 	assert_true(success)
+
+func after_each():
+	PFContext.cleanup_shared_services()

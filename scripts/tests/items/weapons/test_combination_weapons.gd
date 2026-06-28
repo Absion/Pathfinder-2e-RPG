@@ -1,4 +1,4 @@
-﻿# test_combination_weapons.gd
+# test_combination_weapons.gd
 class_name TestCombinationWeapons
 extends GutTest
 
@@ -20,6 +20,7 @@ func before_all() -> void:
 	database.query("INSERT OR REPLACE INTO weapons (id, name, traits, level, weapon_type, damage_dice, damage_faces, hands_required, range_increment, linked_weapon_id, price_cp, material, hardness, max_hp, broken_threshold, grade, bulk, category, group_type, damage_type) VALUES ('mock_gunblade_ranged', 'Gunblade (Ranged)', 'combination', 1, 1, 1, 6, 2, 40, 'mock_gunblade_melee', 0, 0, 5, 20, 10, 0, 1, 0, 0, 0)")
 
 func before_each() -> void:
+	PFContext.init_shared_services()
 	attacker = autofree(PFPlayerCharacter.new("Attacker", [], 1, 50, 0, 0, 0))
 	defender = autofree(PFPlayerCharacter.new("Defender", [], 1, 50, 0, 0, 0))
 
@@ -59,3 +60,6 @@ func test_combination_toggle() -> void:
 	assert_eq(gunblade.die_faces, 8)
 	assert_eq(gunblade.hands_required, 1)
 
+
+func after_each() -> void:
+	PFContext.cleanup_shared_services()

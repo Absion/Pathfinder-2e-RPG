@@ -6,6 +6,7 @@ var minion: PFActor
 var ActionCommandMinion = preload("res://scripts/actions/interaction/pf_action_command_minion.gd")
 
 func before_each():
+	PFContext.init_shared_services()
 	combat_context = PFCombatContext.new()
 	add_child(combat_context)
 	combat_context.enter_context()
@@ -19,6 +20,7 @@ func before_each():
 	combat_context.turn_manager.add_combatant(minion)
 
 func after_each():
+	PFContext.cleanup_shared_services()
 	combat_context.exit_context()
 	combat_context.free()
 	master.free()

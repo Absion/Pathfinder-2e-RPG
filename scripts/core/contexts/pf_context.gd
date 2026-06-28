@@ -1,4 +1,4 @@
-﻿# pf_context.gd
+# pf_context.gd
 ## Base class for global game states (combat, exploration, menus).
 class_name PFContext
 extends Node
@@ -15,6 +15,7 @@ static var detection_manager: PFDetectionManager
 static var reaction_manager: PFReactionManager
 static var environment_manager: PFEnvironmentManager
 static var counteract_manager: PFCounteractManager
+static var condition_manager: PFConditionManager
 static var active_turn_manager: PFTurnManager
 
 ## Initializes shared static services that persist across both Combat and Overworld contexts
@@ -34,6 +35,10 @@ static func init_shared_services() -> void:
 	if counteract_manager == null:
 		counteract_manager = PFCounteractManager.new()
 		Engine.get_main_loop().root.add_child(counteract_manager)
+		
+	if condition_manager == null:
+		condition_manager = PFConditionManager.new()
+		Engine.get_main_loop().root.add_child(condition_manager)
 
 ## Cleans up shared services to prevent state leakage between tests.
 static func cleanup_shared_services() -> void:
@@ -60,6 +65,12 @@ static func cleanup_shared_services() -> void:
 			counteract_manager.get_parent().remove_child(counteract_manager)
 		counteract_manager.free()
 	counteract_manager = null
+	
+	if is_instance_valid(condition_manager):
+		if condition_manager.is_inside_tree():
+			condition_manager.get_parent().remove_child(condition_manager)
+		condition_manager.free()
+	condition_manager = null
 	
 	active_party.clear()
 	reserve_party.clear()

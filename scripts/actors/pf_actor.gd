@@ -1,4 +1,4 @@
-﻿# pf_actor.gd
+# pf_actor.gd
 # Represents any living, undead, or construct entity in the game: Players, NPCs, and Monsters.
 ## The core base class for any targetable and interactive entity in the game world.
 #
@@ -56,43 +56,20 @@ func _ready() -> void:
 	var time_manager = PFTimeManager.get_instance()
 	if time_manager:
 		time_manager.rested_for_night.connect(_on_rested_for_night)
+		time_manager.long_term_rested.connect(_on_long_term_rested)
 		
 	# Every actor gets Grab an Edge inherently
 	PFReactionGrabEdge.register(self)
 
 func _on_rested_for_night() -> void:
-	# Base Healing: CON modifier * Level (minimum 1)
-	var con_mod = get_ability_modifier(&"CON")
-	var amount_to_heal = maxi(1, con_mod) * level
-	heal(amount_to_heal)
-	print("    > %s recovers %d HP after a full night's rest." % [entity_name, amount_to_heal])
-	
-	# Condition reductions on rest
-	if has_condition("doomed"): reduce_condition("doomed", 1)
-	if has_condition("drained"): reduce_condition("drained", 1)
-	if has_condition("fatigued"): remove_condition("fatigued")
-	
-	if "spellbook" in self and self.get(&"spellbook") != null:
-		self.get(&"spellbook").restore_daily_slots()
-		print("    > %s recovers all daily spell slots." % entity_name)
-		
-	# Reset wands and prepare staves
-	if "inventory" in self and self.get(&"inventory") != null:
-		var inventory = self.get(&"inventory")
-		for item in inventory.items:
-			if item.has_method("reset_for_day"):
-				item.reset_for_day()
-			if item.has_method("clear_charges"):
-				item.clear_charges()
-		
-	# Sleeping in Armor Rule (Pathfinder 2e Remaster)
-	var armor = get_worn_armor()
-	if armor != null:
-		var category = armor.category
-		var is_medium_or_heavy = category == PFEquipmentConstants.ArmorCategory.MEDIUM or category == PFEquipmentConstants.ArmorCategory.HEAVY
-		if is_medium_or_heavy and not armor.has_trait(&"comfort"):
-			print("    > %s slept in uncomfortable %s armor!" % [entity_name, armor.entity_name])
-			apply_condition(PFCondition.create("fatigued", 1))
+	var prep_manager = PFDailyPrepManager.get_instance()
+	if prep_manager:
+		prep_manager.rest_actor(self, false)
+
+func _on_long_term_rested() -> void:
+	var prep_manager = PFDailyPrepManager.get_instance()
+	if prep_manager:
+		prep_manager.rest_actor(self, true)
 
 func grant_reaction(reaction_class_name: String) -> void:
 	# In a real system, we might look this up via a factory or load it
@@ -134,13 +111,13 @@ func expose_to_affliction(affliction_id: StringName) -> void:
 	# Default affliction logic
 	var affliction = PFCondition.create(affliction_id)
 	if affliction is PFConditionAffliction:
-		# Immediately prompt save
+		# Afflictions immediately prompt a save upon exposure (onset delay excluded for now)
 		print("    > %s is exposed to %s! Attempting %s save (DC %d)..." % [entity_name, affliction.condition_name, affliction.save_stat, affliction.save_dc])
 		var save_mod = get_save_bonus(affliction.save_stat)
+		
 		var roll = randi() % 20 + 1
 		var total = roll + save_mod
 		
-		# Simple degree of success
 		var degree = PFMathConstants.DegreeOfSuccess.FAIL
 		if total >= affliction.save_dc + 10 or roll == 20: degree = PFMathConstants.DegreeOfSuccess.CRIT_SUCCESS
 		elif total >= affliction.save_dc: degree = PFMathConstants.DegreeOfSuccess.SUCCESS
@@ -160,24 +137,8 @@ func expose_to_affliction(affliction_id: StringName) -> void:
 		push_error("expose_to_affliction called with non-affliction ID: " + str(affliction_id))
 
 func apply_condition(new_condition: PFCondition) -> void:
-	# Check if condition already exists
-	for c in conditions:
-		if c.condition_id == new_condition.condition_id:
-			# Condition exists. Max stacking rule.
-			if new_condition.value > c.value:
-				c.value = new_condition.value
-				print("%s %s worsened to %d!" % [entity_name, c.condition_name, c.value])
-			else:
-				print("%s is already %s %d or higher." % [entity_name, c.condition_name, c.value])
-			return
-			
-	if not new_condition.on_apply(self):
-		return
-
-	# We now append all conditions instead of overriding. 
-	# get_condition_modifier will calculate the strongest ones.
-	conditions.append(new_condition)
-	print("%s is now %s %d!" % [entity_name, new_condition.condition_name, new_condition.value])
+	var mgr = PFConditionManager.get_instance()
+	if mgr: mgr.apply_condition(self, new_condition)
 
 func add_immunity(immunity_id: StringName, duration_turns: int = -1) -> void:
 	immunities[immunity_id] = duration_turns
@@ -185,70 +146,28 @@ func add_immunity(immunity_id: StringName, duration_turns: int = -1) -> void:
 func has_immunity(immunity_id: StringName) -> bool:
 	return immunities.has(immunity_id)
 
-
 func remove_condition(condition_id: String) -> void:
-	for i in range(conditions.size() - 1, -1, -1):
-		if str(conditions[i].condition_id) == condition_id:
-			var removed_condition = conditions[i]
-			conditions.remove_at(i)
-			removed_condition.on_remove(self)
-			print("%s is no longer %s!" % [entity_name, removed_condition.condition_name])
-			return
+	var mgr = PFConditionManager.get_instance()
+	if mgr: mgr.remove_condition(self, condition_id)
 
 func reduce_condition(condition_id: String, amount: int = 1) -> void:
-	for i in range(conditions.size() - 1, -1, -1):
-		if str(conditions[i].condition_id) == condition_id:
-			conditions[i].value -= amount
-			if conditions[i].value <= 0:
-				remove_condition(condition_id)
-			else:
-				print("%s's %s reduced to %d." % [entity_name, conditions[i].condition_name, conditions[i].value])
-			return
+	var mgr = PFConditionManager.get_instance()
+	if mgr: mgr.reduce_condition(self, condition_id, amount)
 			
 func has_condition(condition_id: String) -> bool:
-	for c in conditions:
-		if str(c.condition_id) == condition_id:
-			return true
+	var mgr = PFConditionManager.get_instance()
+	if mgr: return mgr.has_condition(self, condition_id)
 	return false
 
 func get_condition(condition_id: String) -> PFCondition:
-	for c in conditions:
-		if str(c.condition_id) == condition_id:
-			return c
+	var mgr = PFConditionManager.get_instance()
+	if mgr: return mgr.get_condition(self, condition_id)
 	return null
 
-
 func get_condition_modifier(context: StringName) -> int:
-	var highest_status_bonus = 0
-	var highest_circumstance_bonus = 0
-	var highest_item_bonus = 0
-	
-	var highest_status_penalty = 0
-	var highest_circumstance_penalty = 0
-	var highest_item_penalty = 0
-	
-	var untyped_sum = 0
-	
-	for c in conditions:
-		if c.is_active:
-			var modifier = c.get_modifier(context)
-			if modifier == 0: continue
-			
-			if c.modifier_type == "status":
-				if modifier > 0: highest_status_bonus = maxi(highest_status_bonus, modifier)
-				else: highest_status_penalty = mini(highest_status_penalty, modifier)
-			elif c.modifier_type == "circumstance":
-				if modifier > 0: highest_circumstance_bonus = maxi(highest_circumstance_bonus, modifier)
-				else: highest_circumstance_penalty = mini(highest_circumstance_penalty, modifier)
-			elif c.modifier_type == "item":
-				if modifier > 0: highest_item_bonus = maxi(highest_item_bonus, modifier)
-				else: highest_item_penalty = mini(highest_item_penalty, modifier)
-			else:
-				untyped_sum += modifier
-				
-	return highest_status_bonus + highest_circumstance_bonus + highest_item_bonus + \
-		   highest_status_penalty + highest_circumstance_penalty + highest_item_penalty + \
-		   untyped_sum
+	var mgr = PFConditionManager.get_instance()
+	if mgr: return mgr.get_condition_modifier(self, context)
+	return 0
 
 func get_actor_bulk() -> int:
 	var base_bulk = 60 # Default Medium (6 Bulk)
@@ -369,10 +288,6 @@ func end_turn() -> void:
 	if has_trait(&"minion"):
 		action_economy.actions_remaining = 0
 		action_economy.reactions_remaining = 0
-	
-	for c in conditions:
-		if c.is_active: c.on_turn_end(self)
-	conditions = conditions.filter(func(c): return c.is_active)
 
 # ---------------------------------------------------------
 # HEALTH & DAMAGE LOGIC

@@ -4,10 +4,14 @@ var actor1: PFActor
 var actor2: PFActor
 
 func before_each():
-	actor1 = autofree(PFPlayerCharacter.new("Alchemist", [&"humanoid"] as Array[StringName], 1, 15, 10, 10, 10))
-	actor2 = autofree(PFPlayerCharacter.new("Goblin", [&"humanoid", &"goblin"] as Array[StringName], 1, 15, 10, 10, 10))
-	add_child_autofree(actor1)
-	add_child_autofree(actor2)
+	PFContext.init_shared_services()
+	actor1 = PFPlayerCharacter.new("Alchemist", [&"humanoid"] as Array[StringName], 1, 15, 10, 10, 10)
+	actor2 = PFPlayerCharacter.new("Goblin", [&"humanoid", &"goblin"] as Array[StringName], 1, 15, 10, 10, 10)
+
+func after_each():
+	PFContext.cleanup_shared_services()
+	if is_instance_valid(actor1): actor1.free()
+	if is_instance_valid(actor2): actor2.free()
 
 func test_mutagen_overwrites_mutagen():
 	var elixir1 = autofree(PFAlchemicalElixir.new("mutagen_juggernaut", "Juggernaut Mutagen", 1, true))

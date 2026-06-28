@@ -49,7 +49,18 @@ This phase relies entirely on Phase 1's Cover mechanics.
 - [x] **Tattoos**: Magical skin modifications with item investiture logic.
 
 ## Phase 8: Game Loop & Daily Preparation
-- [ ] **Daily Preparation Manager**: Create a unified manager (`PFDailyPrepManager`) for the Morning Rest cycle. 
+- [x] **Daily Preparation Manager**: Create a unified manager (`PFDailyPrepManager`) for the Morning Rest cycle. 
   - Allows actors to explicitly prepare their spells in their spellbook.
   - Allows Prepared Casters to expend slots to charge magical staves.
   - Resets Focus Points, Hit Points, and handles temporary item generation (Alchemist infusions, snare crafting).
+
+## Phase 9: Active Conditions and Effect Tracking
+- [x] **Condition Manager (`PFConditionManager`)**: Centralize logic for ticking, expiring, and handling overlapping conditions.
+- [x] **Persistent Damage**: Robust logic for triggering persistent damage at the end of a turn and resolving recovery flat checks.
+- [x] **Affliction Ticking**: Hooking poison/disease progression into turn phases or time progression.
+
+## Phase 10: The Inventory Subsystem
+- [x] **Encumbrance**: Bulk calculation and application of the Encumbered condition.
+- [x] **Containers**: Backpacks, bags of holding, and retrieving items from within containers.
+- [x] **Investiture**: 10-item limit for invested magical items.
+- [x] **Coins & Wealth**: Tracking CP, SP, GP, PP.

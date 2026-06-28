@@ -1,4 +1,4 @@
-﻿extends GutTest
+extends GutTest
 
 class_name TestBestiary
 

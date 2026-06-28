@@ -7,6 +7,7 @@ var troop: PFTroop
 var enemy: PFNpc
 
 func before_each():
+	PFContext.init_shared_services()
 	combat_context = PFCombatContext.new()
 	add_child_autofree(combat_context)
 	combat_context.enter_context()
@@ -23,6 +24,7 @@ func before_each():
 	combat_context.turn_manager.add_combatant(enemy, true)
 
 func after_each():
+	PFContext.cleanup_shared_services()
 	combat_context.exit_context()
 	troop.free()
 	enemy.free()

@@ -1,4 +1,4 @@
-﻿extends GutTest
+extends GutTest
 
 var manager: PFDetectionManager
 var rogue: PFActor
@@ -15,6 +15,7 @@ func before_all():
 func after_all():
 	pass
 func before_each():
+	PFContext.init_shared_services()
 	manager = autofree(PFDetectionManager.new())
 	add_child_autofree(manager)
 	
@@ -27,10 +28,7 @@ func before_each():
 	add_child_autofree(guard_2)
 
 func after_each():
-	manager.queue_free()
-	rogue.queue_free()
-	guard_1.queue_free()
-	guard_2.queue_free()
+	PFContext.cleanup_shared_services()
 
 func test_default_detection_state():
 	# By default, anyone should be observed to anyone else.

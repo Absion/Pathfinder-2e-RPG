@@ -4,14 +4,18 @@ var actor1: PFActor
 var actor2: PFActor
 
 func before_each():
-	actor1 = autofree(PFPlayerCharacter.new("Alchemist", [&"humanoid"] as Array[StringName], 1, 15, 10, 10, 10))
-	actor2 = autofree(PFPlayerCharacter.new("Goblin", [&"humanoid", &"goblin"] as Array[StringName], 1, 15, 10, 10, 10))
-	add_child_autofree(actor1)
-	add_child_autofree(actor2)
+	PFContext.init_shared_services()
+	actor1 = PFPlayerCharacter.new("Alchemist", [&"humanoid"] as Array[StringName], 1, 15, 10, 10, 10)
+	actor2 = PFPlayerCharacter.new("Goblin", [&"humanoid", &"goblin"] as Array[StringName], 1, 15, 10, 10, 10)
+
+func after_each():
+	PFContext.cleanup_shared_services()
+	if is_instance_valid(actor1): actor1.free()
+	if is_instance_valid(actor2): actor2.free()
 
 func test_apply_and_deliver_poison():
-	var poison = autofree(load("res://scripts/items/consumables/pf_alchemical_poison.gd").new("giant_centipede_venom", "Giant Centipede Venom", 1, "injury", &"giant_centipede_venom_affliction"))
-	var dagger = autofree(PFWeapon.new("Dagger", [&"agile", &"finesse", &"thrown"] as Array[StringName], 1, 0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.SIMPLE, PFEquipmentConstants.WeaponGroup.KNIFE, 1, 4, PFCombatConstants.DamageType.PIERCING))
+	var poison = load("res://scripts/items/consumables/pf_alchemical_poison.gd").new("giant_centipede_venom", "Giant Centipede Venom", 1, "injury", &"giant_centipede_venom_affliction")
+	var dagger = PFWeapon.new("Dagger", [&"agile", &"finesse", &"thrown"] as Array[StringName], 1, 0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.SIMPLE, PFEquipmentConstants.WeaponGroup.KNIFE, 1, 4, PFCombatConstants.DamageType.PIERCING)
 	
 	actor1.inventory.add_item(poison)
 	actor1.inventory.add_item(dagger)

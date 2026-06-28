@@ -1,4 +1,4 @@
-﻿extends GutTest
+extends GutTest
 
 var reaction_manager: PFReactionManager
 var alice: PFActor
@@ -6,6 +6,7 @@ var bob: PFActor
 var shield: PFShield
 
 func before_each():
+	PFContext.init_shared_services()
 	reaction_manager = autofree(PFReactionManager.new())
 	add_child_autofree(reaction_manager)
 	
@@ -25,9 +26,7 @@ func before_each():
 	raised.on_apply(alice)
 
 func after_each():
-	reaction_manager.queue_free()
-	alice.queue_free()
-	bob.queue_free()
+	PFContext.cleanup_shared_services()
 	PFContext.reaction_manager = null
 
 func test_shield_block_damage_reduction():

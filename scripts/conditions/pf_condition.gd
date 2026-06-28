@@ -1,4 +1,4 @@
-﻿# pf_condition.gd
+# pf_condition.gd
 ## An active effect or status applied to an actor.
 class_name PFCondition
 extends RefCounted
@@ -17,7 +17,10 @@ var strategy_script_path: String
 # For conditions like Grabbed or Restrained that require an Escape check
 var source_dc: int = 0
 
-func _init(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0):
+# Duration tracking (-1 means permanent until removed/cured)
+var duration_turns: int = -1
+
+func _init(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0, p_duration: int = -1):
 	condition_id = p_id
 	var db_inst = PFDatabase.get_instance()
 	var data: Dictionary = {}
@@ -38,9 +41,10 @@ func _init(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0):
 		
 	value = p_initial_value
 	source_dc = p_source_dc
+	duration_turns = p_duration
 
 # NEW: Factory method for instantiating the correct condition subclass
-static func create(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0) -> PFCondition:
+static func create(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0, p_duration: int = -1) -> PFCondition:
 	var db_inst = PFDatabase.get_instance()
 	var data: Dictionary = {}
 	if db_inst:
@@ -55,8 +59,11 @@ static func create(p_id: StringName, p_initial_value: int = 1, p_source_dc: int 
 	if data and data.get(&"script_path", "") != "":
 		var script = load(data["script_path"])
 		if script:
-			return script.new(p_id, p_initial_value, p_source_dc)
-	return PFCondition.new(p_id, p_initial_value, p_source_dc)
+			# persistent damage is instantiated manually, but factory shouldn't crash
+			if p_id == &"persistent_damage":
+				pass 
+			return script.new(p_id, p_initial_value, p_source_dc, p_duration)
+	return PFCondition.new(p_id, p_initial_value, p_source_dc, p_duration)
 
 # NEW: Called right before it is added to the actor. Return false to reject the condition.
 func on_apply(_owner: PFActor) -> bool:
