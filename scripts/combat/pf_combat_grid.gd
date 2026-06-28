@@ -200,20 +200,23 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 		if actor == mover:
 			continue
 			
-		var actor_cells: Array[Vector3] = []
+		var overlap = false
 		if actor is PFTroop:
 			for seg in actor.active_segments:
-				actor_cells.append(Vector3(round(actor.global_position.x + seg.x), 0, round(actor.global_position.z + seg.z)))
+				var a_x = round(actor.global_position.x + seg.x)
+				var a_z = round(actor.global_position.z + seg.z)
+				for t_cell in target_cells:
+					if abs(t_cell.x - a_x) <= 0.5 and abs(t_cell.z - a_z) <= 0.5:
+						overlap = true
+						break
+				if overlap: break
 		else:
-			actor_cells.append(Vector3(round(actor.global_position.x), 0, round(actor.global_position.z)))
-			
-		var overlap = false
-		for t_cell in target_cells:
-			for a_cell in actor_cells:
-				if t_cell.distance_to(a_cell) <= 0.5:
+			var a_x = round(actor.global_position.x)
+			var a_z = round(actor.global_position.z)
+			for t_cell in target_cells:
+				if abs(t_cell.x - a_x) <= 0.5 and abs(t_cell.z - a_z) <= 0.5:
 					overlap = true
 					break
-			if overlap: break
 			
 		# If we aren'transform overlapping the XZ coordinate, it's free.
 		if not overlap:
