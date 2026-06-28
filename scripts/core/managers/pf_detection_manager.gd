@@ -60,8 +60,8 @@ func is_concealed(observer: PFActor, target: PFActor) -> bool:
 		if light_level == PFEnvironmentConstants.LightLevel.DIM_LIGHT or light_level == PFEnvironmentConstants.LightLevel.DARKNESS:
 			# Dim Light / Darkness grants Concealment (or worse), unless observer has special vision
 			var vision = PFBiographyConstants.Vision.NORMAL
-			if observer.has_node("PFSensesComponent"):
-				vision = (observer.get_node("PFSensesComponent") as PFSensesComponent).vision
+			if "senses" in observer and observer.senses != null:
+				vision = observer.senses.vision
 				
 			if light_level == PFEnvironmentConstants.LightLevel.DARKNESS and vision != PFBiographyConstants.Vision.DARKVISION:
 				# In darkness without darkvision, you are blinded to the target (they are Hidden or Undetected).
@@ -80,8 +80,8 @@ func is_concealed(observer: PFActor, target: PFActor) -> bool:
 
 ## Evaluates if the observer's precise senses automatically detect the target, bypassing visual cover.
 func detects_with_precise_sense(observer: PFActor, target: PFActor) -> bool:
-	if not observer.has_node("PFSensesComponent"): return false
-	var senses_comp = observer.get_node("PFSensesComponent") as PFSensesComponent
+	if not "senses" in observer or observer.senses == null: return false
+	var senses_comp = observer.senses
 	
 	for sense in senses_comp.senses:
 		if sense.acuity == PFBiographyConstants.SenseAcuity.PRECISE:
@@ -108,8 +108,8 @@ func detects_with_precise_sense(observer: PFActor, target: PFActor) -> bool:
 
 ## Evaluates if an imprecise sense (like Hearing or Scent) detects the target.
 func detects_with_imprecise_sense(observer: PFActor, target: PFActor) -> bool:
-	if not observer.has_node("PFSensesComponent"): return false
-	var senses_comp = observer.get_node("PFSensesComponent") as PFSensesComponent
+	if not "senses" in observer or observer.senses == null: return false
+	var senses_comp = observer.senses
 	
 	for sense in senses_comp.senses:
 		if sense.acuity == PFBiographyConstants.SenseAcuity.IMPRECISE:
@@ -142,8 +142,8 @@ func apply_imprecise_senses() -> void:
 
 ## Evaluates if a vague sense (like smell) detects the target.
 func detects_with_vague_sense(observer: PFActor, target: PFActor) -> bool:
-	if not observer.has_node("PFSensesComponent"): return false
-	var senses_comp = observer.get_node("PFSensesComponent") as PFSensesComponent
+	if not "senses" in observer or observer.senses == null: return false
+	var senses_comp = observer.senses
 	
 	for sense in senses_comp.senses:
 		if sense.acuity == PFBiographyConstants.SenseAcuity.VAGUE:
