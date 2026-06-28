@@ -52,6 +52,15 @@ func test_versatile_trait():
 	var _strike2 = PFActionStrike.new(versatile_weapon)
 	# By default it's slashing
 
+func test_versatile_trait_error_path():
+	var normal_weapon = PFWeapon.new("Mace", [], 1, 1.0, PFEquipmentConstants.WeaponType.MELEE, PFEquipmentConstants.WeaponCategory.SIMPLE, PFEquipmentConstants.WeaponGroup.CLUB, 1, 6, PFCombatConstants.DamageType.BLUDGEONING)
+
+	# Attempt to set to slashing, which the mace does not have a versatile trait for
+	normal_weapon.set_versatile_type(PFCombatConstants.DamageType.SLASHING)
+
+	# Assert that active damage type did not change from base damage type
+	assert_eq(normal_weapon.active_damage_type, PFCombatConstants.DamageType.BLUDGEONING)
+
 func test_nonlethal_trait():
 	var _initial_hp = defender.health.current_hp
 	
