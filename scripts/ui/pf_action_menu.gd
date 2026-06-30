@@ -102,6 +102,10 @@ func _ready():
 	
 	# Optional: make the condition panel clickable
 	conditions_panel.gui_input.connect(_on_conditions_gui_input)
+	conditions_panel.mouse_entered.connect(func(): conditions_panel.modulate = Color(1.2, 1.2, 1.2))
+	conditions_panel.mouse_exited.connect(func(): conditions_panel.modulate = Color.WHITE)
+	conditions_panel.focus_entered.connect(func(): conditions_panel.modulate = Color(1.2, 1.2, 1.2))
+	conditions_panel.focus_exited.connect(func(): conditions_panel.modulate = Color.WHITE)
 	
 	var spacer2 = Control.new()
 	spacer2.custom_minimum_size = Vector2(0, 10)
@@ -201,6 +205,8 @@ func _open_submenu(menu_name: String):
 		scroll_vbox.add_child(strike1)
 	elif menu_name == "MAGIC":
 		var s1 = _create_styled_button("No Spells Prepared")
+		s1.disabled = true
+		s1.tooltip_text = "You do not have any spells prepared or available to cast."
 		scroll_vbox.add_child(s1)
 	elif menu_name == "ACTIONS":
 		var a1 = _create_styled_button("Grapple")

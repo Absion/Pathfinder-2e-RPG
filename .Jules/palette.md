@@ -4,3 +4,6 @@
 ## 2026-06-28 - Programmatic UI Interaction Discoverability
 **Learning:** In Godot 4, programmatic UI elements like `TextureRect` default to `MOUSE_FILTER_IGNORE` and `PanelContainer` lack proper cursor affordances and keyboard focus by default, leading to undiscoverable tooltips and non-obvious clickable elements that are inaccessible via keyboard.
 **Action:** When building data-driven UI components via script, explicitly set `mouse_filter = Control.MOUSE_FILTER_PASS` (for tooltips), `mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND` (for clickable containers), and `focus_mode = Control.FOCUS_ALL` (to support keyboard navigation with Space/Enter handling) to ensure standard accessibility guidelines are met.
+## 2026-06-30 - Visual Focus Feedback for Programmatic UI Containers
+**Learning:** In Godot 4, programmatic UI containers (like `PanelContainer`) lack built-in visual focus feedback, even when `focus_mode` is enabled.
+**Action:** Manually connect `focus_entered`, `focus_exited`, `mouse_entered`, and `mouse_exited` signals to visually indicate focus/hover states (e.g., by adjusting `modulate` color) to ensure interaction discoverability for keyboard and mouse navigation.
