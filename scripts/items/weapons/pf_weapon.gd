@@ -1,4 +1,4 @@
-﻿# pf_weapon.gd
+# pf_weapon.gd
 ## Offensive equipment used to make strikes against targets.
 class_name PFWeapon
 extends PFItem
@@ -167,7 +167,7 @@ func set_versatile_type(new_type: PFCombatConstants.DamageType) -> void:
 				elif new_type == PFCombatConstants.DamageType.SLASHING and "s" in trait_string: is_valid = true
 	
 	if is_valid: active_damage_type = new_type
-	else: push_error("Weapon lacks required versatile or modular trait.")
+	else: print("    > [ERROR] Weapon lacks required versatile or modular trait.")
 
 func can_be_thrown() -> bool:
 	for t in traits:

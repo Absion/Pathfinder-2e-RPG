@@ -47,7 +47,7 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 	# --- EXECUTION ---
 	
 	if not is_valid:
-		push_error(error_message)
+		print("    > [ERROR] " + error_message)
 		return false
 		
 	print("%s unleashes a Flurry of Blows using their %s!" % [user.entity_name, weapon.entity_name])
