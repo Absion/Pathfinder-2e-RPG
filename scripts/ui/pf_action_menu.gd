@@ -7,6 +7,7 @@ enum MenuPosition { TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT }
 @export var menu_position: MenuPosition = MenuPosition.BOTTOM_RIGHT
 
 var bound_actor: PFActor = null
+var _last_opened_menu: String = ""
 
 # UI Elements
 var margin_container: MarginContainer
@@ -172,6 +173,8 @@ func _create_styled_button(text: String) -> Button:
 	return button
 
 func _open_submenu(menu_name: String):
+	_last_opened_menu = menu_name
+
 	for child in submenu_vbox.get_children():
 		child.queue_free()
 		
@@ -231,9 +234,21 @@ func _open_submenu(menu_name: String):
 	main_menu_vbox.hide()
 	submenu_vbox.show()
 
+	# Place focus on the back button so keyboard users can navigate immediately
+	if back_btn:
+		back_btn.grab_focus()
+
 func _close_submenu():
 	submenu_vbox.hide()
 	main_menu_vbox.show()
+
+	# Restore focus to the button that opened the menu
+	if _last_opened_menu != "":
+		for child in main_menu_vbox.get_children():
+			if child is Button and child.text == _last_opened_menu:
+				child.grab_focus()
+				break
+		_last_opened_menu = ""
 
 func _on_conditions_gui_input(event: InputEvent):
 	var is_click = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
