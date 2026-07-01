@@ -179,21 +179,17 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 	if PFContext.active_turn_manager == null:
 		return false
 		
-	# ⚡ Bolt: Cache mover calculations outside the loop
-	var target_cells: Array[Vector3] = []
+	# ⚡ Bolt: Cache mover calculations outside the loop, avoid array allocation
 	var mover_is_swarm_or_tiny = false
 	var mover_record = null
+	var is_mover_troop = false
+	var base_t_x = target_pos.x
+	var base_t_z = target_pos.z
 
 	if mover != null:
-		if mover is PFTroop:
-			for seg in mover.active_segments:
-				target_cells.append(Vector3(round(target_pos.x + seg.x), 0, round(target_pos.z + seg.z)))
-		else:
-			target_cells.append(Vector3(round(target_pos.x), 0, round(target_pos.z)))
+		is_mover_troop = mover is PFTroop
 		mover_is_swarm_or_tiny = mover.has_trait(&"swarm") or mover.size_id == &"tiny"
 		mover_record = PFContext.active_turn_manager.get_combatant_record(mover)
-	else:
-		target_cells.append(Vector3(round(target_pos.x), 0, round(target_pos.z)))
 
 	for record in PFContext.active_turn_manager.combatants:
 		var actor = record.actor
@@ -205,20 +201,37 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 			for seg in actor.active_segments:
 				var a_x = round(actor.global_position.x + seg.x)
 				var a_z = round(actor.global_position.z + seg.z)
-				for t_cell in target_cells:
-					if abs(t_cell.x - a_x) <= 0.5 and abs(t_cell.z - a_z) <= 0.5:
+				if is_mover_troop:
+					for mover_seg in mover.active_segments:
+						var t_x = round(base_t_x + mover_seg.x)
+						var t_z = round(base_t_z + mover_seg.z)
+						if abs(t_x - a_x) <= 0.5 and abs(t_z - a_z) <= 0.5:
+							overlap = true
+							break
+					if overlap: break
+				else:
+					var t_x = round(base_t_x)
+					var t_z = round(base_t_z)
+					if abs(t_x - a_x) <= 0.5 and abs(t_z - a_z) <= 0.5:
 						overlap = true
 						break
-				if overlap: break
 		else:
 			var a_x = round(actor.global_position.x)
 			var a_z = round(actor.global_position.z)
-			for t_cell in target_cells:
-				if abs(t_cell.x - a_x) <= 0.5 and abs(t_cell.z - a_z) <= 0.5:
+			if is_mover_troop:
+				for mover_seg in mover.active_segments:
+					var t_x = round(base_t_x + mover_seg.x)
+					var t_z = round(base_t_z + mover_seg.z)
+					if abs(t_x - a_x) <= 0.5 and abs(t_z - a_z) <= 0.5:
+						overlap = true
+						break
+			else:
+				var t_x = round(base_t_x)
+				var t_z = round(base_t_z)
+				if abs(t_x - a_x) <= 0.5 and abs(t_z - a_z) <= 0.5:
 					overlap = true
-					break
 			
-		# If we aren'transform overlapping the XZ coordinate, it's free.
+		# If we aren't overlapping the XZ coordinate, it's free.
 		if not overlap:
 			continue
 			
