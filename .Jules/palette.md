@@ -7,3 +7,6 @@
 ## 2026-06-30 - Visual Focus Feedback for Programmatic UI Containers
 **Learning:** In Godot 4, programmatic UI containers (like `PanelContainer`) lack built-in visual focus feedback, even when `focus_mode` is enabled.
 **Action:** Manually connect `focus_entered`, `focus_exited`, `mouse_entered`, and `mouse_exited` signals to visually indicate focus/hover states (e.g., by adjusting `modulate` color) to ensure interaction discoverability for keyboard and mouse navigation.
+## 2024-07-01 - Focus Management for Dynamic Menus
+**Learning:** In Godot 4 programmatic UI, when dynamically hiding/showing components (like submenus), keyboard users lose focus context if the focused element is hidden.
+**Action:** Always store the name or reference of the button that opened the submenu. When closing the menu, manually re-apply `grab_focus()` to the original button. When opening, immediately apply `grab_focus()` to the newly revealed back button or first item. This adheres to WCAG focus discoverability standards.
