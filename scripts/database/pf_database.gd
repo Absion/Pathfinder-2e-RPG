@@ -41,13 +41,20 @@ var _edicts_cache: Dictionary = {}
 var _anathemas_cache: Dictionary = {}
 var _deities_cache: Dictionary = {}
 
+static var _instance_cache: PFDatabase = null
+
 static func get_instance() -> PFDatabase:
+	if _instance_cache != null and is_instance_valid(_instance_cache):
+		return _instance_cache
+
 	var ml = Engine.get_main_loop()
 	if ml:
 		if ml.root.has_node("PFDB"):
-			return ml.root.get_node("PFDB") as PFDatabase
+			_instance_cache = ml.root.get_node("PFDB") as PFDatabase
+			return _instance_cache
 		elif ml.root.has_node("PFDatabase"):
-			return ml.root.get_node("PFDatabase") as PFDatabase
+			_instance_cache = ml.root.get_node("PFDatabase") as PFDatabase
+			return _instance_cache
 	return null
 
 func _ready():

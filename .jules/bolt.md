@@ -10,3 +10,6 @@
 ## 2026-07-01 - Avoid internal array allocations in GDScript tight loops
 **Learning:** Instantiating temporary arrays `[]` inside hot loop functions like `is_space_occupied` produces significant GC overhead and heap allocation pressure.
 **Action:** When calculating mathematical bounds or positions (like target cell checking) inside highly repetitive functions, expand the logic to calculate coordinates manually and inline instead of storing objects/vectors in an array to iterate over later.
+## 2026-07-02 - Cache Database Singleton Instance
+**Learning:** Frequent calls to `PFDatabase.get_instance()` were performing string-based scene tree traversals (`has_node` and `get_node`) which are slow and allocate memory.
+**Action:** Implemented a static cache variable `_instance_cache` in `PFDatabase` and used `is_instance_valid` to ensure safety. Replaced manual scene tree lookups in hot paths (like `PFItem._init`) with the cached getter.
