@@ -41,16 +41,27 @@ var _edicts_cache: Dictionary = {}
 var _anathemas_cache: Dictionary = {}
 var _deities_cache: Dictionary = {}
 
+static var _instance: PFDatabase
+
 static func get_instance() -> PFDatabase:
+	# Performance: Cache the instance to avoid expensive string-based scene tree traversals
+	# (has_node/get_node) during frequent database access.
+	if is_instance_valid(_instance):
+		return _instance
+
 	var ml = Engine.get_main_loop()
 	if ml:
 		if ml.root.has_node("PFDB"):
-			return ml.root.get_node("PFDB") as PFDatabase
+			_instance = ml.root.get_node("PFDB") as PFDatabase
+			return _instance
 		elif ml.root.has_node("PFDatabase"):
-			return ml.root.get_node("PFDatabase") as PFDatabase
+			_instance = ml.root.get_node("PFDatabase") as PFDatabase
+			return _instance
 	return null
 
 func _ready():
+	_instance = self
+
 	# If godot-sqlite is missing, this will fail safely.
 	if not ClassDB.class_exists("SQLite"):
 		push_error("Godot SQLite plugin not found or not enabled!")

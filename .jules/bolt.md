@@ -10,3 +10,9 @@
 ## 2026-07-01 - Avoid internal array allocations in GDScript tight loops
 **Learning:** Instantiating temporary arrays `[]` inside hot loop functions like `is_space_occupied` produces significant GC overhead and heap allocation pressure.
 **Action:** When calculating mathematical bounds or positions (like target cell checking) inside highly repetitive functions, expand the logic to calculate coordinates manually and inline instead of storing objects/vectors in an array to iterate over later.
+## 2026-07-03 - Cached Singleton Scene Tree Traversals
+**Learning:**  and  methods on the root of the Scene Tree are expensive string-based lookups when invoked frequently. In systems making constant database queries, this causes measurable overhead.
+**Action:** Always cache the static instances of singletons via a class  and verify them with  to guarantee fast O(1) retrieval instead of O(N) scene-graph searching.
+## 2026-07-03 - Cached Singleton Scene Tree Traversals
+**Learning:** `has_node` and `get_node` methods on the root of the Scene Tree are expensive string-based lookups when invoked frequently. In systems making constant database queries, this causes measurable overhead.
+**Action:** Always cache the static instances of singletons via a class `static var` and verify them with `is_instance_valid` to guarantee fast O(1) retrieval instead of O(N) scene-graph searching.
