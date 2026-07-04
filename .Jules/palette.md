@@ -10,3 +10,6 @@
 ## 2024-07-01 - Focus Management for Dynamic Menus
 **Learning:** In Godot 4 programmatic UI, when dynamically hiding/showing components (like submenus), keyboard users lose focus context if the focused element is hidden.
 **Action:** Always store the name or reference of the button that opened the submenu. When closing the menu, manually re-apply `grab_focus()` to the original button. When opening, immediately apply `grab_focus()` to the newly revealed back button or first item. This adheres to WCAG focus discoverability standards.
+## 2024-07-02 - Explicit Empty States for Dynamic Menus
+**Learning:** In dynamically generated UI menus, leaving a container completely empty can cause confusion, as users might think the interface is broken rather than intentionally blank.
+**Action:** Always include a check for an empty list (`get_child_count() == 0`) and append an explicitly disabled "No items available" indicator with a helpful tooltip.

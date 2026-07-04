@@ -231,6 +231,12 @@ func _open_submenu(menu_name: String):
 		var a9 = _create_styled_button("Battle Medicine")
 		scroll_vbox.add_child(a9)
 		
+	if scroll_vbox.get_child_count() == 0:
+		var empty_state = _create_styled_button("No items available")
+		empty_state.disabled = true
+		empty_state.tooltip_text = "There are no options available in this menu."
+		scroll_vbox.add_child(empty_state)
+
 	main_menu_vbox.hide()
 	submenu_vbox.show()
 
