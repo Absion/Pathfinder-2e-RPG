@@ -95,7 +95,8 @@ func _initialize_schema_if_needed():
 		id TEXT PRIMARY KEY,
 		name TEXT,
 		effective_size INTEGER,
-		base_bulk INTEGER
+		base_bulk INTEGER,
+		description TEXT
 	);")
 	
 	database.query("CREATE TABLE IF NOT EXISTS player_knowledge (
@@ -116,14 +117,16 @@ func _initialize_schema_if_needed():
 		state_strikes INTEGER DEFAULT 0,
 		state_spells INTEGER DEFAULT 0,
 		state_special_abilities INTEGER DEFAULT 0,
-		false_data TEXT DEFAULT '{}'
+		false_data TEXT DEFAULT '{}',
+		description TEXT
 	);")
 	
 	database.query("CREATE TABLE IF NOT EXISTS traits (
 		id TEXT PRIMARY KEY,
 		name TEXT,
 		mechanic_hook TEXT,
-		hook_value INTEGER
+		hook_value INTEGER,
+		description TEXT
 	);")
 	
 	
@@ -162,32 +165,37 @@ func _initialize_schema_if_needed():
 		modifier_type TEXT,
 		target_stat TEXT,
 		multiplier INTEGER,
-		script_path TEXT
+		script_path TEXT,
+		description TEXT
 	);")
 	
 	database.query("CREATE TABLE IF NOT EXISTS beliefs (
 		id TEXT PRIMARY KEY,
 		name TEXT,
 		type TEXT,
-		mechanic_hook TEXT
+		mechanic_hook TEXT,
+		description TEXT
 	);")
 	
 	database.query("CREATE TABLE IF NOT EXISTS skills (
 		id TEXT PRIMARY KEY,
 		name TEXT,
 		key_ability TEXT,
-		is_lore INTEGER
+		is_lore INTEGER,
+		description TEXT
 	);")
 	
 	database.query("CREATE TABLE IF NOT EXISTS languages (
 		id TEXT PRIMARY KEY,
 		name TEXT,
-		rarity INTEGER
+		rarity INTEGER,
+		description TEXT
 	);")
 	
 	database.query("CREATE TABLE IF NOT EXISTS regions (
 		id TEXT PRIMARY KEY,
-		name TEXT
+		name TEXT,
+		description TEXT
 	);")
 	
 	database.query("CREATE TABLE IF NOT EXISTS heritages (
@@ -231,7 +239,8 @@ func _initialize_schema_if_needed():
 		senses TEXT,
 		unarmed_attacks TEXT,
 		support_benefit TEXT,
-		advanced_maneuver TEXT
+		advanced_maneuver TEXT,
+		description TEXT
 	);")
 	
 	# Specific Familiars
@@ -273,6 +282,7 @@ func _initialize_schema_if_needed():
 		granted_features TEXT,
 		granted_feat_slots TEXT,
 		granted_spells TEXT,
+		description TEXT,
 		PRIMARY KEY (class_id, level)
 	);")
 	
@@ -302,7 +312,8 @@ func _initialize_schema_if_needed():
 		ammunition_type INTEGER DEFAULT 0,
 		linked_weapon_id TEXT DEFAULT '',
 		is_specific_magic INTEGER DEFAULT 0,
-		granted_actions TEXT DEFAULT ''
+		granted_actions TEXT DEFAULT '',
+		description TEXT
 	);")
 	
 	# Attachments
@@ -314,7 +325,8 @@ func _initialize_schema_if_needed():
 		price_cp INTEGER,
 		granted_weapon_id TEXT DEFAULT '',
 		granted_traits TEXT DEFAULT '',
-		valid_hosts TEXT DEFAULT ''
+		valid_hosts TEXT DEFAULT '',
+		description TEXT
 	);")
 	
 	# Adjustments
@@ -326,7 +338,8 @@ func _initialize_schema_if_needed():
 		price_cp INTEGER,
 		granted_weapon_id TEXT DEFAULT '',
 		granted_traits TEXT DEFAULT '',
-		valid_hosts TEXT DEFAULT ''
+		valid_hosts TEXT DEFAULT '',
+		description TEXT
 	);")
 	
 	# Armors
@@ -350,7 +363,8 @@ func _initialize_schema_if_needed():
 		speed_penalty INTEGER,
 		strength_req INTEGER,
 		is_specific_magic INTEGER DEFAULT 0,
-		granted_actions TEXT DEFAULT ''
+		granted_actions TEXT DEFAULT '',
+		description TEXT
 	);")
 	
 	# Shields
@@ -367,7 +381,8 @@ func _initialize_schema_if_needed():
 		max_hp INTEGER,
 		broken_threshold INTEGER,
 		is_specific_magic INTEGER DEFAULT 0,
-		granted_actions TEXT DEFAULT ''
+		granted_actions TEXT DEFAULT '',
+		description TEXT
 	);")
 	
 	# Afflictions
@@ -379,7 +394,8 @@ func _initialize_schema_if_needed():
 		max_stage INTEGER,
 		onset_interval INTEGER,
 		stage_interval INTEGER,
-		stages TEXT
+		stages TEXT,
+		description TEXT
 	);")
 	
 	# Ancestries
@@ -391,7 +407,8 @@ func _initialize_schema_if_needed():
 		size TEXT,
 		speed INTEGER,
 		boosts TEXT,
-		flaws TEXT
+		flaws TEXT,
+		description TEXT
 	);")
 	
 	# Backgrounds
@@ -435,7 +452,8 @@ func _initialize_schema_if_needed():
 		caster_type INTEGER,
 		spell_tradition INTEGER,
 		spell_proficiency INTEGER,
-		spell_progression INTEGER
+		spell_progression INTEGER,
+		description TEXT
 	);")
 	
 	# Spells
@@ -466,7 +484,8 @@ func _initialize_schema_if_needed():
 		damage_dice INTEGER,
 		damage_faces INTEGER,
 		applied_conditions TEXT,
-		special_effects TEXT
+		special_effects TEXT,
+		description TEXT
 	);")
 	
 	# Domains
@@ -517,7 +536,8 @@ func _initialize_schema_if_needed():
 		boon_major TEXT,
 		curse_minor TEXT,
 		curse_moderate TEXT,
-		curse_major TEXT
+		curse_major TEXT,
+		description TEXT
 	);")
 	
 	database.query("SELECT COUNT(*) as count FROM deities;")
@@ -527,7 +547,7 @@ func _initialize_schema_if_needed():
 func _seed_data():
 	print("PFDatabase: Seeding default data...")
 	# Afflictions
-	database.query("""INSERT OR IGNORE INTO afflictions (id, name, saving_throw_stat, dc, max_stage, onset_interval, stage_interval, stages) VALUES 
+	database.query("""INSERT OR IGNORE INTO afflictions (id, name, saving_throw_stat, dc, max_stage, onset_interval, stage_interval, stages, description) VALUES 
 		('giant_centipede_venom', 'Giant Centipede Venom', 'fortitude', 17, 6, 0, 1, 
 		'[
 			{"stage": 1, "damage": "1d6", "damage_type": "poison"},
@@ -536,70 +556,69 @@ func _seed_data():
 			{"stage": 4, "damage": "2d6", "damage_type": "poison", "conditions": [{"id": "enfeebled", "value": 2}]},
 			{"stage": 5, "damage": "2d8", "damage_type": "poison", "conditions": [{"id": "enfeebled", "value": 2}]},
 			{"stage": 6, "damage": "3d6", "damage_type": "poison", "conditions": [{"id": "enfeebled", "value": 2}]}
-		]')
-	;""")
+		]', 'A toxic venom from a giant centipede that causes muscle spasms and weakness.');""")
 	
 	print("PFDatabase: Seeding complete.")
 	
 	# Seed Sizes
-	database.query("INSERT OR IGNORE INTO sizes (id, name, effective_size, base_bulk) VALUES 
-		('tiny', 'Tiny', 0, 10),
-		('small', 'Small', 1, 30),
-		('medium', 'Medium', 1, 60),
-		('large', 'Large', 2, 120),
-		('huge', 'Huge', 3, 240),
-		('gargantuan', 'Gargantuan', 4, 480);")
+	database.query("INSERT OR IGNORE INTO sizes (id, name, effective_size, base_bulk, description) VALUES 
+		('tiny', 'Tiny', 0, 10, 'A creature or object smaller than a typical halfling, usually taking up less than a 5-foot square.'),
+		('small', 'Small', 1, 30, 'A creature or object about the size of a halfling or goblin.'),
+		('medium', 'Medium', 1, 60, 'A creature or object about the size of a human, elf, or dwarf.'),
+		('large', 'Large', 2, 120, 'A creature or object about the size of an ogre or horse, typically taking up a 10-by-10-foot space.'),
+		('huge', 'Huge', 3, 240, 'A creature or object about the size of a giant, typically taking up a 15-by-15-foot space.'),
+		('gargantuan', 'Gargantuan', 4, 480, 'A massive creature or object, taking up a 20-by-20-foot space or larger.');")
 		
 	# Seed Traits
-	database.query("INSERT OR IGNORE INTO traits (id, name, mechanic_hook, hook_value) VALUES 
-		('agile', 'Agile', 'modifies_map', 4),
-		('finesse', 'Finesse', 'allows_dex_to_hit', 0),
-		('versatile_p', 'Versatile P', 'adds_damage_type', 0),
-		('versatile p', 'Versatile P', 'adds_damage_type', 0),
-		('steel', 'Steel', '', 0),
-		('two-hand d12', 'Two-Hand d12', '', 0),
-		('wood', 'Wood', '', 0),
-		('improvised', 'Improvised', '', 0),
-		('slashing', 'Slashing', '', 0),
-		('bludgeoning', 'Bludgeoning', '', 0),
-		('piercing', 'Piercing', '', 0),
-		('alchemical', 'Alchemical', '', 0),
-		('bomb', 'Bomb', '', 0),
-		('consumable', 'Consumable', '', 0),
-		('splash', 'Splash', '', 0),
-		('fire', 'Fire', '', 0),
-		('cold', 'Cold', '', 0),
-		('acid', 'Acid', '', 0),
-		('electricity', 'Electricity', '', 0),
-		('sonic', 'Sonic', '', 0),
-		('poison', 'Poison', '', 0),
-		('thrown', 'Thrown', '', 0),
-		('returning', 'Returning', '', 0),
-		('elixir', 'Elixir', '', 0),
-		('mutagen', 'Mutagen', '', 0),
-		('polymorph', 'Polymorph', '', 0),
-		('healing', 'Healing', '', 0),
-		('unarmed', 'Unarmed', '', 0),
-		('reach', 'Reach', '', 0),
-		('nonlethal', 'Nonlethal', '', 0),
-		('backstabber', 'Backstabber', '', 0),
-		('sweep', 'Sweep', '', 0),
-		('backswing', 'Backswing', '', 0),
-		('forceful', 'Forceful', '', 0),
-		('cobbled', 'Cobbled', '', 0),
-		('concussive', 'Concussive', '', 0),
-		('injection', 'Injection', '', 0),
-		('repeating', 'Repeating', '', 0),
-		('kickback', 'Kickback', '', 0),
-		('brutal', 'Brutal', '', 0),
-		('free-hand', 'Free-Hand', '', 0),
-		('manipulate', 'Manipulate', '', 0),
-		('move', 'Move', '', 0),
-		('attack', 'Attack', '', 0),
-		('concentrate', 'Concentrate', '', 0),
-		('auditory', 'Auditory', '', 0),
-		('visual', 'Visual', '', 0),
-		('secret', 'Secret', '', 0);")
+	database.query("INSERT OR IGNORE INTO traits (id, name, mechanic_hook, hook_value, description) VALUES 
+		('agile', 'Agile', 'modifies_map', 4, 'The multiple attack penalty you take with this weapon on the second attack on your turn is -4 instead of -5, and -8 instead of -10 on the third and subsequent attacks.'),
+		('finesse', 'Finesse', 'allows_dex_to_hit', 0, 'You can use your Dexterity modifier instead of your Strength modifier on attack rolls using this melee weapon.'),
+		('versatile_p', 'Versatile P', 'adds_damage_type', 0, 'This weapon can be used to deal piercing damage instead of its normal damage type.'),
+		('versatile p', 'Versatile P', 'adds_damage_type', 0, 'This weapon can be used to deal piercing damage instead of its normal damage type.'),
+		('steel', 'Steel', '', 0, 'This object is made of steel.'),
+		('two-hand d12', 'Two-Hand d12', '', 0, 'This weapon can be wielded with two hands. Doing so changes its weapon damage die to the indicated value.'),
+		('wood', 'Wood', '', 0, 'This object is made of wood.'),
+		('improvised', 'Improvised', '', 0, 'This object was not designed to be a weapon. You take a -2 item penalty to attack rolls with it.'),
+		('slashing', 'Slashing', '', 0, 'This attack deals slashing damage.'),
+		('bludgeoning', 'Bludgeoning', '', 0, 'This attack deals bludgeoning damage.'),
+		('piercing', 'Piercing', '', 0, 'This attack deals piercing damage.'),
+		('alchemical', 'Alchemical', '', 0, 'This item was created using alchemy.'),
+		('bomb', 'Bomb', '', 0, 'An alchemical bomb that is thrown as a ranged weapon.'),
+		('consumable', 'Consumable', '', 0, 'An item that is used up once activated.'),
+		('splash', 'Splash', '', 0, 'When you use a thrown weapon with the splash trait, you dont add your Strength modifier to the damage roll. If an attack with a splash weapon fails, succeeds, or critically succeeds, all creatures within 5 feet of the target take the listed splash damage.'),
+		('fire', 'Fire', '', 0, 'This effect deals fire damage or is created by fire magic.'),
+		('cold', 'Cold', '', 0, 'This effect deals cold damage or is created by cold magic.'),
+		('acid', 'Acid', '', 0, 'This effect deals acid damage or is created by acid magic.'),
+		('electricity', 'Electricity', '', 0, 'This effect deals electricity damage or is created by electricity magic.'),
+		('sonic', 'Sonic', '', 0, 'This effect deals sonic damage or is created by sonic magic.'),
+		('poison', 'Poison', '', 0, 'This effect deals poison damage, inflicts a poison affliction, or is created by poison magic.'),
+		('thrown', 'Thrown', '', 0, 'You can throw this weapon as a ranged attack.'),
+		('returning', 'Returning', '', 0, 'A returning weapon flies back to your hand after a Strike.'),
+		('elixir', 'Elixir', '', 0, 'An alchemical liquid you drink.'),
+		('mutagen', 'Mutagen', '', 0, 'An elixir that temporarily morphs your body, granting a benefit but inflicting a drawback.'),
+		('polymorph', 'Polymorph', '', 0, 'An effect that changes the targets shape.'),
+		('healing', 'Healing', '', 0, 'A healing effect restores Hit Points or heals damage.'),
+		('unarmed', 'Unarmed', '', 0, 'An attack that uses your body rather than a manufactured weapon.'),
+		('reach', 'Reach', '', 0, 'This weapon is long and can be used to attack targets up to 10 feet away instead of only adjacent targets.'),
+		('nonlethal', 'Nonlethal', '', 0, 'Attacks with this weapon are nonlethal, and are used to knock creatures unconscious instead of killing them.'),
+		('backstabber', 'Backstabber', '', 0, 'When you hit an off-guard creature, this weapon deals 1 precision damage.'),
+		('sweep', 'Sweep', '', 0, 'This weapon gets a +1 circumstance bonus to attack rolls if you have already attacked a different target this turn.'),
+		('backswing', 'Backswing', '', 0, 'You can use the momentum from a missed attack with this weapon to lead into your next attack.'),
+		('forceful', 'Forceful', '', 0, 'This weapon becomes more dangerous as you build momentum. Subsequent attacks deal extra damage.'),
+		('cobbled', 'Cobbled', '', 0, 'This weapon is cobbled together from disparate parts.'),
+		('concussive', 'Concussive', '', 0, 'These weapons smash as much as puncture.'),
+		('injection', 'Injection', '', 0, 'This weapon can be filled with an injury poison.'),
+		('repeating', 'Repeating', '', 0, 'This weapon has a magazine or similar mechanism that holds ammunition.'),
+		('kickback', 'Kickback', '', 0, 'This weapon is exceptionally powerful and recoils heavily.'),
+		('brutal', 'Brutal', '', 0, 'Ranged attacks with a brutal weapon use Strength instead of Dexterity for attack rolls.'),
+		('free-hand', 'Free-Hand', '', 0, 'You can use the hand holding this weapon to perform other actions.'),
+		('manipulate', 'Manipulate', '', 0, 'You must physically manipulate an item or make gestures to use this action.'),
+		('move', 'Move', '', 0, 'An action that involves moving from one space to another.'),
+		('attack', 'Attack', '', 0, 'An action that harms your opponent and contributes to your multiple attack penalty.'),
+		('concentrate', 'Concentrate', '', 0, 'An action that requires a degree of mental focus.'),
+		('auditory', 'Auditory', '', 0, 'An action or effect that relies on sound.'),
+		('visual', 'Visual', '', 0, 'An action or effect that relies on sight.'),
+		('secret', 'Secret', '', 0, 'The GM rolls the check for this action in secret.');")
 		
 
 	# Seed Basic Actions
@@ -643,148 +662,147 @@ func _seed_data():
 	;")
 
 	# Seed Conditions
-	database.query("INSERT OR IGNORE INTO conditions (id, name, modifier_type, target_stat, multiplier, script_path) VALUES 
-		('clumsy', 'Clumsy', 'status', 'dex_based', -1, ''),
-		('enfeebled', 'Enfeebled', 'status', 'str_based', -1, ''),
-		('frightened', 'Frightened', 'status', 'all_checks_and_dcs', -1, ''),
-		('parry', 'Parry', 'circumstance', 'ac', 1, '');")
+	database.query("INSERT OR IGNORE INTO conditions (id, name, modifier_type, target_stat, multiplier, script_path, description) VALUES 
+		('clumsy', 'Clumsy', 'status', 'dex_based', -1, '', 'You take a status penalty equal to the clumsy value on Dexterity-based checks and DCs.'),
+		('enfeebled', 'Enfeebled', 'status', 'str_based', -1, '', 'You take a status penalty equal to the enfeebled value on Strength-based checks and DCs.'),
+		('frightened', 'Frightened', 'status', 'all_checks_and_dcs', -1, '', 'You take a status penalty equal to this value to all your checks and DCs.'),
+		('parry', 'Parry', 'circumstance', 'ac', 1, '', 'You gain a +1 circumstance bonus to AC until the start of your next turn.');")
 		
 	# Seed Beliefs
-	database.query("INSERT OR IGNORE INTO beliefs (id, name, type, mechanic_hook) VALUES 
-		('bring_civilization', 'Bring civilization to the frontiers', 'edict', ''),
-		('earn_wealth', 'Earn wealth through hard work and trade', 'edict', ''),
-		('follow_law', 'Follow the rule of law', 'edict', ''),
-		('create_art', 'Create art', 'edict', ''),
-		('defend_nature', 'Defend nature', 'edict', ''),
-		('protect_innocent', 'Protect the innocent', 'edict', ''),
-		('seek_knowledge', 'Seek knowledge', 'edict', ''),
-		('destroy_undead', 'Destroy undead', 'edict', ''),
-		
-		('banditry_piracy', 'Engage in banditry or piracy', 'anathema', ''),
-		('steal', 'Steal', 'anathema', ''),
-		('undermine_court', 'Undermine a law-abiding court', 'anathema', ''),
-		('create_undead', 'Create undead', 'anathema', ''),
-		('despoil_nature', 'Despoil nature', 'anathema', ''),
-		('harm_innocent', 'Harm the innocent', 'anathema', ''),
-		('destroy_knowledge', 'Destroy knowledge', 'anathema', ''),
-		('lie', 'Tell a lie', 'anathema', ''),
-		('break_promise', 'Break a promise', 'anathema', '');")
+	database.query("INSERT OR IGNORE INTO beliefs (id, name, type, mechanic_hook, description) VALUES 
+		('bring_civilization', 'Bring civilization to the frontiers', 'edict', '', 'Bring the light of civilization to the untamed wilderness.'),
+		('earn_wealth', 'Earn wealth through hard work and trade', 'edict', '', 'Acquire wealth and personal prosperity.'),
+		('follow_law', 'Follow the rule of law', 'edict', '', 'Strictly adhere to the laws of the land.'),
+		('create_art', 'Create art', 'edict', '', 'Create and preserve beautiful art.'),
+		('defend_nature', 'Defend nature', 'edict', '', 'Protect the natural world from destruction.'),
+		('protect_innocent', 'Protect the innocent', 'edict', '', 'Shield those who cannot shield themselves.'),
+		('seek_knowledge', 'Seek knowledge', 'edict', '', 'Uncover hidden truths and ancient lore.'),
+		('destroy_undead', 'Destroy undead', 'edict', '', 'Eradicate the undead wherever they are found.'),
+		('banditry_piracy', 'Engage in banditry or piracy', 'anathema', '', 'Plunder and steal from others on the roads or high seas.'),
+		('steal', 'Steal', 'anathema', '', 'Take what belongs to others for yourself.'),
+		('undermine_court', 'Undermine a law-abiding court', 'anathema', '', 'Subvert and disrupt legal proceedings or royalty.'),
+		('create_undead', 'Create undead', 'anathema', '', 'Raise the dead to serve your will.'),
+		('despoil_nature', 'Despoil nature', 'anathema', '', 'Corrupt or destroy the natural world.'),
+		('harm_innocent', 'Harm the innocent', 'anathema', '', 'Inflict pain on those who have done no wrong.'),
+		('destroy_knowledge', 'Destroy knowledge', 'anathema', '', 'Burn books and erase history.'),
+		('lie', 'Tell a lie', 'anathema', '', 'Deceive others for your own gain.'),
+		('break_promise', 'Break a promise', 'anathema', '', 'Go back on your given word.');")
 		
 	# Seed Skills & Lores
-	database.query("INSERT OR IGNORE INTO skills (id, name, key_ability, is_lore) VALUES 
-		('acrobatics', 'Acrobatics', 'DEX', 0),
-		('arcana', 'Arcana', 'INT', 0),
-		('athletics', 'Athletics', 'STR', 0),
-		('crafting', 'Crafting', 'INT', 0),
-		('deception', 'Deception', 'CHA', 0),
-		('diplomacy', 'Diplomacy', 'CHA', 0),
-		('intimidation', 'Intimidation', 'CHA', 0),
-		('medicine', 'Medicine', 'WIS', 0),
-		('nature', 'Nature', 'WIS', 0),
-		('occultism', 'Occultism', 'INT', 0),
-		('perception', 'Perception', 'WIS', 0),
-		('performance', 'Performance', 'CHA', 0),
-		('religion', 'Religion', 'WIS', 0),
-		('society', 'Society', 'INT', 0),
-		('stealth', 'Stealth', 'DEX', 0),
-		('survival', 'Survival', 'WIS', 0),
-		('thievery', 'Thievery', 'DEX', 0),
-		('academia_lore', 'Academia Lore', 'INT', 1),
-		('accounting_lore', 'Accounting Lore', 'INT', 1),
-		('architecture_lore', 'Architecture Lore', 'INT', 1),
-		('art_lore', 'Art Lore', 'INT', 1),
-		('circus_lore', 'Circus Lore', 'INT', 1),
-		('engineering_lore', 'Engineering Lore', 'INT', 1),
-		('farming_lore', 'Farming Lore', 'INT', 1),
-		('fishing_lore', 'Fishing Lore', 'INT', 1),
-		('fortune_telling_lore', 'Fortune-Telling Lore', 'INT', 1),
-		('games_lore', 'Games Lore', 'INT', 1),
-		('genealogy_lore', 'Genealogy Lore', 'INT', 1),
-		('gladiatorial_lore', 'Gladiatorial Lore', 'INT', 1),
-		('guild_lore', 'Guild Lore', 'INT', 1),
-		('heraldry_lore', 'Heraldry Lore', 'INT', 1),
-		('herbalism_lore', 'Herbalism Lore', 'INT', 1),
-		('hunting_lore', 'Hunting Lore', 'INT', 1),
-		('labor_lore', 'Labor Lore', 'INT', 1),
-		('legal_lore', 'Legal Lore', 'INT', 1),
-		('library_lore', 'Library Lore', 'INT', 1),
-		('mercantile_lore', 'Mercantile Lore', 'INT', 1),
-		('midwifery_lore', 'Midwifery Lore', 'INT', 1),
-		('milling_lore', 'Milling Lore', 'INT', 1),
-		('mining_lore', 'Mining Lore', 'INT', 1),
-		('piloting_lore', 'Piloting Lore', 'INT', 1),
-		('sailing_lore', 'Sailing Lore', 'INT', 1),
-		('scouting_lore', 'Scouting Lore', 'INT', 1),
-		('scribing_lore', 'Scribing Lore', 'INT', 1),
-		('stabling_lore', 'Stabling Lore', 'INT', 1),
-		('tanning_lore', 'Tanning Lore', 'INT', 1),
-		('theater_lore', 'Theater Lore', 'INT', 1),
-		('underworld_lore', 'Underworld Lore', 'INT', 1);")
+	database.query("INSERT OR IGNORE INTO skills (id, name, key_ability, is_lore, description) VALUES 
+		('acrobatics', 'Acrobatics', 'DEX', 0, 'Acrobatics measures your ability to perform tasks requiring coordination and grace.'),
+		('arcana', 'Arcana', 'INT', 0, 'Arcana measures how much you know about arcane magic and creatures.'),
+		('athletics', 'Athletics', 'STR', 0, 'Athletics allows you to perform deeds of physical prowess.'),
+		('crafting', 'Crafting', 'INT', 0, 'You can use this skill to create, understand, and repair items.'),
+		('deception', 'Deception', 'CHA', 0, 'You can trick and mislead others using disguises, lies, and other forms of subterfuge.'),
+		('diplomacy', 'Diplomacy', 'CHA', 0, 'You influence others through negotiation and flattery.'),
+		('intimidation', 'Intimidation', 'CHA', 0, 'You bend others to your will using threats.'),
+		('medicine', 'Medicine', 'WIS', 0, 'You can patch up wounds and help people recover from diseases and poisons.'),
+		('nature', 'Nature', 'WIS', 0, 'You know a great deal about the natural world.'),
+		('occultism', 'Occultism', 'INT', 0, 'You know a great deal about ancient mysteries, obscure philosophy, and the supernatural.'),
+		('perception', 'Perception', 'WIS', 0, 'Perception measures your ability to notice things.'),
+		('performance', 'Performance', 'CHA', 0, 'You are skilled at a form of performance, using it to impress a crowd.'),
+		('religion', 'Religion', 'WIS', 0, 'The secrets of deities, dogma, faith, and the realms of divine creatures are open to you.'),
+		('society', 'Society', 'INT', 0, 'You understand the people and systems that make civilization run.'),
+		('stealth', 'Stealth', 'DEX', 0, 'You are skilled at avoiding detection.'),
+		('survival', 'Survival', 'WIS', 0, 'You are adept at living in the wilderness.'),
+		('thievery', 'Thievery', 'DEX', 0, 'You are trained in a particular set of skills highly sought after by thieves and scoundrels.'),
+		('academia_lore', 'Academia Lore', 'INT', 1, 'Lore about academia and universities.'),
+		('accounting_lore', 'Accounting Lore', 'INT', 1, 'Lore about accounting and finances.'),
+		('architecture_lore', 'Architecture Lore', 'INT', 1, 'Lore about buildings and engineering.'),
+		('art_lore', 'Art Lore', 'INT', 1, 'Lore about art and artists.'),
+		('circus_lore', 'Circus Lore', 'INT', 1, 'Lore about circuses and carnivals.'),
+		('engineering_lore', 'Engineering Lore', 'INT', 1, 'Lore about engineering and construction.'),
+		('farming_lore', 'Farming Lore', 'INT', 1, 'Lore about agriculture.'),
+		('fishing_lore', 'Fishing Lore', 'INT', 1, 'Lore about fishing and the sea.'),
+		('fortune_telling_lore', 'Fortune-Telling Lore', 'INT', 1, 'Lore about predicting the future.'),
+		('games_lore', 'Games Lore', 'INT', 1, 'Lore about games and gambling.'),
+		('genealogy_lore', 'Genealogy Lore', 'INT', 1, 'Lore about bloodlines and families.'),
+		('gladiatorial_lore', 'Gladiatorial Lore', 'INT', 1, 'Lore about gladiators and arenas.'),
+		('guild_lore', 'Guild Lore', 'INT', 1, 'Lore about trade guilds.'),
+		('heraldry_lore', 'Heraldry Lore', 'INT', 1, 'Lore about noble houses and their symbols.'),
+		('herbalism_lore', 'Herbalism Lore', 'INT', 1, 'Lore about plants and natural remedies.'),
+		('hunting_lore', 'Hunting Lore', 'INT', 1, 'Lore about hunting game.'),
+		('labor_lore', 'Labor Lore', 'INT', 1, 'Lore about manual labor.'),
+		('legal_lore', 'Legal Lore', 'INT', 1, 'Lore about laws and courts.'),
+		('library_lore', 'Library Lore', 'INT', 1, 'Lore about libraries and archives.'),
+		('mercantile_lore', 'Mercantile Lore', 'INT', 1, 'Lore about trade and commerce.'),
+		('midwifery_lore', 'Midwifery Lore', 'INT', 1, 'Lore about childbirth.'),
+		('milling_lore', 'Milling Lore', 'INT', 1, 'Lore about grain and mills.'),
+		('mining_lore', 'Mining Lore', 'INT', 1, 'Lore about mining and the earth.'),
+		('piloting_lore', 'Piloting Lore', 'INT', 1, 'Lore about flying or steering ships.'),
+		('sailing_lore', 'Sailing Lore', 'INT', 1, 'Lore about sailing ships.'),
+		('scouting_lore', 'Scouting Lore', 'INT', 1, 'Lore about reconnaissance.'),
+		('scribing_lore', 'Scribing Lore', 'INT', 1, 'Lore about writing and copying.'),
+		('stabling_lore', 'Stabling Lore', 'INT', 1, 'Lore about horses and stables.'),
+		('tanning_lore', 'Tanning Lore', 'INT', 1, 'Lore about leatherworking.'),
+		('theater_lore', 'Theater Lore', 'INT', 1, 'Lore about plays and acting.'),
+		('underworld_lore', 'Underworld Lore', 'INT', 1, 'Lore about the criminal underworld.');")
 		
 
 	# Seed Conditions
-	database.query("INSERT OR IGNORE INTO conditions (id, name, modifier_type, target_stat, multiplier, script_path) VALUES 
-		('blinded', 'Blinded', '', '', 0, ''),
-		('broken', 'Broken', 'status', 'ac', -2, ''),
-		('clumsy', 'Clumsy', 'status', 'dex_based', -1, ''),
-		('concealed', 'Concealed', '', '', 0, ''),
-		('confused', 'Confused', '', '', 0, ''),
-		('controlled', 'Controlled', '', '', 0, ''),
-		('cover', 'Cover', 'circumstance', 'ac', 2, ''),
-		('dazzled', 'Dazzled', '', '', 0, ''),
-		('dead', 'Dead', '', '', 0, ''),
-		('deafened', 'Deafened', 'status', 'perception_hearing', -2, ''),
-		('doomed', 'Doomed', '', '', 0, 'res://scripts/conditions/pf_condition_doomed.gd'),
-		('drained', 'Drained', 'status', 'con_based', -1, ''),
-		('dying', 'Dying', '', '', 0, 'res://scripts/conditions/pf_condition_dying.gd'),
-		('encumbered', 'Encumbered', 'status', 'speed', -10, 'res://scripts/conditions/pf_condition_encumbered.gd'),
-		('enfeebled', 'Enfeebled', 'status', 'str_based', -1, ''),
-		('fascinated', 'Fascinated', 'status', 'perception_and_skill', -2, ''),
-		('fatigued', 'Fatigued', 'status', 'ac_and_saves', -1, ''),
-		('fleeing', 'Fleeing', '', '', 0, ''),
-		('frightened', 'Frightened', 'status', 'all_checks_and_dcs', -1, 'res://scripts/conditions/pf_condition_frightened.gd'),
-		('grabbed', 'Grabbed', '', '', 0, 'res://scripts/conditions/pf_condition_grabbed.gd'),
-		('hidden', 'Hidden', '', '', 0, ''),
-		('immobilized', 'Immobilized', '', '', 0, ''),
-		('invisible', 'Invisible', '', '', 0, ''),
-		('observed', 'Observed', '', '', 0, ''),
-		('off_guard', 'Off-Guard', 'circumstance', 'ac', -2, ''),
-		('paralyzed', 'Paralyzed', '', '', 0, ''),
-		('persistent_damage', 'Persistent Damage', '', '', 0, 'res://scripts/conditions/pf_condition_persistent.gd'),
-		('parry', 'Parry', 'circumstance', 'ac', 1, ''),
-		('raised_shield', 'Raised Shield', 'circumstance', 'ac', 0, ''),
-		('petrified', 'Petrified', '', '', 0, ''),
-		('prone', 'Prone', 'circumstance', 'attack', -2, 'res://scripts/conditions/pf_condition_prone.gd'),
-		('quickened', 'Quickened', '', '', 0, 'res://scripts/conditions/pf_condition_quickened.gd'),
-		('restrained', 'Restrained', '', '', 0, 'res://scripts/conditions/pf_condition_grabbed.gd'),
-		('sickened', 'Sickened', 'status', 'all_checks_and_dcs', -1, ''),
-		('slowed', 'Slowed', '', '', 0, 'res://scripts/conditions/pf_condition_slowed.gd'),
-		('stunned', 'Stunned', '', '', 0, 'res://scripts/conditions/pf_condition_stunned.gd'),
-		('stupefied', 'Stupefied', 'status', 'mental_based', -1, ''),
-		('unconscious', 'Unconscious', 'status', 'ac_and_saves', -4, 'res://scripts/conditions/pf_condition_unconscious.gd'),
-		('undetected', 'Undetected', '', '', 0, ''),
-		('unnoticed', 'Unnoticed', '', '', 0, ''),
-		('wounded', 'Wounded', '', '', 0, 'res://scripts/conditions/pf_condition_wounded.gd');")
+	database.query("INSERT OR IGNORE INTO conditions (id, name, modifier_type, target_stat, multiplier, script_path, description) VALUES 
+		('blinded', 'Blinded', '', '', 0, '', 'You cant see. All normal terrain is difficult terrain to you. You cant detect anything using vision.'),
+		('broken', 'Broken', 'status', 'ac', -2, '', 'A broken object cant be used for its normal function, nor does it grant bonuses.'),
+		('clumsy', 'Clumsy', 'status', 'dex_based', -1, '', 'You take a status penalty equal to the clumsy value on Dexterity-based checks and DCs.'),
+		('concealed', 'Concealed', '', '', 0, '', 'While you are concealed from a creature, such as in thick fog, you are difficult for that creature to see.'),
+		('confused', 'Confused', '', '', 0, '', 'You dont have your wits about you, and you attack randomly.'),
+		('controlled', 'Controlled', '', '', 0, '', 'Someone else is dictating your actions.'),
+		('cover', 'Cover', 'circumstance', 'ac', 2, '', 'You are behind an obstacle that provides a bonus to AC.'),
+		('dazzled', 'Dazzled', '', '', 0, '', 'Your eyes are overstimulated. All creatures and objects are concealed from you.'),
+		('dead', 'Dead', '', '', 0, '', 'You are dead.'),
+		('deafened', 'Deafened', 'status', 'perception_hearing', -2, '', 'You cant hear.'),
+		('doomed', 'Doomed', '', '', 0, 'res://scripts/conditions/pf_condition_doomed.gd', 'Your life is slipping away. The maximum dying value at which you die is reduced by your doomed value.'),
+		('drained', 'Drained', 'status', 'con_based', -1, '', 'You are depleted of vitality. You take a status penalty to Constitution-based checks and reduce your max HP.'),
+		('dying', 'Dying', '', '', 0, 'res://scripts/conditions/pf_condition_dying.gd', 'You are bleeding out or otherwise at deaths door.'),
+		('encumbered', 'Encumbered', 'status', 'speed', -10, 'res://scripts/conditions/pf_condition_encumbered.gd', 'You are carrying more weight than you can manage.'),
+		('enfeebled', 'Enfeebled', 'status', 'str_based', -1, '', 'You take a status penalty equal to the enfeebled value on Strength-based checks and DCs.'),
+		('fascinated', 'Fascinated', 'status', 'perception_and_skill', -2, '', 'You are compelled to focus your attention on something, taking a penalty to Perception and skill checks.'),
+		('fatigued', 'Fatigued', 'status', 'ac_and_saves', -1, '', 'You are tired and cant sustain a shield or take the exploration activities you normally could.'),
+		('fleeing', 'Fleeing', '', '', 0, '', 'You are forced to run away due to fear or some other compulsion.'),
+		('frightened', 'Frightened', 'status', 'all_checks_and_dcs', -1, 'res://scripts/conditions/pf_condition_frightened.gd', 'You take a status penalty equal to this value to all your checks and DCs.'),
+		('grabbed', 'Grabbed', '', '', 0, 'res://scripts/conditions/pf_condition_grabbed.gd', 'You are held in place by another creature.'),
+		('hidden', 'Hidden', '', '', 0, '', 'While you are hidden from a creature, that creature knows the space you are in but cant see you.'),
+		('immobilized', 'Immobilized', '', '', 0, '', 'You cant use any action with the move trait.'),
+		('invisible', 'Invisible', '', '', 0, '', 'You cant be seen.'),
+		('observed', 'Observed', '', '', 0, '', 'A creature can see you clearly.'),
+		('off_guard', 'Off-Guard', 'circumstance', 'ac', -2, '', 'You are distracted or otherwise unable to protect yourself. You take a -2 circumstance penalty to AC.'),
+		('paralyzed', 'Paralyzed', '', '', 0, '', 'Your body is frozen in place.'),
+		('persistent_damage', 'Persistent Damage', '', '', 0, 'res://scripts/conditions/pf_condition_persistent.gd', 'You take damage at the end of your turns until the condition ends.'),
+		('parry', 'Parry', 'circumstance', 'ac', 1, '', 'You gain a +1 circumstance bonus to AC until the start of your next turn.'),
+		('raised_shield', 'Raised Shield', 'circumstance', 'ac', 0, '', 'Your shield is raised, granting you its bonus to AC.'),
+		('petrified', 'Petrified', '', '', 0, '', 'You have been turned to stone.'),
+		('prone', 'Prone', 'circumstance', 'attack', -2, 'res://scripts/conditions/pf_condition_prone.gd', 'You are lying on the ground.'),
+		('quickened', 'Quickened', '', '', 0, 'res://scripts/conditions/pf_condition_quickened.gd', 'You gain 1 additional action at the start of your turn.'),
+		('restrained', 'Restrained', '', '', 0, 'res://scripts/conditions/pf_condition_grabbed.gd', 'You are tied up or otherwise securely held.'),
+		('sickened', 'Sickened', 'status', 'all_checks_and_dcs', -1, '', 'You feel ill. You take a status penalty equal to this value on all checks and DCs.'),
+		('slowed', 'Slowed', '', '', 0, 'res://scripts/conditions/pf_condition_slowed.gd', 'You have fewer actions. You lose actions equal to your slowed value.'),
+		('stunned', 'Stunned', '', '', 0, 'res://scripts/conditions/pf_condition_stunned.gd', 'You cant act. You lose actions equal to your stunned value.'),
+		('stupefied', 'Stupefied', 'status', 'mental_based', -1, '', 'Your mind is clouded. You take a status penalty equal to this value on INT, WIS, and CHA checks.'),
+		('unconscious', 'Unconscious', 'status', 'ac_and_saves', -4, 'res://scripts/conditions/pf_condition_unconscious.gd', 'You are asleep or have been knocked out.'),
+		('undetected', 'Undetected', '', '', 0, '', 'When you are undetected by a creature, it doesnt know what space you occupy.'),
+		('unnoticed', 'Unnoticed', '', '', 0, '', 'A creature has no idea you are even present.'),
+		('wounded', 'Wounded', '', '', 0, 'res://scripts/conditions/pf_condition_wounded.gd', 'You have been seriously injured. If you lose all HP and are dying, your dying value increases by your wounded value.');")
 		
 	database.query("UPDATE conditions SET script_path = 'res://scripts/conditions/pf_condition_encumbered.gd' WHERE id = 'encumbered';")
 		
 	# Seed Languages
 	# Rarity: 0=Common, 1=Uncommon, 2=Rare
-	database.query("INSERT OR IGNORE INTO languages (id, name, rarity) VALUES 
-		('common', 'Common', 0),
-		('dwarven', 'Dwarven', 0),
-		('elven', 'Elven', 0),
-		('gnomish', 'Gnomish', 0),
-		('goblin', 'Goblin', 0),
-		('halfling', 'Halfling', 0),
-		('orcish', 'Orcish', 0),
-		('sylvan', 'Sylvan', 1),
-		('undercommon', 'Undercommon', 1),
-		('draconic', 'Draconic', 1),
-		('celestial', 'Celestial', 1),
-		('abyssal', 'Abyssal', 1),
-		('infernal', 'Infernal', 1),
-		('druidic', 'Druidic', 2);")
+	database.query("INSERT OR IGNORE INTO languages (id, name, rarity, description) VALUES 
+		('common', 'Common', 0, 'The most widely spoken language in the Inner Sea region.'),
+		('dwarven', 'Dwarven', 0, 'The language of dwarves, written in dwarven runes.'),
+		('elven', 'Elven', 0, 'The flowing language of elves.'),
+		('gnomish', 'Gnomish', 0, 'The excitable language of gnomes.'),
+		('goblin', 'Goblin', 0, 'The yapping language of goblins.'),
+		('halfling', 'Halfling', 0, 'The language of halflings.'),
+		('orcish', 'Orcish', 0, 'The harsh language of orcs.'),
+		('sylvan', 'Sylvan', 1, 'The language of fey creatures.'),
+		('undercommon', 'Undercommon', 1, 'The trade language of the Darklands.'),
+		('draconic', 'Draconic', 1, 'The ancient language of dragons.'),
+		('celestial', 'Celestial', 1, 'The language of angels and good outsiders.'),
+		('abyssal', 'Abyssal', 1, 'The language of demons.'),
+		('infernal', 'Infernal', 1, 'The language of devils.'),
+		('druidic', 'Druidic', 2, 'The secret language of druids.');")
 		
 	# Seed Domains
 	database.query("INSERT OR IGNORE INTO domains (id, name, description, domain_spell_id, advanced_domain_spell_id, apocryphal_spell_id, advanced_apocryphal_spell_id) VALUES 
@@ -864,39 +882,46 @@ func _seed_data():
 		('anathema_fail_strike', 'fail to strike down evil');")
 
 	# Seed Deities
-	database.query("INSERT OR IGNORE INTO deities (id, name, category, edicts, anathema, areas_of_concern, religious_symbol, sacred_animal, sacred_colors, pantheons, divine_attributes, divine_font, divine_sanctification, divine_skill, favored_weapon, domains, alternate_domains, cleric_spells, boon_minor, boon_moderate, boon_major, curse_minor, curse_moderate, curse_major) VALUES 
-		('sarenrae', 'Sarenrae', 'core', '[\"edict_healing\",\"edict_redemption\"]', '[\"anathema_undead\",\"anathema_lies\",\"anathema_mercy\",\"anathema_fail_strike\"]', '[\"healing\",\"honesty\",\"redemption\",\"the sun\"]', 'Ankh', 'Dove', '[\"blue\",\"gold\"]', '[\"The Godclaw\"]', '[\"WIS\",\"CHA\"]', '[\"heal\"]', '1', 'medicine', 'scimitar', '[\"fire\",\"healing\",\"sun\",\"truth\"]', '[]', '{\"1\":\"burning_hands\", \"3\":\"fireball\", \"4\":\"wall_of_fire\"}', '', '', '', '', '', '');")
+	database.query("INSERT OR IGNORE INTO deities (id, name, category, edicts, anathema, areas_of_concern, religious_symbol, sacred_animal, sacred_colors, pantheons, divine_attributes, divine_font, divine_sanctification, divine_skill, favored_weapon, domains, alternate_domains, cleric_spells, boon_minor, boon_moderate, boon_major, curse_minor, curse_moderate, curse_major, description) VALUES 
+		('sarenrae', 'Sarenrae', 'core', '[\"edict_healing\",\"edict_redemption\"]', '[\"anathema_undead\",\"anathema_lies\",\"anathema_mercy\",\"anathema_fail_strike\"]', '[\"healing\",\"honesty\",\"redemption\",\"the sun\"]', 'Ankh', 'Dove', '[\"blue\",\"gold\"]', '[\"The Godclaw\"]', '[\"WIS\",\"CHA\"]', '[\"heal\"]', '1', 'medicine', 'scimitar', '[\"fire\",\"healing\",\"sun\",\"truth\"]', '[]', '{\"1\":\"burning_hands\", \"3\":\"fireball\", \"4\":\"wall_of_fire\"}', '', '', '', '', '', '', 'The Dawnflower, goddess of healing, honesty, redemption, and the sun.');")
 
 	# Seed Regions
-	database.query("INSERT OR IGNORE INTO regions (id, name) VALUES 
-		('unknown', 'Unknown'),
-		('linvarre', 'Linvarre'),
-		('absalom', 'Absalom'),
-		('andoran', 'Andoran'),
-		('cheliax', 'Cheliax'),
-		('taldor', 'Taldor'),
-		('qadira', 'Qadira');")
+	database.query("INSERT OR IGNORE INTO regions (id, name, description) VALUES 
+		('unknown', 'Unknown', 'An unknown region.'),
+		('linvarre', 'Linvarre', 'A coastal nation known for its bustling ports and diverse trade.'),
+		('absalom', 'Absalom', 'The City at the Center of the World, a massive metropolis on the Isle of Kortos.'),
+		('andoran', 'Andoran', 'A fledgling democracy that threw off the shackles of Chelaxian rule.'),
+		('cheliax', 'Cheliax', 'An infernal empire where devil-binding is practiced openly by the nobility.'),
+		('taldor', 'Taldor', 'A declining empire clinging to the glory of its past.'),
+		('qadira', 'Qadira', 'The westernmost satrapy of the vast Padishah Empire of Kelesh.');")
 		
 	# Seed Heritages
 	# vision_override: -1 (no change), 0 (Normal), 1 (Low-Light), 2 (Darkvision)
 	database.query("INSERT OR IGNORE INTO heritages (id, name, traits, rarity, ancestry_id, is_versatile, hp_bonus, size_id, speed_bonus, vision_override, granted_traits, granted_items, granted_abilities, description) VALUES 
 		('forge_dwarf', 'Forge Dwarf', '[]', 0, 'dwarf', 0, 0, '', 0, -1, '[\"fire_resistance\"]', '[]', '[]', ''),
 		('undine', 'Undine', '[]', 0, '', 1, 0, '', 0, 1, '[\"undine\", \"amphibious\"]', '[]', '[]', 'You are descended from elemental beings of water.'),
-		('half_elf', 'Half-Elf', '[]', 0, '', 1, 0, '', 0, 1, '[\"elf\", \"half-elf\"]', '[]', '[]', 'You have both human and elven blood.');")
+		('half_elf', 'Half-Elf', '[]', 0, '', 1, 0, '', 0, 1, '[\"elf\", \"half-elf\"]', '[]', '[]', 'You have both human and elven blood.'),
+		('skilled_heritage', 'Skilled Heritage', '[]', 0, 'human', 0, 0, '', 0, -1, '[]', '[]', '[]', 'Your ingenuity allows you to train in a wide variety of skills.'),
+		('versatile_heritage', 'Versatile Heritage', '[]', 0, 'human', 0, 0, '', 0, -1, '[]', '[]', '[]', 'Humanity''s versatility grants you an extra general feat.');")
 		
 	database.query("INSERT OR IGNORE INTO ethnicities (id, name, required_traits, description) VALUES 
 		('nidalese', 'Nidalese', '[\"human\"]', 'Humans from the shadowy nation of Nidal.'),
 		('keleshite', 'Keleshite', '[\"human\"]', 'Humans from the vast Padishah Empire of Kelesh.'),
-		('mualijae', 'Mualijae', '[\"elf\"]', 'Elves from the Mwangi Expanse.');")
+		('mualijae', 'Mualijae', '[\"elf\"]', 'Elves from the Mwangi Expanse.'),
+		('kellid', 'Kellid', '[\"human\"]', 'Rugged human survivors from the harsh northern reaches of Avistan.'),
+		('taldan', 'Taldan', '[\"human\"]', 'Humans originating from the mighty, though fading, empire of Taldor.'),
+		('varisian', 'Varisian', '[\"human\"]', 'Nomadic humans known for their deep connection to the ancient magics of Varisia.'),
+		('mwangi', 'Mwangi', '[\"human\"]', 'Humans from the diverse and vibrant Mwangi Expanse.'),
+		('tian', 'Tian', '[\"human\"]', 'Humans tracing their lineage back to the distant continent of Tian Xia.');")
 		
 	database.query("INSERT OR IGNORE INTO backgrounds (id, name, boosts, flaws, traits, granted_items, granted_abilities, description) VALUES 
 		('acolyte', 'Acolyte', '[\"WIS\", \"FREE\"]', '[]', '[]', '[]', '[]', 'You spent your early days in a religious monastery.');")
 		
 	# Seed Animal Companions
 	# Unarmed attacks stored as JSON: [{"name": "Jaws", "damage_dice": 1, "damage_faces": 8, "damage_type": 3, "traits": ["unarmed"]}]
-	database.query("INSERT OR IGNORE INTO animal_companions (id, name, size_id, ancestry_hp, speed_land, str_mod, dex_mod, con_mod, int_mod, wis_mod, cha_mod, signature_skill, skills, senses, unarmed_attacks, support_benefit, advanced_maneuver) VALUES 
-		('bear', 'Bear', 'small', 8, 25, 3, 2, 2, -4, 1, 0, 'athletics', '[\"intimidation\"]', '[1, 2]', '[{\"name\": \"Jaws\", \"damage_dice\": 1, \"damage_faces\": 8, \"damage_type\": 3, \"traits\": [\"unarmed\"]}, {\"name\": \"Claw\", \"damage_dice\": 1, \"damage_faces\": 6, \"damage_type\": 3, \"traits\": [\"agile\", \"unarmed\"]}]', 'Your bear mauls your enemies when you threaten them.', 'Bear Hug'),
-		('wolf', 'Wolf', 'small', 6, 40, 2, 3, 1, -4, 1, 0, 'survival', '[\"stealth\"]', '[1, 2]', '[{\"name\": \"Jaws\", \"damage_dice\": 1, \"damage_faces\": 8, \"damage_type\": 3, \"traits\": [\"unarmed\"]}]', 'Your wolf tears at your enemies legs.', 'Knockdown');")
+	database.query("INSERT OR IGNORE INTO animal_companions (id, name, size_id, ancestry_hp, speed_land, str_mod, dex_mod, con_mod, int_mod, wis_mod, cha_mod, signature_skill, skills, senses, unarmed_attacks, support_benefit, advanced_maneuver, description) VALUES 
+		('bear', 'Bear', 'small', 8, 25, 3, 2, 2, -4, 1, 0, 'athletics', '[\"intimidation\"]', '[1, 2]', '[{\"name\": \"Jaws\", \"damage_dice\": 1, \"damage_faces\": 8, \"damage_type\": 3, \"traits\": [\"unarmed\"]}, {\"name\": \"Claw\", \"damage_dice\": 1, \"damage_faces\": 6, \"damage_type\": 3, \"traits\": [\"agile\", \"unarmed\"]}]', 'Your bear mauls your enemies when you threaten them.', 'Bear Hug', 'A powerful bear that can maul its foes.'),
+		('wolf', 'Wolf', 'small', 6, 40, 2, 3, 1, -4, 1, 0, 'survival', '[\"stealth\"]', '[1, 2]', '[{\"name\": \"Jaws\", \"damage_dice\": 1, \"damage_faces\": 8, \"damage_type\": 3, \"traits\": [\"unarmed\"]}]', 'Your wolf tears at your enemies legs.', 'Knockdown', 'A swift wolf that can knock enemies prone.');")
 		
 	database.query("INSERT OR IGNORE INTO specific_familiars (id, name, required_abilities, granted_abilities, unique_abilities, traits, description) VALUES 
 		('faerie_dragon', 'Faerie Dragon', 3, '[\"amphibious\", \"flier\", \"manual_dexterity\", \"speech\", \"telepathy\", \"touch_telepathy\"]', '[\"breath_weapon\"]', '[\"dragon\"]', 'A tiny, colorful dragon that loves pranks.'),
@@ -919,56 +944,56 @@ func _seed_data():
 		('wizard_spellcasting', 'Arcane Spellcasting', '{}', 'You cast wizard spells.'),
 		('arcane_thesis', 'Arcane Thesis', '{}', 'Your custom arcane research.');")
 		
-	database.query("INSERT OR IGNORE INTO class_progressions (class_id, level, granted_features, granted_feat_slots) VALUES 
-		('wizard', 1, '[\"wizard_spellcasting\", \"arcane_thesis\"]', '[\"ancestry\"]'),
-		('wizard', 2, '[]', '[\"class\", \"skill\"]');")
+	database.query("INSERT OR IGNORE INTO class_progressions (class_id, level, granted_features, granted_feat_slots, description) VALUES 
+		('wizard', 1, '[\"wizard_spellcasting\", \"arcane_thesis\"]', '[\"ancestry\"]', 'Scholars of the arcane arts, wizards study ancient tomes to master powerful spells.'),
+		('wizard', 2, '[]', '[\"class\", \"skill\"]', 'Scholars of the arcane arts, wizards study ancient tomes to master powerful spells.');")
 	
-	database.query("INSERT OR IGNORE INTO weapons (id, name, traits, level, price_cp, material, hardness, max_hp, broken_threshold, grade, bulk, weapon_type, category, group_type, damage_dice, damage_faces, damage_type, range_increment, volley_range, reload_value, hands_required, ammunition_type) VALUES 
-		('longsword', 'Longsword', 'versatile_p', 1, 100, 3, 5, 20, 10, 1, 1, 0, 1, 4, 1, 8, 3, 0, 0, 0, 1, 0),
-		('bayonet_weapon', 'Bayonet Attack', 'agile,finesse', 1, 0, 3, 5, 20, 10, 1, 0, 0, 1, 6, 1, 4, 3, 0, 0, 0, 1, 0),
-		('reinforced_stock_weapon', 'Reinforced Stock Attack', 'finesse,two_hand_d6', 1, 0, 2, 5, 20, 10, 1, 0, 0, 1, 5, 1, 4, 1, 0, 0, 0, 1, 0),
-		('shield_boss_weapon', 'Shield Boss Attack', '', 1, 0, 3, 5, 20, 10, 1, 0, 0, 1, 5, 1, 6, 1, 0, 0, 0, 1, 0),
-		('shield_spikes_weapon', 'Shield Spikes Attack', '', 1, 0, 3, 5, 20, 10, 1, 0, 0, 1, 10, 1, 6, 3, 0, 0, 0, 1, 0);")
+	database.query("INSERT OR IGNORE INTO weapons (id, name, traits, level, price_cp, material, hardness, max_hp, broken_threshold, grade, bulk, weapon_type, category, group_type, damage_dice, damage_faces, damage_type, range_increment, volley_range, reload_value, hands_required, ammunition_type, description) VALUES 
+		('longsword', 'Longsword', 'versatile_p', 1, 100, 3, 5, 20, 10, 1, 1, 0, 1, 4, 1, 8, 3, 0, 0, 0, 1, 0, 'A classic straight-bladed sword favored by knights.'),
+		('bayonet_weapon', 'Bayonet Attack', 'agile,finesse', 1, 0, 3, 5, 20, 10, 1, 0, 0, 1, 6, 1, 4, 3, 0, 0, 0, 1, 0, 'A sharp blade attached to a ranged weapon for close combat.'),
+		('reinforced_stock_weapon', 'Reinforced Stock Attack', 'finesse,two_hand_d6', 1, 0, 2, 5, 20, 10, 1, 0, 0, 1, 5, 1, 4, 1, 0, 0, 0, 1, 0, 'A heavy stock designed to be used as a club in a pinch.'),
+		('shield_boss_weapon', 'Shield Boss Attack', '', 1, 0, 3, 5, 20, 10, 1, 0, 0, 1, 5, 1, 6, 1, 0, 0, 0, 1, 0, 'A heavy metal boss attached to the center of a shield for bashing.'),
+		('shield_spikes_weapon', 'Shield Spikes Attack', '', 1, 0, 3, 5, 20, 10, 1, 0, 0, 1, 10, 1, 6, 3, 0, 0, 0, 1, 0, 'Wicked spikes attached to a shield to puncture foes.');")
 		
-	database.query("INSERT OR IGNORE INTO attachments (id, name, traits, level, price_cp, granted_weapon_id, granted_traits, valid_hosts) VALUES 
-		('bayonet', 'Bayonet', 'attachment', 1, 230, 'bayonet_weapon', '', 'crossbow,firearm'),
-		('reinforced_stock', 'Reinforced Stock', 'attachment', 1, 200, 'reinforced_stock_weapon', '', 'crossbow,firearm'),
-		('shield_boss', 'Shield Boss', 'attachment', 1, 20, 'shield_boss_weapon', '', 'shield'),
-		('shield_spikes', 'Shield Spikes', 'attachment', 1, 50, 'shield_spikes_weapon', '', 'shield'),
-		('scope', 'Scope', 'attachment', 1, 500, '', 'deadly_d6', 'crossbow,firearm');")
+	database.query("INSERT OR IGNORE INTO attachments (id, name, traits, level, price_cp, granted_weapon_id, granted_traits, valid_hosts, description) VALUES 
+		('bayonet', 'Bayonet', 'attachment', 1, 230, 'bayonet_weapon', '', 'crossbow,firearm', 'A blade attached to the barrel of a firearm or crossbow.'),
+		('reinforced_stock', 'Reinforced Stock', 'attachment', 1, 200, 'reinforced_stock_weapon', '', 'crossbow,firearm', 'A strengthened stock for bludgeoning in melee.'),
+		('shield_boss', 'Shield Boss', 'attachment', 1, 20, 'shield_boss_weapon', '', 'shield', 'A rounded metal cap in the center of a shield.'),
+		('shield_spikes', 'Shield Spikes', 'attachment', 1, 50, 'shield_spikes_weapon', '', 'shield', 'Sharp spikes covering the face of a shield.'),
+		('scope', 'Scope', 'attachment', 1, 500, '', 'deadly_d6', 'crossbow,firearm', 'A telescopic sight for a ranged weapon.');")
 		
-	database.query("INSERT OR IGNORE INTO adjustments (id, name, traits, level, price_cp, granted_weapon_id, granted_traits, valid_hosts) VALUES 
-		('shield_augmentation', 'Shield Augmentation', 'adjustment', 1, 0, '', '', 'shield'),
-		('throwing_shield', 'Throwing Shield', 'adjustment', 1, 50, '', 'thrown_20', 'shield'),
-		('counterweight', 'Counterweight', 'adjustment', 1, 20, '', 'agile', 'weapon'),
-		('silencer', 'Silencer', 'adjustment', 1, 100, '', 'covert', 'firearm'),
-		('armored_skirt', 'Armored Skirt', 'adjustment', 1, 200, '', '', 'armor');")
+	database.query("INSERT OR IGNORE INTO adjustments (id, name, traits, level, price_cp, granted_weapon_id, granted_traits, valid_hosts, description) VALUES 
+		('shield_augmentation', 'Shield Augmentation', 'adjustment', 1, 0, '', '', 'shield', 'Additional plating for a shield.'),
+		('throwing_shield', 'Throwing Shield', 'adjustment', 1, 50, '', 'thrown_20', 'shield', 'A shield designed to be thrown like a chakram.'),
+		('counterweight', 'Counterweight', 'adjustment', 1, 20, '', 'agile', 'weapon', 'A weight added to a weapon to improve its balance.'),
+		('silencer', 'Silencer', 'adjustment', 1, 100, '', 'covert', 'firearm', 'A device to muffle the sound of a firearm.'),
+		('armored_skirt', 'Armored Skirt', 'adjustment', 1, 200, '', '', 'armor', 'Chain or plates attached to the bottom of armor to protect the legs.');")
 		
-	database.query("INSERT OR IGNORE INTO shields (id, name, traits, level, price_cp, bulk, ac_bonus, speed_penalty, hardness, max_hp, broken_threshold) VALUES 
-		('buckler', 'Buckler', 'buckler', 1, 10, 1, 1, 0, 3, 12, 6),
-		('steel_shield', 'Steel Shield', '', 1, 200, 1, 2, 0, 5, 20, 10);")
+	database.query("INSERT OR IGNORE INTO shields (id, name, traits, level, price_cp, bulk, ac_bonus, speed_penalty, hardness, max_hp, broken_threshold, description) VALUES 
+		('buckler', 'Buckler', 'buckler', 1, 10, 1, 1, 0, 3, 12, 6, 'A small shield strapped to the forearm.'),
+		('steel_shield', 'Steel Shield', '', 1, 200, 1, 2, 0, 5, 20, 10, 'A sturdy shield made of wood and steel.');")
 		
 	# Seed Character Creation Data
-	database.query("INSERT OR IGNORE INTO ancestries (id, name, traits, hp, size, speed, boosts, flaws) VALUES 
-		('human', 'Human', 'human,humanoid', 8, 'medium', 25, 'FREE,FREE', '');")
+	database.query("INSERT OR IGNORE INTO ancestries (id, name, traits, hp, size, speed, boosts, flaws, description) VALUES 
+		('human', 'Human', 'human,humanoid', 8, 'medium', 25, '[\"FREE\", \"FREE\"]', '[]', 'Adaptable and ambitious, humans are the most populous ancestry in the world.');")
 		
 	database.query("INSERT OR IGNORE INTO backgrounds (id, name, traits, boosts, skills, lores, description) VALUES 
-		('farmhand', 'Farmhand', '', 'CON,FREE', 'athletics', 'Farming Lore', 'You grew up working on a farm.');")
+		('farmhand', 'Farmhand', '', '[\"CON|WIS\", \"FREE\"]', 'athletics', 'Farming Lore', 'You grew up working on a farm.');")
 		
 	# Fighter: 10 HP, STR or DEX key, Expert Perc/Fort/Ref, Trained Will, 3 skills
 	# Trained Class DC (2). Expert unarmed/simple/martial, trained advanced. Trained all armor.
-	database.query("INSERT OR IGNORE INTO classes (id, name, traits, hp_per_level, key_abilities, perception_rank, class_dc_rank, save_fort, save_ref, save_will, trained_skills_count, weapon_unarmed, weapon_simple, weapon_martial, weapon_advanced, armor_unarmored, armor_light, armor_medium, armor_heavy, forced_edicts, forced_anathema, is_spellcaster, caster_type, spell_tradition, spell_proficiency, spell_progression) VALUES 
-		('fighter', 'Fighter', '', 10, 'STR,DEX', 4, 2, 4, 4, 2, 3, 4, 4, 4, 2, 2, 2, 2, 2, '[]', '[]', 0, 0, 0, 0, 0);")
+	database.query("INSERT OR IGNORE INTO classes (id, name, traits, hp_per_level, key_abilities, perception_rank, class_dc_rank, save_fort, save_ref, save_will, trained_skills_count, weapon_unarmed, weapon_simple, weapon_martial, weapon_advanced, armor_unarmored, armor_light, armor_medium, armor_heavy, forced_edicts, forced_anathema, is_spellcaster, caster_type, spell_tradition, spell_proficiency, spell_progression, description) VALUES 
+		('fighter', 'Fighter', '', 10, '[\"STR|DEX\"]', 4, 2, 4, 4, 2, 3, 4, 4, 4, 2, 2, 2, 2, 2, '[]', '[]', 0, 0, 0, 0, 0, 'Masters of martial combat, fighters use their superior training to defeat their foes.');")
 		
-	database.query("INSERT OR IGNORE INTO classes (id, name, traits, hp_per_level, key_abilities, perception_rank, class_dc_rank, save_fort, save_ref, save_will, trained_skills_count, weapon_unarmed, weapon_simple, weapon_martial, weapon_advanced, armor_unarmored, armor_light, armor_medium, armor_heavy, forced_edicts, forced_anathema, is_spellcaster, caster_type, spell_tradition, spell_proficiency, spell_progression) VALUES 
-		('wizard', 'Wizard', '', 6, '[\"INT\"]', 2, 2, 2, 2, 4, 2, 2, 2, 0, 0, 2, 0, 0, 0, '[]', '[]', 1, 1, 1, 2, 1);")
+	database.query("INSERT OR IGNORE INTO classes (id, name, traits, hp_per_level, key_abilities, perception_rank, class_dc_rank, save_fort, save_ref, save_will, trained_skills_count, weapon_unarmed, weapon_simple, weapon_martial, weapon_advanced, armor_unarmored, armor_light, armor_medium, armor_heavy, forced_edicts, forced_anathema, is_spellcaster, caster_type, spell_tradition, spell_proficiency, spell_progression, description) VALUES 
+		('wizard', 'Wizard', '', 6, '[\"INT\"]', 2, 2, 2, 2, 4, 2, 2, 2, 0, 0, 2, 0, 0, 0, '[]', '[]', 1, 1, 1, 2, 1, 'Scholars of the arcane arts, wizards study ancient tomes to master powerful spells.');")
 		
 	# Spells
 	var tr_arc_occ = JSON.stringify([PFMagicConstants.MagicTradition.ARCANE, PFMagicConstants.MagicTradition.OCCULT])
 	var tr_arc_pri = JSON.stringify([PFMagicConstants.MagicTradition.ARCANE, PFMagicConstants.MagicTradition.PRIMAL])
 	
-	database.query("INSERT OR IGNORE INTO spell_variants (spell_id, action_cost, spell_range, target, duration, damage_dice, damage_faces, applied_conditions, special_effects) VALUES 
-		('ignition', 4, 30, '1 creature', '', 2, 4, '[]', '');")
+	database.query("INSERT OR IGNORE INTO spell_variants (spell_id, action_cost, spell_range, target, duration, damage_dice, damage_faces, applied_conditions, special_effects, description) VALUES 
+		('ignition', 4, 30, '1 creature', '', 2, 4, '[]', '', 'Snap your fingers and conjure a gout of flame.');")
 		
 	database.query("INSERT OR IGNORE INTO spells (id, name, traits, base_spell_rank, spell_category, traditions, saving_throw, is_attack, damage_type, scaling_rules, scaling_dice, description, script_path) VALUES 
 		('illusory_object', 'Illusory Object', 'illusion,visual', 1, 0, '" + tr_arc_occ + "', '', 0, '', 0, 0, 'You create an illusion of an object.', '');")
@@ -976,8 +1001,8 @@ func _seed_data():
 	database.query("INSERT OR IGNORE INTO spells (id, name, traits, base_spell_rank, spell_category, traditions, saving_throw, is_attack, damage_type, scaling_rules, scaling_dice, description, script_path) VALUES 
 		('ignition', 'Ignition', 'cantrip,fire', 1, 0, '" + tr_arc_pri + "', '', 1, 'fire', 1, 1, 'You snap your fingers and point, launching a spark that ignites your target.', 'res://scripts/magic/spells/pf_spell_ignition.gd');")
 	
-	database.query("INSERT OR IGNORE INTO spell_variants (spell_id, action_cost, spell_range, target, duration, damage_dice, damage_faces, applied_conditions, special_effects) VALUES 
-		('illusory_object', 4, 500, '', '', 0, 0, '[]', '');")
+	database.query("INSERT OR IGNORE INTO spell_variants (spell_id, action_cost, spell_range, target, duration, damage_dice, damage_faces, applied_conditions, special_effects, description) VALUES 
+		('illusory_object', 4, 500, '', '', 0, 0, '[]', '', 'Create a visual illusion of an object.');")
 		
 	database.query("INSERT OR IGNORE INTO spells (id, name, traits, base_spell_rank, spell_category, traditions, saving_throw, is_attack, damage_type, scaling_rules, scaling_dice, description, script_path) VALUES 
 		('creation', 'Creation', 'manipulate', 4, 0, '" + tr_arc_pri + "', '', 0, '', 0, 0, 'You create a temporary object.', '');")
@@ -985,11 +1010,11 @@ func _seed_data():
 	database.query("INSERT OR IGNORE INTO spells (id, name, traits, base_spell_rank, spell_category, traditions, saving_throw, is_attack, damage_type, scaling_rules, scaling_dice, description, script_path) VALUES 
 		('fireball', 'Fireball', 'fire,concentrate,manipulate', 3, 0, '" + tr_arc_pri + "', 'Reflex', 0, 'fire', 1, 2, 'A roaring blast of fire appears at a spot you designate, dealing 6d6 fire damage.', '');")
 		
-	database.query("INSERT OR IGNORE INTO spell_variants (spell_id, action_cost, spell_range, target, duration, damage_dice, damage_faces, applied_conditions, special_effects) VALUES 
-		('fireball', 2, 500, '20-foot burst', '', 6, 6, '[]', '');")
+	database.query("INSERT OR IGNORE INTO spell_variants (spell_id, action_cost, spell_range, target, duration, damage_dice, damage_faces, applied_conditions, special_effects, description) VALUES 
+		('fireball', 2, 500, '20-foot burst', '', 6, 6, '[]', '', 'A roaring explosion of fire.');")
 	
-	database.query("INSERT OR IGNORE INTO spell_variants (spell_id, action_cost, spell_range, target, duration, damage_dice, damage_faces, applied_conditions, special_effects) VALUES 
-		('creation', 4, 0, '', '1 hour', 0, 0, '[]', '');")
+	database.query("INSERT OR IGNORE INTO spell_variants (spell_id, action_cost, spell_range, target, duration, damage_dice, damage_faces, applied_conditions, special_effects, description) VALUES 
+		('creation', 4, 0, '', '1 hour', 0, 0, '[]', '', 'Form a temporary object out of magical energy.');")
 		
 	# Deity: Abadar
 	var abadar_edicts = JSON.stringify(["bring_civilization", "earn_wealth", "follow_law"])
@@ -1003,8 +1028,8 @@ func _seed_data():
 	var abadar_alt_domains = JSON.stringify(["creation", "duty", "metal", "toil"])
 	var abadar_spells = JSON.stringify({"1": "illusory_object", "4": "creation"})
 	
-	database.query("INSERT OR IGNORE INTO deities (id, name, category, edicts, anathema, areas_of_concern, religious_symbol, sacred_animal, sacred_colors, pantheons, divine_attributes, divine_font, divine_sanctification, divine_skill, favored_weapon, domains, alternate_domains, cleric_spells, boon_minor, boon_moderate, boon_major, curse_minor, curse_moderate, curse_major) VALUES " + 
-	"('abadar', 'Abadar', 'Gods of the Inner Sea', '" + abadar_edicts + "', '" + abadar_anathema + "', '" + abadar_areas + "', 'golden key', 'monkey', '" + abadar_colors + "', '" + abadar_pantheons + "', '" + abadar_attributes + "', '" + abadar_fonts + "', 'can choose holy or unholy', 'society', 'crossbow', '" + abadar_domains + "', '" + abadar_alt_domains + "', '" + abadar_spells + "', '', '', '', '', '', '');")
+	database.query("INSERT OR IGNORE INTO deities (id, name, category, edicts, anathema, areas_of_concern, religious_symbol, sacred_animal, sacred_colors, pantheons, divine_attributes, divine_font, divine_sanctification, divine_skill, favored_weapon, domains, alternate_domains, cleric_spells, boon_minor, boon_moderate, boon_major, curse_minor, curse_moderate, curse_major, description) VALUES " + 
+	"('abadar', 'Abadar', 'Gods of the Inner Sea', '" + abadar_edicts + "', '" + abadar_anathema + "', '" + abadar_areas + "', 'golden key', 'monkey', '" + abadar_colors + "', '" + abadar_pantheons + "', '" + abadar_attributes + "', '" + abadar_fonts + "', 'can choose holy or unholy', 'society', 'crossbow', '" + abadar_domains + "', '" + abadar_alt_domains + "', '" + abadar_spells + "', '', '', '', '', '', '', 'The Master of the First Vault, god of cities, law, merchants, and wealth.');")
 
 # ---------------------------------------------------------
 # CACHED DATA-DRIVEN FETCHERS
@@ -1474,6 +1499,42 @@ func get_adjustment(id: String) -> PFAdjustment:
 			new_adj.valid_hosts.append(v.strip_edges())
 			
 	return new_adj
+
+func get_all_ancestries() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if database.query("SELECT id, name, description FROM ancestries ORDER BY name ASC"):
+		for row in database.query_result:
+			result.append(row)
+	return result
+
+func get_all_backgrounds() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if database.query("SELECT id, name, description, boosts, skills, lores FROM backgrounds ORDER BY name ASC"):
+		for row in database.query_result:
+			result.append(row)
+	return result
+
+func get_all_classes() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if database.query("SELECT id, name, description FROM classes ORDER BY name ASC"):
+		for row in database.query_result:
+			result.append(row)
+	return result
+
+func get_all_ethnicities() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if database.query("SELECT id, name, description FROM ethnicities ORDER BY name ASC"):
+		for row in database.query_result:
+			result.append(row)
+	return result
+
+func get_all_regions() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if database.query("SELECT id, name, description FROM regions ORDER BY name ASC"):
+		for row in database.query_result:
+			result.append(row)
+	return result
+
 
 func get_ancestry(id: String) -> PFAncestry:
 	var row: Dictionary

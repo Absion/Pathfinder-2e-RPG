@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Pathfinder2RPG"
 config/version="1.0.0"
-run/main_scene="uid://b6f6sw7cuoa4t"
+run/main_scene="res://scenes/ui/character_creation.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -22,12 +22,10 @@ PFDB="*uid://d1h7imqcawkjd"
 
 [display]
 
-window/size/viewport_width=640
-window/size/viewport_height=360
-window/size/window_width_override=1280
-window/size/window_height_override=760
+window/size/viewport_width=1280
+window/size/viewport_height=760
 window/stretch/mode="canvas_items"
-window/stretch/scale_mode="integer"
+window/stretch/aspect="expand"
 
 [editor_plugins]
 

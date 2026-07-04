@@ -1,4 +1,4 @@
-﻿# pf_feat.gd
+# pf_feat.gd
 ## Represents an individual feat selected by an actor
 class_name PFFeat
 extends PFEntity
@@ -16,7 +16,7 @@ var feat_type: FeatType
 var required_level: int
 var prerequisites_json: String
 var granted_rules_json: String
-var description: String
+var max_selections: int = 1
 
 func _init(p_id: StringName):
 	var database = PFDatabase.get_instance()

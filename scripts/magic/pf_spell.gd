@@ -1,4 +1,4 @@
-﻿# pf_spell.gd
+# pf_spell.gd
 ## Represents a magical spell that can be cast by an actor.
 class_name PFSpell
 extends PFEntity
@@ -11,7 +11,6 @@ var saving_throw: String
 var duration: String
 var is_cantrip: bool
 var is_sustained: bool
-var description: String
 var script_path: String
 
 # Basic Default Effect Properties
