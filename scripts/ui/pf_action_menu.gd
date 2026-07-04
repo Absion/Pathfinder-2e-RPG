@@ -151,6 +151,7 @@ func _ready():
 	portrait.custom_minimum_size = Vector2(128, 128) # Updated size based on mock
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.mouse_filter = Control.MOUSE_FILTER_PASS
 	hbox.add_child(portrait)
 		
 	_apply_position()
@@ -322,6 +323,7 @@ func _on_actor_state_changed_2(_arg1, _arg2):
 
 func _update_ui():
 	name_label.text = bound_actor.entity_name
+	portrait.tooltip_text = bound_actor.entity_name
 	
 	# Dynamically check temp HP
 	var temp_hp = 0
