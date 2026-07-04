@@ -65,7 +65,7 @@ func _init(p_name: String = "", p_traits: Array[StringName] = [], p_level: int =
 	
 	# Scale bulk natively based on the size of the item
 	var eff_size = 1
-	var pf_db = Engine.get_main_loop().root.get_node_or_null("PFDatabase") if Engine.get_main_loop() else null
+	var pf_db = PFDatabase.get_instance()
 	if pf_db:
 		var size_data = pf_db.get_size_data(size_id)
 		eff_size = size_data.get(&"effective_size", 1) if size_data else 1
@@ -151,7 +151,7 @@ func get_price_string() -> String:
 func get_selling_price_cp() -> int:
 	var multiplier = 1.0
 	var eff_size = 1
-	var pf_db = Engine.get_main_loop().root.get_node_or_null("PFDatabase") if Engine.get_main_loop() else null
+	var pf_db = PFDatabase.get_instance()
 	if pf_db:
 		var size_data = pf_db.get_size_data(size_id)
 		eff_size = size_data.get(&"effective_size", 1) if size_data else 1
