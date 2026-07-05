@@ -13,3 +13,6 @@
 ## 2026-07-02 - Cache Database Singleton Instance
 **Learning:** Frequent calls to `PFDatabase.get_instance()` were performing string-based scene tree traversals (`has_node` and `get_node`) which are slow and allocate memory.
 **Action:** Implemented a static cache variable `_instance_cache` in `PFDatabase` and used `is_instance_valid` to ensure safety. Replaced manual scene tree lookups in hot paths (like `PFItem._init`) with the cached getter.
+## 2026-07-05 - Squared Distance Over distance_to
+**Learning:** In GDScript, inside tight calculation loops, using `distance_to` allocates implicit vectors and performs a costly `sqrt` operation. Furthermore, creating a new array via assignment (`ties = [i]`) causes unnecessary heap allocation per reassignment.
+**Action:** Use inline math (`dx * dx + dy * dy + dz * dz`) for squared distance comparisons, and recycle arrays using `.clear()` and `.append()` to minimize Garbage Collection overhead in grid loops.
