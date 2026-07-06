@@ -174,6 +174,8 @@ func _build_ui():
 	btn_finalize = Button.new()
 	btn_finalize.text = "Finish & Generate Character"
 	btn_finalize.disabled = true
+	btn_finalize.tooltip_text = "Fill out Biography, Ancestry, Background, and Class to continue."
+	btn_finalize.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	btn_finalize.pressed.connect(_on_finalize_pressed)
 	form_layout.add_child(btn_finalize)
 
@@ -206,6 +208,7 @@ func _add_dropdown(label_text: String) -> OptionButton:
 	
 	var opt = OptionButton.new()
 	opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	opt.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	container.add_child(opt)
 	
 	form_layout.add_child(container)
@@ -361,8 +364,10 @@ func _update_ui_state():
 	# Bypassing the 4-free boosts strict check for the simplified MVP
 	if manager.draft_name != "" and manager.draft_ancestry_id != "" and manager.draft_background_id != "" and manager.draft_class_id != "":
 		btn_finalize.disabled = false
+		btn_finalize.tooltip_text = ""
 	else:
 		btn_finalize.disabled = true
+		btn_finalize.tooltip_text = "Fill out Biography, Ancestry, Background, and Class to continue."
 
 func _on_finalize_pressed():
 	var a_boosts: Array[StringName] = []
@@ -572,6 +577,7 @@ func _create_label(text: String) -> Label:
 
 func _create_stat_dropdown(options: Array) -> OptionButton:
 	var opt = OptionButton.new()
+	opt.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	opt.add_item("---", -1)
 	for i in range(options.size()):
 		opt.add_item(options[i], i)

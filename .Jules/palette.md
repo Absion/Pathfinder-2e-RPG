@@ -13,3 +13,6 @@
 ## 2024-07-02 - Explicit Empty States for Dynamic Menus
 **Learning:** In dynamically generated UI menus, leaving a container completely empty can cause confusion, as users might think the interface is broken rather than intentionally blank.
 **Action:** Always include a check for an empty list (`get_child_count() == 0`) and append an explicitly disabled "No items available" indicator with a helpful tooltip.
+## 2024-07-05 - Disabled State Clarification
+**Learning:** In complex forms (like character creation), simply disabling a submit button without explanation leaves users guessing which required fields are missing, violating UX heuristics for error prevention and system status visibility.
+**Action:** Always pair `disabled = true` states on critical action buttons with a clear, specific `tooltip_text` explaining exactly what needs to be completed to proceed. Ensure the tooltip is cleared when the button becomes enabled.
