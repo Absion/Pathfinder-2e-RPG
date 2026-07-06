@@ -41,6 +41,9 @@ func process_auras(all_actors: Array[PFActor]) -> void:
 			continue
 			
 		var emitter_pos = aura.emitter.position # Assuming a generic position vector
+		# ⚡ Bolt: Cache squared radius outside the loop to avoid redundant math
+		var radius_units = aura.radius_feet / 5.0
+		var radius_sq = radius_units * radius_units
 		
 		# Find who is in range
 		var in_range_actors: Array[PFActor] = []
@@ -49,11 +52,9 @@ func process_auras(all_actors: Array[PFActor]) -> void:
 				in_range_actors.append(actor)
 				continue
 				
-			var dist = actor.position.distance_to(emitter_pos) # Assume distance works this way in 3D/2D
-			var grid_dist = (dist / 1.0) * 5.0 # Very rough approximation if 1 unit = 5 feet
-			# Better: use PFSpatialMath if available, but for now we approximate distance
-			# In actual PF2e game, we would query the CombatGrid.
-			if grid_dist <= aura.radius_feet:
+			# ⚡ Bolt: Use native distance_squared_to instead of distance_to
+			# to avoid expensive `sqrt` calls while maintaining 2D/3D compatibility
+			if actor.position.distance_squared_to(emitter_pos) <= radius_sq:
 				# Check applies_to logic (simplified)
 				if aura.applies_to == "all":
 					in_range_actors.append(actor)
