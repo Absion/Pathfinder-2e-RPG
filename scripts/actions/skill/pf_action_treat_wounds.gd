@@ -12,9 +12,9 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 		print("    > [ERROR] No target for Treat Wounds!")
 		return false
 		
-	var distance = user.global_position.distance_to(target.global_position)
-	if distance > 5.0:
-		print("    > [ERROR] Target is not adjacent (%d ft > 5 ft)!" % distance)
+	var distance_sq = user.global_position.distance_squared_to(target.global_position)
+	if distance_sq > 25.0:
+		print("    > [ERROR] Target is not adjacent (%d ft > 5 ft)!" % sqrt(distance_sq))
 		return false
 		
 	# Requires two free hands and healer's tools (simplified check)

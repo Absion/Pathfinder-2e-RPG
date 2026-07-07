@@ -97,8 +97,8 @@ func detects_with_precise_sense(observer: PFActor, target: PFActor) -> bool:
 				
 			# Range check
 			if sense.range_ft > 0:
-				var dist = observer.global_position.distance_to(target.global_position)
-				if dist > sense.range_ft:
+				var dist_sq = observer.global_position.distance_squared_to(target.global_position)
+				if dist_sq > (sense.range_ft * sense.range_ft):
 					continue
 					
 			print("    > [Senses] %s detects %s using precise %s!" % [observer.entity_name, target.entity_name, PFBiographyConstants.SenseType.keys()[sense.type]])
@@ -117,8 +117,8 @@ func detects_with_imprecise_sense(observer: PFActor, target: PFActor) -> bool:
 				continue
 				
 			if sense.range_ft > 0:
-				var dist = observer.global_position.distance_to(target.global_position)
-				if dist > sense.range_ft:
+				var dist_sq = observer.global_position.distance_squared_to(target.global_position)
+				if dist_sq > (sense.range_ft * sense.range_ft):
 					continue
 					
 			return true
@@ -150,8 +150,8 @@ func detects_with_vague_sense(observer: PFActor, target: PFActor) -> bool:
 			if target.has_meta(&"masked_sense_" + str(sense.type)):
 				continue
 			if sense.range_ft > 0:
-				var dist = observer.global_position.distance_to(target.global_position)
-				if dist > sense.range_ft:
+				var dist_sq = observer.global_position.distance_squared_to(target.global_position)
+				if dist_sq > (sense.range_ft * sense.range_ft):
 					continue
 			return true
 	return false
