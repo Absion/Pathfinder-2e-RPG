@@ -1,7 +1,7 @@
 # pf_item.gd
 ## Base class for all physical items in the game world.
 class_name PFItem
-extends PFEntity # Force Reparse
+extends PFEntity
 
 var item_material: PFEquipmentConstants.ItemMaterial
 var grade: PFEquipmentConstants.MaterialGrade

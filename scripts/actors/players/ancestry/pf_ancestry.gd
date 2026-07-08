@@ -1,7 +1,7 @@
 # pf_ancestry.gd
 ## Represents an actor's biological heritage and innate traits.
 class_name PFAncestry
-extends PFEntity # Force Reparse
+extends PFEntity
 
 const VALID_ABILITIES: Array[StringName] = [&"STR", &"DEX", &"CON", &"INT", &"WIS", &"CHA", &"FREE"]
 

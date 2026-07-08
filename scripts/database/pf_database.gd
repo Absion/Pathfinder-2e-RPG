@@ -1,7 +1,7 @@
 # pf_database.gd
 ## A stateless singleton that parses sqlite data into GDScript Objects.
 class_name PFDatabase
-extends Node # Force Reparse
+extends Node
 
 const DB_PATH = "res://db/pf2e_data.db"
 var database
@@ -323,6 +323,30 @@ func _initialize_schema_if_needed():
 		description TEXT
 	);")
 	
+	# Equipment
+	database.query("CREATE TABLE IF NOT EXISTS equipment (
+		id TEXT PRIMARY KEY,
+		name TEXT,
+		level INTEGER,
+		price_cp INTEGER,
+		bulk INTEGER,
+		usage_cooldown TEXT,
+		action_script_path TEXT,
+		skill_bonus_data TEXT
+	);")
+	
+	# Consumables
+	database.query("CREATE TABLE IF NOT EXISTS consumables (
+		id TEXT PRIMARY KEY,
+		name TEXT,
+		level INTEGER,
+		price_cp INTEGER,
+		bulk INTEGER,
+		consumable_type TEXT,
+		charges INTEGER,
+		spell_id TEXT
+	);")
+	
 	# Attachments
 	database.query("CREATE TABLE IF NOT EXISTS attachments (
 		id TEXT PRIMARY KEY,
@@ -492,7 +516,8 @@ func _initialize_schema_if_needed():
 		damage_faces INTEGER,
 		applied_conditions TEXT,
 		special_effects TEXT,
-		description TEXT
+		description TEXT,
+		UNIQUE(spell_id, action_cost, target)
 	);")
 	
 	# Domains
@@ -522,14 +547,13 @@ func _initialize_schema_if_needed():
 	database.query("CREATE TABLE IF NOT EXISTS deities (
 		id TEXT PRIMARY KEY,
 		name TEXT,
+		title TEXT,
 		category TEXT,
 		edicts TEXT,
 		anathema TEXT,
-		areas_of_concern TEXT,
 		religious_symbol TEXT,
 		sacred_animal TEXT,
 		sacred_colors TEXT,
-		pantheons TEXT,
 		divine_attributes TEXT,
 		divine_font TEXT,
 		divine_sanctification TEXT,
@@ -889,8 +913,8 @@ func _seed_data():
 		('anathema_fail_strike', 'fail to strike down evil');")
 
 	# Seed Deities
-	database.query("INSERT OR IGNORE INTO deities (id, name, category, edicts, anathema, areas_of_concern, religious_symbol, sacred_animal, sacred_colors, pantheons, divine_attributes, divine_font, divine_sanctification, divine_skill, favored_weapon, domains, alternate_domains, cleric_spells, boon_minor, boon_moderate, boon_major, curse_minor, curse_moderate, curse_major, description) VALUES 
-		('sarenrae', 'Sarenrae', 'core', '[\"edict_healing\",\"edict_redemption\"]', '[\"anathema_undead\",\"anathema_lies\",\"anathema_mercy\",\"anathema_fail_strike\"]', '[\"healing\",\"honesty\",\"redemption\",\"the sun\"]', 'Ankh', 'Dove', '[\"blue\",\"gold\"]', '[\"The Godclaw\"]', '[\"WIS\",\"CHA\"]', '[\"heal\"]', '1', 'medicine', 'scimitar', '[\"fire\",\"healing\",\"sun\",\"truth\"]', '[]', '{\"1\":\"burning_hands\", \"3\":\"fireball\", \"4\":\"wall_of_fire\"}', '', '', '', '', '', '', 'The Dawnflower, goddess of healing, honesty, redemption, and the sun.');")
+	database.query("INSERT OR IGNORE INTO deities (id, name, title, category, edicts, anathema, religious_symbol, sacred_animal, sacred_colors, divine_attributes, divine_font, divine_sanctification, divine_skill, favored_weapon, domains, alternate_domains, cleric_spells, boon_minor, boon_moderate, boon_major, curse_minor, curse_moderate, curse_major, description) VALUES 
+		('sarenrae', 'Sarenrae', 'The Dawnflower', 'core', '[\"edict_healing\",\"edict_redemption\"]', '[\"anathema_undead\",\"anathema_lies\",\"anathema_mercy\",\"anathema_fail_strike\"]', 'Ankh', 'Dove', '[\"blue\",\"gold\"]', '[\"WIS\",\"CHA\"]', '[\"heal\"]', '1', 'medicine', 'scimitar', '[\"fire\",\"healing\",\"sun\",\"truth\"]', '[]', '{\"1\":\"burning_hands\", \"3\":\"fireball\", \"4\":\"wall_of_fire\"}', '', '', '', '', '', '', 'The Dawnflower, goddess of healing, honesty, redemption, and the sun.');")
 
 	# Seed Regions
 	database.query("INSERT OR IGNORE INTO regions (id, name, description) VALUES 
@@ -1026,17 +1050,15 @@ func _seed_data():
 	# Deity: Abadar
 	var abadar_edicts = JSON.stringify(["bring_civilization", "earn_wealth", "follow_law"])
 	var abadar_anathema = JSON.stringify(["banditry_piracy", "steal", "undermine_court"])
-	var abadar_areas = JSON.stringify(["cities", "law", "merchants", "wealth"])
 	var abadar_colors = JSON.stringify(["gold", "silver"])
-	var abadar_pantheons = JSON.stringify(["Talons of the Godclaw", "The Deliberate Journey", "The Godclaw", "The Offering Plate", "The Resplendent Court", "Urban Prosperity"])
 	var abadar_attributes = JSON.stringify(["CON", "INT"])
 	var abadar_fonts = JSON.stringify(["harm", "heal"])
 	var abadar_domains = JSON.stringify(["cities", "earth", "travel", "wealth"])
 	var abadar_alt_domains = JSON.stringify(["creation", "duty", "metal", "toil"])
 	var abadar_spells = JSON.stringify({"1": "illusory_object", "4": "creation"})
 	
-	database.query("INSERT OR IGNORE INTO deities (id, name, category, edicts, anathema, areas_of_concern, religious_symbol, sacred_animal, sacred_colors, pantheons, divine_attributes, divine_font, divine_sanctification, divine_skill, favored_weapon, domains, alternate_domains, cleric_spells, boon_minor, boon_moderate, boon_major, curse_minor, curse_moderate, curse_major, description) VALUES " + 
-	"('abadar', 'Abadar', 'Gods of the Inner Sea', '" + abadar_edicts + "', '" + abadar_anathema + "', '" + abadar_areas + "', 'golden key', 'monkey', '" + abadar_colors + "', '" + abadar_pantheons + "', '" + abadar_attributes + "', '" + abadar_fonts + "', 'can choose holy or unholy', 'society', 'crossbow', '" + abadar_domains + "', '" + abadar_alt_domains + "', '" + abadar_spells + "', '', '', '', '', '', '', 'The Master of the First Vault, god of cities, law, merchants, and wealth.');")
+	database.query("INSERT OR IGNORE INTO deities (id, name, title, category, edicts, anathema, religious_symbol, sacred_animal, sacred_colors, divine_attributes, divine_font, divine_sanctification, divine_skill, favored_weapon, domains, alternate_domains, cleric_spells, boon_minor, boon_moderate, boon_major, curse_minor, curse_moderate, curse_major, description) VALUES " + 
+	"('abadar', 'Abadar', 'The Master of the First Vault', 'Gods of the Inner Sea', '" + abadar_edicts + "', '" + abadar_anathema + "', 'golden key', 'monkey', '" + abadar_colors + "', '" + abadar_attributes + "', '" + abadar_fonts + "', 'can choose holy or unholy', 'society', 'crossbow', '" + abadar_domains + "', '" + abadar_alt_domains + "', '" + abadar_spells + "', '', '', '', '', '', '', 'The Master of the First Vault, god of cities, law, merchants, and wealth.');")
 
 # ---------------------------------------------------------
 # CACHED DATA-DRIVEN FETCHERS
@@ -1669,6 +1691,7 @@ func get_pf_deity(id: String) -> PFDeity:
 		_deities_cache[id] = row
 	var new_deity = PFDeity.new()
 	new_deity.entity_name = row["name"]
+	new_deity.title = row["title"]
 	new_deity.category = row["category"]
 	new_deity.religious_symbol = row["religious_symbol"]
 	new_deity.sacred_animal = row["sacred_animal"]
@@ -1691,14 +1714,10 @@ func get_pf_deity(id: String) -> PFDeity:
 	if parsed_anathema: 
 		for a in parsed_anathema: new_deity.anathema.append(StringName(a))
 	
-	var parsed_areas = JSON.parse_string(row["areas_of_concern"])
-	if parsed_areas: new_deity.areas_of_concern.assign(parsed_areas)
 	
 	var parsed_colors = JSON.parse_string(row["sacred_colors"])
 	if parsed_colors: new_deity.sacred_colors.assign(parsed_colors)
 	
-	var parsed_pantheons = JSON.parse_string(row["pantheons"])
-	if parsed_pantheons: new_deity.pantheons.assign(parsed_pantheons)
 	
 	var parsed_attributes = JSON.parse_string(row["divine_attributes"])
 	if parsed_attributes: 
@@ -1751,7 +1770,7 @@ func update_player_knowledge(monster_id: String, updates: Dictionary) -> void:
 	var exists = not database.query_result.is_empty()
 	
 	if not exists:
-		database.query("INSERT INTO player_knowledge (monster_id) VALUES ('" + monster_id + "');")
+		database.query("INSERT OR IGNORE INTO player_knowledge (monster_id) VALUES ('" + monster_id + "');")
 		
 	var set_statements = []
 	for key in updates.keys():

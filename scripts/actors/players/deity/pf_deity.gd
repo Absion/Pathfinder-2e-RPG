@@ -5,14 +5,15 @@ extends PFEntity
 
 
 
+var title: String
 var category: String
 var edicts: Array[StringName]
 var anathema: Array[StringName]
-var areas_of_concern: Array[String]
+
 var religious_symbol: String
 var sacred_animal: String
 var sacred_colors: Array[String]
-var pantheons: Array[String]
+
 
 # Mechanical Benefits
 var divine_attributes: Array[StringName]
