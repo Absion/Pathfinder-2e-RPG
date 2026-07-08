@@ -19,3 +19,6 @@
 ## 2026-07-06 - distance_squared_to over distance_to and inline math
 **Learning:** In GDScript, inside tight loops (like checking aura overlap), using `distance_to` allocates implicit vectors and performs a costly `sqrt` operation. While inline math (`dx * dx + dy * dy + dz * dz`) avoids this, doing multiple property accesses inside the interpreted GDScript VM is typically slower than calling a single heavily optimized native C++ built-in method like `distance_squared_to`. Additionally, `distance_squared_to` safely handles both 2D and 3D vectors via duck-typing, unlike manual `.z` property access which would crash on a `Vector2`.
 **Action:** Use Godot's native `distance_squared_to` method instead of `distance_to` or inline math for distance checks to minimize Garbage Collection overhead and maintain 2D/3D safety in grid loops.
+## 2026-07-08 - Use distance_squared_to over inline math property accesses
+**Learning:** In Godot (GDScript), calling highly optimized native C++ built-in methods (like `distance_squared_to` for vector math) is significantly faster than interpreting multiple discrete arithmetic operations and property accesses within a GDScript `for` loop, while maintaining 2D/3D compatibility.
+**Action:** Replace manually inlined vector distance math with `distance_squared_to`, precalculating differences outside loops when applicable.
