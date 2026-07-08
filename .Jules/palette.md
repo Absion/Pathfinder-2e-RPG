@@ -16,3 +16,6 @@
 ## 2024-07-05 - Disabled State Clarification
 **Learning:** In complex forms (like character creation), simply disabling a submit button without explanation leaves users guessing which required fields are missing, violating UX heuristics for error prevention and system status visibility.
 **Action:** Always pair `disabled = true` states on critical action buttons with a clear, specific `tooltip_text` explaining exactly what needs to be completed to proceed. Ensure the tooltip is cleared when the button becomes enabled.
+## 2024-07-06 - Dynamic Tooltips for Disabled UI Form Fields
+**Learning:** In complex UI forms (like character creation), simply setting a submit button or cascading dropdown to `disabled = true` without explanation leaves users guessing which prerequisite fields are missing, violating heuristic guidelines for error prevention and system status visibility.
+**Action:** When disabling interactive UI elements, always provide a clear, specific, and dynamically generated `tooltip_text` that lists exactly what is missing (e.g., using `PackedStringArray().join(", ")` in GDScript). Ensure the tooltip is reset to `""` when the element becomes enabled.

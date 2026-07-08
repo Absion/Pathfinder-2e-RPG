@@ -349,16 +349,26 @@ func _update_ui_state():
 		opt_background.disabled = false
 		opt_ethnicity.disabled = false
 		opt_heritage.disabled = false
+
+		opt_background.tooltip_text = ""
+		opt_ethnicity.tooltip_text = ""
+		opt_heritage.tooltip_text = ""
 	else:
 		opt_background.disabled = true
 		opt_ethnicity.disabled = true
 		opt_heritage.disabled = true
 		
+		opt_background.tooltip_text = "Requires Ancestry selection first."
+		opt_ethnicity.tooltip_text = "Requires Ancestry selection first."
+		opt_heritage.tooltip_text = "Requires Ancestry selection first."
+
 	# Class requires Background
 	if manager.draft_background_id != "":
 		opt_class.disabled = false
+		opt_class.tooltip_text = ""
 	else:
 		opt_class.disabled = true
+		opt_class.tooltip_text = "Requires Background selection first."
 		
 	# Finish Button requires everything
 	# Bypassing the 4-free boosts strict check for the simplified MVP
@@ -366,8 +376,18 @@ func _update_ui_state():
 		btn_finalize.disabled = false
 		btn_finalize.tooltip_text = ""
 	else:
+		var missing = PackedStringArray()
+		if manager.draft_name == "":
+			missing.append("Biography (Name)")
+		if manager.draft_ancestry_id == "":
+			missing.append("Ancestry")
+		if manager.draft_background_id == "":
+			missing.append("Background")
+		if manager.draft_class_id == "":
+			missing.append("Class")
+
 		btn_finalize.disabled = true
-		btn_finalize.tooltip_text = "Fill out Biography, Ancestry, Background, and Class to continue."
+		btn_finalize.tooltip_text = "Missing required fields: " + ", ".join(missing) + "."
 
 func _on_finalize_pressed():
 	var a_boosts: Array[StringName] = []
