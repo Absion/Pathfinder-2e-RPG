@@ -19,3 +19,6 @@
 ## 2024-07-06 - Dynamic Tooltips for Disabled UI Form Fields
 **Learning:** In complex UI forms (like character creation), simply setting a submit button or cascading dropdown to `disabled = true` without explanation leaves users guessing which prerequisite fields are missing, violating heuristic guidelines for error prevention and system status visibility.
 **Action:** When disabling interactive UI elements, always provide a clear, specific, and dynamically generated `tooltip_text` that lists exactly what is missing (e.g., using `PackedStringArray().join(", ")` in GDScript). Ensure the tooltip is reset to `""` when the element becomes enabled.
+## 2024-07-09 - Placeholder Text for Discoverability
+**Learning:** Adding `placeholder_text` to `LineEdit` fields in Godot UI forms vastly improves user understanding and discoverability of expected input formats without cluttering the UI.
+**Action:** When creating new input fields, always supply a contextual placeholder text (e.g. "e.g., Valeros" for a name field) or a helpful generic placeholder (e.g. "Enter [Label]...").

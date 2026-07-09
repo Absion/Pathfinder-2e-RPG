@@ -109,7 +109,7 @@ func _build_ui():
 	
 	# Bio Section
 	_build_section_header("1. Biography")
-	line_name = _add_input_field("Character Name")
+	line_name = _add_input_field("Character Name", "e.g. Valeros")
 	line_name.text_changed.connect(_on_name_changed)
 	
 	opt_gender = _add_dropdown("Gender")
@@ -185,7 +185,7 @@ func _build_section_header(text: String):
 	lbl.add_theme_color_override("font_color", Color(0.8, 0.8, 1.0))
 	form_layout.add_child(lbl)
 
-func _add_input_field(label_text: String) -> LineEdit:
+func _add_input_field(label_text: String, placeholder: String = "") -> LineEdit:
 	var container = HBoxContainer.new()
 	var lbl = Label.new()
 	lbl.text = label_text
@@ -194,6 +194,7 @@ func _add_input_field(label_text: String) -> LineEdit:
 	
 	var input = LineEdit.new()
 	input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	input.placeholder_text = placeholder if placeholder != "" else "Enter " + label_text + "..."
 	container.add_child(input)
 	
 	form_layout.add_child(container)
