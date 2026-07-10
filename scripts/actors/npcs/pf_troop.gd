@@ -88,21 +88,13 @@ func _remove_segment() -> void:
 			var closest_dist_sq = INF
 			var ties: Array[int] = []
 			
-			var a_x = anchor.x
-			var a_y = anchor.y
-			var a_z = anchor.z
-			var t_x = target_loc.x
-			var t_y = target_loc.y
-			var t_z = target_loc.z
+			var local_target = target_loc - anchor
 
 			for i in range(active_segments.size()):
 				var seg = active_segments[i]
-				# ⚡ Bolt: Inline squared distance calculation to avoid Vector3 allocations,
-				# method overhead of `distance_to`, and expensive `sqrt` calls during grid math
-				var dx = (a_x + seg.x) - t_x
-				var dy = (a_y + seg.y) - t_y
-				var dz = (a_z + seg.z) - t_z
-				var dist_sq = dx * dx + dy * dy + dz * dz
+				# ⚡ Bolt: Use native distance_squared_to instead of inline math,
+				# as native C++ built-ins are faster and safely maintain duck-typed 2D/3D compatibility.
+				var dist_sq = seg.distance_squared_to(local_target)
 
 				if dist_sq < closest_dist_sq:
 					closest_dist_sq = dist_sq
