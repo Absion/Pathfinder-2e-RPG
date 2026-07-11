@@ -27,7 +27,7 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 		return false
 		
 	# Distance check
-	var dist_ft = user.global_position.distance_to(target.global_position)
+	var dist_sq = user.global_position.distance_squared_to(target.global_position)
 	var reach = 5
 	var maneuver_trait = ManeuverType.keys()[maneuver_type].to_lower()
 	
@@ -41,8 +41,8 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 				if parts.size() > 1 and parts[1].is_valid_int():
 					reach = parts[1].to_int()
 					
-	if dist_ft > reach:
-		print("    > [ERROR] Target is out of reach (%d ft > %d ft)!" % [dist_ft, reach])
+	if dist_sq > reach * reach:
+		print("    > [ERROR] Target is out of reach (%d ft > %d ft)!" % [sqrt(dist_sq), reach])
 		return false
 
 	var base_bonus = 0

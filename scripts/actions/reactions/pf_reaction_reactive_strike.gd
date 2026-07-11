@@ -25,13 +25,13 @@ static func condition(trigger_actor: PFActor, event_data: Dictionary, listener: 
 	# If the trigger is ON_LEAVE_SQUARE, we check the distance to the square they left
 	if event_data.has(&"trigger_type") and event_data["trigger_type"] == PFCombatConstants.ReactionTriggers.ON_LEAVE_SQUARE:
 		var from_pos = event_data.get(&"from_position", trigger_actor.global_position)
-		var dist_ft = listener.global_position.distance_to(from_pos)
-		if dist_ft > reach:
+		var dist_sq = listener.global_position.distance_squared_to(from_pos)
+		if dist_sq > reach * reach:
 			return false
 	else:
 		# Check reach to their current position
-		var dist_ft = listener.global_position.distance_to(trigger_actor.global_position)
-		if dist_ft > reach:
+		var dist_sq = listener.global_position.distance_squared_to(trigger_actor.global_position)
+		if dist_sq > reach * reach:
 			return false
 		
 	return true
