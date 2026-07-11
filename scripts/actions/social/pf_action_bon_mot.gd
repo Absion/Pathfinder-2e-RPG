@@ -10,9 +10,9 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 		print("    > [ERROR] No target for Bon Mot!")
 		return false
 		
-	var distance = user.global_position.distance_to(target.global_position)
-	if distance > 30.0:
-		print("    > [ERROR] Target is too far (%d ft > 30 ft)!" % distance)
+	var distance_sq = user.global_position.distance_squared_to(target.global_position)
+	if distance_sq > 900.0:
+		print("    > [ERROR] Target is too far (%d ft > 30 ft)!" % sqrt(distance_sq))
 		return false
 		
 	var immunity_key = StringName("bon_mot_" + user.name)

@@ -10,10 +10,10 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 		print("    > [ERROR] No target for Feint!")
 		return false
 		
-	var distance = user.global_position.distance_to(target.global_position)
+	var distance_sq = user.global_position.distance_squared_to(target.global_position)
 	var reach = 5 # Should technically check weapon reach, but Feint generally requires melee reach
-	if distance > reach:
-		print("    > [ERROR] Target is too far for a melee Feint (%d ft > %d ft)!" % [distance, reach])
+	if distance_sq > reach * reach:
+		print("    > [ERROR] Target is too far for a melee Feint (%d ft > %d ft)!" % [sqrt(distance_sq), reach])
 		return false
 			
 	var base_bonus = user.get_skill_bonus(&"deception") if user.has_method(&"get_skill_bonus") else 0

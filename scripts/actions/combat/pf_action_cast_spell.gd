@@ -60,9 +60,9 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 		return true
 
 	# Calculate distance
-	var distance = user.global_position.distance_to(target.global_position)
-	if distance > spell.range_ft:
-		print("    > [ERROR] Target %s is out of range (%d ft > %d ft)." % [target.entity_name, distance, spell.range_ft])
+	var distance_sq = user.global_position.distance_squared_to(target.global_position)
+	if distance_sq > spell.range_ft * spell.range_ft:
+		print("    > [ERROR] Target %s is out of range (%d ft > %d ft)." % [target.entity_name, sqrt(distance_sq), spell.range_ft])
 		# The spell slot is already expended though! (Rules-wise: wasting the spell)
 		return true
 		
