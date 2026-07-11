@@ -109,7 +109,7 @@ func _build_ui():
 	
 	# Bio Section
 	_build_section_header("1. Biography")
-	line_name = _add_input_field("Character Name", "e.g. Valeros")
+	line_name = _add_input_field("Character Name", "e.g. Arthur")
 	line_name.text_changed.connect(_on_name_changed)
 	
 	opt_gender = _add_dropdown("Gender")
