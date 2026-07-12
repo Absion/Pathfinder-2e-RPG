@@ -152,6 +152,7 @@ func _build_ui():
 	# Ability Scores Section
 	_build_section_header("5. Ability Scores")
 	chk_alt_boosts = CheckBox.new()
+	chk_alt_boosts.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	chk_alt_boosts.text = "Use Alternate Ancestry Boosts (2 Free)"
 	chk_alt_boosts.toggled.connect(_on_alt_boosts_toggled)
 	form_layout.add_child(chk_alt_boosts)
