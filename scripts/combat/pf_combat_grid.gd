@@ -183,13 +183,15 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 	var mover_is_swarm_or_tiny = false
 	var mover_record = null
 	var is_mover_troop = false
-	var base_t_x = target_pos.x
-	var base_t_z = target_pos.z
+	var r_base_t_x = round(target_pos.x)
+	var r_base_t_z = round(target_pos.z)
+	var mover_y = 0.0
 
 	if mover != null:
 		is_mover_troop = mover is PFTroop
 		mover_is_swarm_or_tiny = mover.has_trait(&"swarm") or mover.size_id == &"tiny"
 		mover_record = PFContext.active_turn_manager.get_combatant_record(mover)
+		mover_y = mover.global_position.y
 
 	for record in PFContext.active_turn_manager.combatants:
 		var actor = record.actor
@@ -203,16 +205,14 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 				var a_z = round(actor.global_position.z + seg.z)
 				if is_mover_troop:
 					for mover_seg in mover.active_segments:
-						var t_x = round(base_t_x + mover_seg.x)
-						var t_z = round(base_t_z + mover_seg.z)
-						if abs(t_x - a_x) <= 0.5 and abs(t_z - a_z) <= 0.5:
+						var t_x = r_base_t_x + round(mover_seg.x)
+						var t_z = r_base_t_z + round(mover_seg.z)
+						if t_x == a_x and t_z == a_z:
 							overlap = true
 							break
 					if overlap: break
 				else:
-					var t_x = round(base_t_x)
-					var t_z = round(base_t_z)
-					if abs(t_x - a_x) <= 0.5 and abs(t_z - a_z) <= 0.5:
+					if r_base_t_x == a_x and r_base_t_z == a_z:
 						overlap = true
 						break
 		else:
@@ -220,15 +220,13 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 			var a_z = round(actor.global_position.z)
 			if is_mover_troop:
 				for mover_seg in mover.active_segments:
-					var t_x = round(base_t_x + mover_seg.x)
-					var t_z = round(base_t_z + mover_seg.z)
-					if abs(t_x - a_x) <= 0.5 and abs(t_z - a_z) <= 0.5:
+					var t_x = r_base_t_x + round(mover_seg.x)
+					var t_z = r_base_t_z + round(mover_seg.z)
+					if t_x == a_x and t_z == a_z:
 						overlap = true
 						break
 			else:
-				var t_x = round(base_t_x)
-				var t_z = round(base_t_z)
-				if abs(t_x - a_x) <= 0.5 and abs(t_z - a_z) <= 0.5:
+				if r_base_t_x == a_x and r_base_t_z == a_z:
 					overlap = true
 			
 		# If we aren't overlapping the XZ coordinate, it's free.
@@ -241,7 +239,7 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 			continue
 			
 		# RULE 2: Flying or burrowing creates vertical separation. (Assuming Y threshold of 1.0 unit = 5ft)
-		if mover != null and abs(mover.global_position.y - actor.global_position.y) >= 1.0:
+		if mover != null and abs(mover_y - actor.global_position.y) >= 1.0:
 			continue
 			
 		# RULE 3: You can move through an ally's space, but you cannot end your turn there.
