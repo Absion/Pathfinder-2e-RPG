@@ -376,6 +376,7 @@ func _update_ui_state():
 	# Finish Button requires everything
 	# Bypassing the 4-free boosts strict check for the simplified MVP
 	if manager.draft_name != "" and manager.draft_ancestry_id != "" and manager.draft_background_id != "" and manager.draft_class_id != "":
+		btn_finalize.text = "Finish & Generate Character"
 		btn_finalize.disabled = false
 		btn_finalize.tooltip_text = ""
 	else:
@@ -464,6 +465,10 @@ func _on_finalize_pressed():
 	print("      INT: ", pc.attributes.int_score, " WIS: ", pc.attributes.wis_score, " CHA: ", pc.attributes.cha_score)
 	print("  - Known Languages: ", pc.languages)
 	print("=======================================")
+
+	btn_finalize.text = "✔ Character Created Successfully!"
+	btn_finalize.disabled = true
+	btn_finalize.tooltip_text = "Character created. You can now use this character in the game."
 
 
 
