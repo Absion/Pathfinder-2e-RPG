@@ -22,3 +22,6 @@
 ## 2026-07-08 - Use distance_squared_to over inline math property accesses
 **Learning:** In Godot (GDScript), calling highly optimized native C++ built-in methods (like `distance_squared_to` for vector math) is significantly faster than interpreting multiple discrete arithmetic operations and property accesses within a GDScript `for` loop, while maintaining 2D/3D compatibility.
 **Action:** Replace manually inlined vector distance math with `distance_squared_to`, precalculating differences outside loops when applicable.
+## 2026-07-09 - Avoid rounding and property access inside hot combat grid loops
+**Learning:** Checking for space occupancy (`is_space_occupied`) is a hot path inside combat grid pathfinding. Extracting static vectors' positional X/Z rounds and actor Y bounds significantly reduces GC overhead inside `for` blocks compared to doing math on every overlap evaluation.
+**Action:** When implementing grid loop logic, cache loop-invariant mathematical outcomes (like target rounding or `global_position.y`) ahead of internal checking sequences to limit GDScript engine operations.
