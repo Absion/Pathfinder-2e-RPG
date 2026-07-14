@@ -19,3 +19,7 @@
 ## 2024-07-06 - Dynamic Tooltips for Disabled UI Form Fields
 **Learning:** In complex UI forms (like character creation), simply setting a submit button or cascading dropdown to `disabled = true` without explanation leaves users guessing which prerequisite fields are missing, violating heuristic guidelines for error prevention and system status visibility.
 **Action:** When disabling interactive UI elements, always provide a clear, specific, and dynamically generated `tooltip_text` that lists exactly what is missing (e.g., using `PackedStringArray().join(", ")` in GDScript). Ensure the tooltip is reset to `""` when the element becomes enabled.
+
+## 2026-07-14 - Visual Required Indicators and Auto-Focus
+**Learning:** In Godot UI forms, required fields must be visually indicated proactively, and initial keyboard focus should be explicitly set via grab_focus() on the first interactive element to allow immediate keyboard interaction.
+**Action:** Always append * to required field labels and call grab_focus() on the first input during form initialization.
