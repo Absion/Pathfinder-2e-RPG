@@ -54,6 +54,7 @@ func _ready():
 	_build_ui()
 	_populate_dropdowns()
 	_update_ui_state()
+	line_name.grab_focus()
 
 func _build_ui():
 	var margin_container = MarginContainer.new()
@@ -109,7 +110,7 @@ func _build_ui():
 	
 	# Bio Section
 	_build_section_header("1. Biography")
-	line_name = _add_input_field("Character Name", "e.g. Arthur")
+	line_name = _add_input_field("Character Name *", "e.g. Arthur")
 	line_name.text_changed.connect(_on_name_changed)
 	
 	opt_gender = _add_dropdown("Gender")
@@ -126,7 +127,7 @@ func _build_ui():
 	
 	# Ancestry Section
 	_build_section_header("2. Ancestry & Heritage")
-	opt_ancestry = _add_dropdown("Ancestry")
+	opt_ancestry = _add_dropdown("Ancestry *")
 	opt_ancestry.item_selected.connect(_on_ancestry_selected)
 	
 	opt_heritage = _add_dropdown("Heritage")
@@ -139,13 +140,13 @@ func _build_ui():
 	
 	# Background Section
 	_build_section_header("3. Background")
-	opt_background = _add_dropdown("Background")
+	opt_background = _add_dropdown("Background *")
 	opt_background.item_selected.connect(_on_background_selected)
 	opt_background.disabled = true
 	
 	# Class Section
 	_build_section_header("4. Class")
-	opt_class = _add_dropdown("Class")
+	opt_class = _add_dropdown("Class *")
 	opt_class.item_selected.connect(_on_class_selected)
 	opt_class.disabled = true
 	
