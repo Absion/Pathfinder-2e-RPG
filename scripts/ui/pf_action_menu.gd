@@ -210,6 +210,7 @@ func _open_submenu(menu_name: String):
 	elif menu_name == "MAGIC":
 		var s1 = _create_styled_button("No Spells Prepared")
 		s1.disabled = true
+		s1.mouse_default_cursor_shape = Control.CURSOR_ARROW
 		s1.tooltip_text = "You do not have any spells prepared or available to cast."
 		scroll_vbox.add_child(s1)
 	elif menu_name == "ACTIONS":
@@ -235,6 +236,7 @@ func _open_submenu(menu_name: String):
 	if scroll_vbox.get_child_count() == 0:
 		var empty_state = _create_styled_button("No items available")
 		empty_state.disabled = true
+		empty_state.mouse_default_cursor_shape = Control.CURSOR_ARROW
 		empty_state.tooltip_text = "There are no options available in this menu."
 		scroll_vbox.add_child(empty_state)
 
