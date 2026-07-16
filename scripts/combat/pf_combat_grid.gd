@@ -199,10 +199,12 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 			continue
 			
 		var overlap = false
+		var actor_pos = actor.global_position
+
 		if actor is PFTroop:
 			for seg in actor.active_segments:
-				var a_x = round(actor.global_position.x + seg.x)
-				var a_z = round(actor.global_position.z + seg.z)
+				var a_x = round(actor_pos.x + seg.x)
+				var a_z = round(actor_pos.z + seg.z)
 				if is_mover_troop:
 					for mover_seg in mover.active_segments:
 						var t_x = r_base_t_x + round(mover_seg.x)
@@ -216,8 +218,8 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 						overlap = true
 						break
 		else:
-			var a_x = round(actor.global_position.x)
-			var a_z = round(actor.global_position.z)
+			var a_x = round(actor_pos.x)
+			var a_z = round(actor_pos.z)
 			if is_mover_troop:
 				for mover_seg in mover.active_segments:
 					var t_x = r_base_t_x + round(mover_seg.x)
@@ -239,7 +241,7 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 			continue
 			
 		# RULE 2: Flying or burrowing creates vertical separation. (Assuming Y threshold of 1.0 unit = 5ft)
-		if mover != null and abs(mover_y - actor.global_position.y) >= 1.0:
+		if mover != null and abs(mover_y - actor_pos.y) >= 1.0:
 			continue
 			
 		# RULE 3: You can move through an ally's space, but you cannot end your turn there.

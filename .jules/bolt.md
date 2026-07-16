@@ -25,3 +25,6 @@
 ## 2026-07-09 - Avoid rounding and property access inside hot combat grid loops
 **Learning:** Checking for space occupancy (`is_space_occupied`) is a hot path inside combat grid pathfinding. Extracting static vectors' positional X/Z rounds and actor Y bounds significantly reduces GC overhead inside `for` blocks compared to doing math on every overlap evaluation.
 **Action:** When implementing grid loop logic, cache loop-invariant mathematical outcomes (like target rounding or `global_position.y`) ahead of internal checking sequences to limit GDScript engine operations.
+## 2026-07-10 - Cache node properties before tight loops
+**Learning:** In GDScript, reading a property like `global_position` from a Node involves crossing the GDScript-to-C++ boundary and executing getter logic. Doing this repeatedly inside a loop incurs unnecessary overhead.
+**Action:** Cache Node properties (like position vectors) into local variables prior to executing tight loops to maximize performance.
