@@ -28,3 +28,6 @@
 ## 2026-07-10 - Cache node properties before tight loops
 **Learning:** In GDScript, reading a property like `global_position` from a Node involves crossing the GDScript-to-C++ boundary and executing getter logic. Doing this repeatedly inside a loop incurs unnecessary overhead.
 **Action:** Cache Node properties (like position vectors) into local variables prior to executing tight loops to maximize performance.
+## 2026-07-11 - Cache moving troop segments before grid intersection loops
+**Learning:** Inside `is_space_occupied`, resolving absolute target coordinates for moving troop segments involves repeated `round` and addition operations that were being executed per-segment of every actor on the grid.
+**Action:** Extract and cache the absolute target positions of the mover's segments as arrays outside the main `for record in combatants` loop to minimize VM operation counts and GC pressure inside hot loops.
