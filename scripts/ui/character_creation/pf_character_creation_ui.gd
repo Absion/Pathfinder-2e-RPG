@@ -177,7 +177,7 @@ func _build_ui():
 	btn_finalize.text = "Finish & Generate Character"
 	btn_finalize.disabled = true
 	btn_finalize.tooltip_text = "Fill out Biography, Ancestry, Background, and Class to continue."
-	btn_finalize.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	btn_finalize.mouse_default_cursor_shape = Control.CURSOR_ARROW
 	btn_finalize.pressed.connect(_on_finalize_pressed)
 	form_layout.add_child(btn_finalize)
 
@@ -353,6 +353,9 @@ func _update_ui_state():
 		opt_background.disabled = false
 		opt_ethnicity.disabled = false
 		opt_heritage.disabled = false
+		opt_background.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		opt_ethnicity.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		opt_heritage.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 		opt_background.tooltip_text = ""
 		opt_ethnicity.tooltip_text = ""
@@ -361,6 +364,9 @@ func _update_ui_state():
 		opt_background.disabled = true
 		opt_ethnicity.disabled = true
 		opt_heritage.disabled = true
+		opt_background.mouse_default_cursor_shape = Control.CURSOR_ARROW
+		opt_ethnicity.mouse_default_cursor_shape = Control.CURSOR_ARROW
+		opt_heritage.mouse_default_cursor_shape = Control.CURSOR_ARROW
 		
 		opt_background.tooltip_text = "Requires Ancestry selection first."
 		opt_ethnicity.tooltip_text = "Requires Ancestry selection first."
@@ -369,9 +375,11 @@ func _update_ui_state():
 	# Class requires Background
 	if manager.draft_background_id != "":
 		opt_class.disabled = false
+		opt_class.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		opt_class.tooltip_text = ""
 	else:
 		opt_class.disabled = true
+		opt_class.mouse_default_cursor_shape = Control.CURSOR_ARROW
 		opt_class.tooltip_text = "Requires Background selection first."
 		
 	# Finish Button requires everything
@@ -379,6 +387,7 @@ func _update_ui_state():
 	if manager.draft_name != "" and manager.draft_ancestry_id != "" and manager.draft_background_id != "" and manager.draft_class_id != "":
 		btn_finalize.text = "Finish & Generate Character"
 		btn_finalize.disabled = false
+		btn_finalize.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		btn_finalize.tooltip_text = ""
 	else:
 		var missing = PackedStringArray()
@@ -392,6 +401,7 @@ func _update_ui_state():
 			missing.append("Class")
 
 		btn_finalize.disabled = true
+		btn_finalize.mouse_default_cursor_shape = Control.CURSOR_ARROW
 		btn_finalize.tooltip_text = "Missing required fields: " + ", ".join(missing) + "."
 
 func _on_finalize_pressed():
@@ -469,6 +479,7 @@ func _on_finalize_pressed():
 
 	btn_finalize.text = "✔ Character Created Successfully!"
 	btn_finalize.disabled = true
+	btn_finalize.mouse_default_cursor_shape = Control.CURSOR_ARROW
 	btn_finalize.tooltip_text = "Character created. You can now use this character in the game."
 
 
