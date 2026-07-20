@@ -186,12 +186,18 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 	var r_base_t_x = round(target_pos.x)
 	var r_base_t_z = round(target_pos.z)
 	var mover_y = 0.0
+	var mover_troop_xs: Array[int] = []
+	var mover_troop_zs: Array[int] = []
 
 	if mover != null:
 		is_mover_troop = mover is PFTroop
 		mover_is_swarm_or_tiny = mover.has_trait(&"swarm") or mover.size_id == &"tiny"
 		mover_record = PFContext.active_turn_manager.get_combatant_record(mover)
 		mover_y = mover.global_position.y
+		if is_mover_troop:
+			for mover_seg in mover.active_segments:
+				mover_troop_xs.append(int(r_base_t_x + round(mover_seg.x)))
+				mover_troop_zs.append(int(r_base_t_z + round(mover_seg.z)))
 
 	for record in PFContext.active_turn_manager.combatants:
 		var actor = record.actor
@@ -206,10 +212,8 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 				var a_x = round(actor_pos.x + seg.x)
 				var a_z = round(actor_pos.z + seg.z)
 				if is_mover_troop:
-					for mover_seg in mover.active_segments:
-						var t_x = r_base_t_x + round(mover_seg.x)
-						var t_z = r_base_t_z + round(mover_seg.z)
-						if t_x == a_x and t_z == a_z:
+					for i in range(mover_troop_xs.size()):
+						if mover_troop_xs[i] == a_x and mover_troop_zs[i] == a_z:
 							overlap = true
 							break
 					if overlap: break
@@ -221,10 +225,8 @@ func is_space_occupied(target_pos: Vector3, mover: PFActor = null, end_of_move: 
 			var a_x = round(actor_pos.x)
 			var a_z = round(actor_pos.z)
 			if is_mover_troop:
-				for mover_seg in mover.active_segments:
-					var t_x = r_base_t_x + round(mover_seg.x)
-					var t_z = r_base_t_z + round(mover_seg.z)
-					if t_x == a_x and t_z == a_z:
+				for i in range(mover_troop_xs.size()):
+					if mover_troop_xs[i] == a_x and mover_troop_zs[i] == a_z:
 						overlap = true
 						break
 			else:
