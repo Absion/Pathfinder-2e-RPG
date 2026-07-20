@@ -161,8 +161,17 @@ func _build_main_menu():
 		child.queue_free()
 		
 	var actions = ["MOVE", "STRIKE", "MAGIC", "ITEM", "ACTIONS"]
+	var tooltips = {
+		"MOVE": "View movement actions like Stride and Step.",
+		"STRIKE": "View attack actions and weapons.",
+		"MAGIC": "View prepared spells and magical abilities.",
+		"ITEM": "View consumable items and equipment.",
+		"ACTIONS": "View other combat actions like Grapple or Trip."
+	}
 	for action_name in actions:
 		var button = _create_styled_button(action_name)
+		if tooltips.has(action_name):
+			button.tooltip_text = tooltips[action_name]
 		button.pressed.connect(func(): _open_submenu(action_name))
 		main_menu_vbox.add_child(button)
 
@@ -181,6 +190,7 @@ func _open_submenu(menu_name: String):
 		
 	var back_btn = _create_styled_button("<- BACK")
 	back_btn.add_theme_color_override("font_color", Color("#ffd700"))
+	back_btn.tooltip_text = "Return to main action menu."
 	back_btn.pressed.connect(_close_submenu)
 	submenu_vbox.add_child(back_btn)
 	
