@@ -86,9 +86,9 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 
 	# Range & Volley Penalties
 	var range_penalty = 0
-	var dist_ft = 0.0
+	var dist_sq = 0.0
 	if user.is_inside_tree() and target.is_inside_tree():
-		dist_ft = user.global_position.distance_to(target.global_position)
+		dist_sq = user.global_position.distance_squared_to(target.global_position)
 	
 	if weapon.weapon_type == PFEquipmentConstants.WeaponType.MELEE and not weapon.has_trait(&"thrown"):
 		var base_reach = 5
@@ -100,10 +100,12 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 				var parts = ts.split(" ")
 				if parts.size() > 1 and parts[1].is_valid_int():
 					base_reach = parts[1].to_int()
-		if dist_ft > base_reach:
-			print("    > [ERROR] Target is out of melee reach (%d ft > %d ft)!" % [dist_ft, base_reach])
+		if dist_sq > (base_reach * base_reach):
+			# ⚡ Bolt: Use native distance_squared_to instead of distance_to to avoid expensive sqrt calls
+			print("    > [ERROR] Target is out of melee reach (%d ft > %d ft)!" % [sqrt(dist_sq), base_reach])
 			return false
 	elif weapon.weapon_type == PFEquipmentConstants.WeaponType.RANGED or weapon.has_trait(&"thrown"):
+		var dist_ft = sqrt(dist_sq) if dist_sq > 0.0 else 0.0
 		if weapon.range_increment > 0:
 			var increments = int(dist_ft / weapon.range_increment)
 			if increments > 0:
