@@ -23,3 +23,7 @@
 ## 2026-07-14 - Visual Required Indicators and Auto-Focus
 **Learning:** In Godot UI forms, required fields must be visually indicated proactively, and initial keyboard focus should be explicitly set via grab_focus() on the first interactive element to allow immediate keyboard interaction.
 **Action:** Always append * to required field labels and call grab_focus() on the first input during form initialization.
+
+## 2026-07-17 - [Cursor Affordance on Disabled Elements]
+**Learning:** In Godot, UI elements that are initialized with a pointing hand cursor retain it even when `disabled = true`, creating false clickability affordances.
+**Action:** Always manually reset `mouse_default_cursor_shape` to `Control.CURSOR_ARROW` alongside setting `disabled = true`.

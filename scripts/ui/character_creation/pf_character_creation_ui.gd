@@ -357,6 +357,10 @@ func _update_ui_state():
 		opt_ethnicity.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		opt_heritage.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
+		opt_background.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		opt_ethnicity.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		opt_heritage.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+
 		opt_background.tooltip_text = ""
 		opt_ethnicity.tooltip_text = ""
 		opt_heritage.tooltip_text = ""
@@ -368,6 +372,10 @@ func _update_ui_state():
 		opt_ethnicity.mouse_default_cursor_shape = Control.CURSOR_ARROW
 		opt_heritage.mouse_default_cursor_shape = Control.CURSOR_ARROW
 		
+		opt_background.mouse_default_cursor_shape = Control.CURSOR_ARROW
+		opt_ethnicity.mouse_default_cursor_shape = Control.CURSOR_ARROW
+		opt_heritage.mouse_default_cursor_shape = Control.CURSOR_ARROW
+
 		opt_background.tooltip_text = "Requires Ancestry selection first."
 		opt_ethnicity.tooltip_text = "Requires Ancestry selection first."
 		opt_heritage.tooltip_text = "Requires Ancestry selection first."
