@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://char_create_123"]
+[gd_scene format=3 uid="uid://bwf0jrxvxf6j8"]
 
-[ext_resource type="Script" path="res://scripts/ui/character_creation/pf_character_creation_ui.gd" id="1_a2b3c"]
+[ext_resource type="Script" uid="uid://dp4avj3o8h3cj" path="res://scripts/ui/character_creation/pf_character_creation_ui.gd" id="1_a2b3c"]
 
-[node name="CharacterCreation" type="CanvasLayer"]
+[node name="CharacterCreation" type="CanvasLayer" unique_id=1747901433]
 script = ExtResource("1_a2b3c")
