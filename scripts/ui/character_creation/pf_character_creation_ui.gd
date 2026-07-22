@@ -196,6 +196,8 @@ func _add_input_field(label_text: String, placeholder: String = "") -> LineEdit:
 	
 	var input = LineEdit.new()
 	input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	input.clear_button_enabled = true
+	input.caret_blink = true
 	if placeholder != "":
 		input.placeholder_text = placeholder
 	container.add_child(input)
