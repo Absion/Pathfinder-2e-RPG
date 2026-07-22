@@ -133,22 +133,26 @@ func _build_ui():
 	opt_heritage = _add_dropdown("Heritage")
 	opt_heritage.item_selected.connect(_on_heritage_selected)
 	opt_heritage.disabled = true
+	opt_heritage.mouse_default_cursor_shape = Control.CURSOR_ARROW
 	
 	opt_ethnicity = _add_dropdown("Ethnicity (Ancestry Restricted)")
 	opt_ethnicity.item_selected.connect(_on_ethnicity_selected)
 	opt_ethnicity.disabled = true
+	opt_ethnicity.mouse_default_cursor_shape = Control.CURSOR_ARROW
 	
 	# Background Section
 	_build_section_header("3. Background")
 	opt_background = _add_dropdown("Background *")
 	opt_background.item_selected.connect(_on_background_selected)
 	opt_background.disabled = true
+	opt_background.mouse_default_cursor_shape = Control.CURSOR_ARROW
 	
 	# Class Section
 	_build_section_header("4. Class")
 	opt_class = _add_dropdown("Class *")
 	opt_class.item_selected.connect(_on_class_selected)
 	opt_class.disabled = true
+	opt_class.mouse_default_cursor_shape = Control.CURSOR_ARROW
 	
 	# Ability Scores Section
 	_build_section_header("5. Ability Scores")
