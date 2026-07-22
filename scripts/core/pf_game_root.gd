@@ -3,6 +3,19 @@
 class_name PFGameRoot
 extends Node
 
+static var _instance_cache: PFGameRoot = null
+
+static func get_instance() -> PFGameRoot:
+	if _instance_cache != null and is_instance_valid(_instance_cache):
+		return _instance_cache
+
+	var ml = Engine.get_main_loop()
+	if ml:
+		if ml.root.has_node("PFGameRoot"):
+			_instance_cache = ml.root.get_node("PFGameRoot") as PFGameRoot
+			return _instance_cache
+	return null
+
 var current_context: PFContext = null
 var contexts: Dictionary = {}
 

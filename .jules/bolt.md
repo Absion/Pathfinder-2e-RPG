@@ -31,3 +31,6 @@
 ## 2026-07-11 - Cache moving troop segments before grid intersection loops
 **Learning:** Inside `is_space_occupied`, resolving absolute target coordinates for moving troop segments involves repeated `round` and addition operations that were being executed per-segment of every actor on the grid.
 **Action:** Extract and cache the absolute target positions of the mover's segments as arrays outside the main `for record in combatants` loop to minimize VM operation counts and GC pressure inside hot loops.
+## 2024-07-21 - [Singleton Pattern for Root Node]
+**Learning:** Checking for node existence with `has_node` and retrieving it via `get_node` on Engine.get_main_loop().root during runtime incurs expensive scene tree traversal overhead.
+**Action:** Implement static instance caching on globally accessed nodes to avoid overhead and reuse the instance.
