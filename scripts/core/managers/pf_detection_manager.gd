@@ -83,6 +83,8 @@ func detects_with_precise_sense(observer: PFActor, target: PFActor) -> bool:
 	if not "senses" in observer or observer.senses == null: return false
 	var senses_comp = observer.senses
 	
+	var cached_dist_sq = -1.0
+
 	for sense in senses_comp.senses:
 		if sense.acuity == PFBiographyConstants.SenseAcuity.PRECISE:
 			# If it's vision, it requires line of sight (cover applies).
@@ -97,8 +99,9 @@ func detects_with_precise_sense(observer: PFActor, target: PFActor) -> bool:
 				
 			# Range check
 			if sense.range_ft > 0:
-				var dist_sq = observer.global_position.distance_squared_to(target.global_position)
-				if dist_sq > (sense.range_ft * sense.range_ft):
+				if cached_dist_sq < 0.0:
+					cached_dist_sq = observer.global_position.distance_squared_to(target.global_position)
+				if cached_dist_sq > (sense.range_ft * sense.range_ft):
 					continue
 					
 			print("    > [Senses] %s detects %s using precise %s!" % [observer.entity_name, target.entity_name, PFBiographyConstants.SenseType.keys()[sense.type]])
@@ -111,14 +114,17 @@ func detects_with_imprecise_sense(observer: PFActor, target: PFActor) -> bool:
 	if not "senses" in observer or observer.senses == null: return false
 	var senses_comp = observer.senses
 	
+	var cached_dist_sq = -1.0
+
 	for sense in senses_comp.senses:
 		if sense.acuity == PFBiographyConstants.SenseAcuity.IMPRECISE:
 			if target.has_meta(&"masked_sense_" + str(sense.type)):
 				continue
 				
 			if sense.range_ft > 0:
-				var dist_sq = observer.global_position.distance_squared_to(target.global_position)
-				if dist_sq > (sense.range_ft * sense.range_ft):
+				if cached_dist_sq < 0.0:
+					cached_dist_sq = observer.global_position.distance_squared_to(target.global_position)
+				if cached_dist_sq > (sense.range_ft * sense.range_ft):
 					continue
 					
 			return true
@@ -145,13 +151,16 @@ func detects_with_vague_sense(observer: PFActor, target: PFActor) -> bool:
 	if not "senses" in observer or observer.senses == null: return false
 	var senses_comp = observer.senses
 	
+	var cached_dist_sq = -1.0
+
 	for sense in senses_comp.senses:
 		if sense.acuity == PFBiographyConstants.SenseAcuity.VAGUE:
 			if target.has_meta(&"masked_sense_" + str(sense.type)):
 				continue
 			if sense.range_ft > 0:
-				var dist_sq = observer.global_position.distance_squared_to(target.global_position)
-				if dist_sq > (sense.range_ft * sense.range_ft):
+				if cached_dist_sq < 0.0:
+					cached_dist_sq = observer.global_position.distance_squared_to(target.global_position)
+				if cached_dist_sq > (sense.range_ft * sense.range_ft):
 					continue
 			return true
 	return false
