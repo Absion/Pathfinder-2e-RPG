@@ -31,6 +31,9 @@
 ## 2026-07-11 - Cache moving troop segments before grid intersection loops
 **Learning:** Inside `is_space_occupied`, resolving absolute target coordinates for moving troop segments involves repeated `round` and addition operations that were being executed per-segment of every actor on the grid.
 **Action:** Extract and cache the absolute target positions of the mover's segments as arrays outside the main `for record in combatants` loop to minimize VM operation counts and GC pressure inside hot loops.
+## 2026-07-13 - Lazily evaluate expensive loop-invariant operations
+**Learning:** In GDScript, inside hot path loops (like iterating through senses in `PFDetectionManager`), calculating distance checks like `distance_squared_to` on every iteration incurs unnecessary overhead when the calculation is loop-invariant (the observer and target don't move during the evaluation). However, calculating it strictly *before* the loop might be unnecessary if an early break/continue occurs.
+**Action:** Use lazy evaluation for expensive loop-invariant operations by initializing a sentinel value (e.g., `-1.0`) outside the loop and calculating it only when first needed inside the loop, preventing redundant calculations and unnecessary C++ boundary crossings.
 ## 2024-07-21 - [Singleton Pattern for Root Node]
 **Learning:** Checking for node existence with `has_node` and retrieving it via `get_node` on Engine.get_main_loop().root during runtime incurs expensive scene tree traversal overhead.
 **Action:** Implement static instance caching on globally accessed nodes to avoid overhead and reuse the instance.
