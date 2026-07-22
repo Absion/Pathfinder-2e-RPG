@@ -27,3 +27,7 @@
 ## 2026-07-17 - [Cursor Affordance on Disabled Elements]
 **Learning:** In Godot, UI elements that are initialized with a pointing hand cursor retain it even when `disabled = true`, creating false clickability affordances.
 **Action:** Always manually reset `mouse_default_cursor_shape` to `Control.CURSOR_ARROW` alongside setting `disabled = true`.
+
+## 2026-07-22 - Cursor Affordance on Initial Disabled States
+**Learning:** In Godot UI, dynamically generated option buttons initialized as disabled retain the default pointing hand cursor from their factory method, creating false affordances on page load.
+**Action:** When manually setting disabled = true during UI initialization for forms, always accompany it with mouse_default_cursor_shape = Control.CURSOR_ARROW to prevent user confusion.
