@@ -31,3 +31,6 @@
 ## 2026-07-11 - Cache moving troop segments before grid intersection loops
 **Learning:** Inside `is_space_occupied`, resolving absolute target coordinates for moving troop segments involves repeated `round` and addition operations that were being executed per-segment of every actor on the grid.
 **Action:** Extract and cache the absolute target positions of the mover's segments as arrays outside the main `for record in combatants` loop to minimize VM operation counts and GC pressure inside hot loops.
+## 2026-07-13 - Lazily evaluate expensive loop-invariant operations
+**Learning:** In GDScript, inside hot path loops (like iterating through senses in `PFDetectionManager`), calculating distance checks like `distance_squared_to` on every iteration incurs unnecessary overhead when the calculation is loop-invariant (the observer and target don't move during the evaluation). However, calculating it strictly *before* the loop might be unnecessary if an early break/continue occurs.
+**Action:** Use lazy evaluation for expensive loop-invariant operations by initializing a sentinel value (e.g., `-1.0`) outside the loop and calculating it only when first needed inside the loop, preventing redundant calculations and unnecessary C++ boundary crossings.
