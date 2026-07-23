@@ -33,9 +33,9 @@ func _init(p_action_id: StringName):
 func execute(user: PFActor, target: Variant = null) -> bool:
 	super.execute(user, target)
 	
-	var ml = Engine.get_main_loop()
-	if ml and ml.root.has_node("PFGameRoot"):
-		var root = ml.root.get_node("PFGameRoot") as PFGameRoot
+	# ⚡ Bolt: Cache PFGameRoot instance to avoid expensive get_node/has_node scene tree traversals
+	var root = PFGameRoot.get_instance()
+	if root:
 		var context = root.current_context as PFOverworldContext
 		if context:
 			context.set_exploration_activity(user, action_id)
