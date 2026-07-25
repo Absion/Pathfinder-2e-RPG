@@ -37,3 +37,6 @@
 ## 2024-07-21 - [Singleton Pattern for Root Node]
 **Learning:** Checking for node existence with `has_node` and retrieving it via `get_node` on Engine.get_main_loop().root during runtime incurs expensive scene tree traversal overhead.
 **Action:** Implement static instance caching on globally accessed nodes to avoid overhead and reuse the instance.
+## 2026-07-22 - Avoid .keys() in GDScript hot loops
+**Learning:** Calling .keys() on a Dictionary allocates and returns a new Array in memory, which causes unnecessary GC pressure in hot paths (like PFDetectionManager). Iterating directly over the Dictionary (e.g., 'for key in dict:') is natively supported and avoids this overhead.
+**Action:** Use direct dictionary iteration in loops instead of calling .keys().
