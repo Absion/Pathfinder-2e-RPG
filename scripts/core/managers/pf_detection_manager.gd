@@ -134,8 +134,8 @@ func detects_with_imprecise_sense(observer: PFActor, target: PFActor) -> bool:
 ## Upgrades state to Hidden if observer detects target with Imprecise senses while they were Undetected.
 func apply_imprecise_senses() -> void:
 	# This should be called periodically or after movements
-	for obs in matrix.keys():
-		for tgt in matrix[obs].keys():
+	for obs in matrix:
+		for tgt in matrix[obs]:
 			var state = matrix[obs][tgt]
 			if state == PFCombatConstants.DetectionState.UNDETECTED or state == PFCombatConstants.DetectionState.UNNOTICED:
 				if tgt.has_meta(&"is_sneaking") and tgt.get_meta(&"is_sneaking"):
@@ -167,8 +167,8 @@ func detects_with_vague_sense(observer: PFActor, target: PFActor) -> bool:
 
 ## Upgrades state to Undetected if observer detects target with Vague senses while they were Unnoticed.
 func apply_vague_senses() -> void:
-	for obs in matrix.keys():
-		for tgt in matrix[obs].keys():
+	for obs in matrix:
+		for tgt in matrix[obs]:
 			var state = matrix[obs][tgt]
 			if state == PFCombatConstants.DetectionState.UNNOTICED:
 				if tgt.has_meta(&"is_sneaking") and tgt.get_meta(&"is_sneaking"):
