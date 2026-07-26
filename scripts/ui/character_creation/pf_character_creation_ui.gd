@@ -52,6 +52,8 @@ func _init():
 func _ready():
 	db = PFDatabase.get_instance()
 	_build_ui()
+	_rebuild_languages()
+	_rebuild_skills()
 	_populate_dropdowns()
 	_update_ui_state()
 	line_name.grab_focus()
@@ -713,10 +715,10 @@ func _rebuild_skills():
 		child.queue_free()
 	skill_opts.clear()
 	
-	if manager.draft_class_id == "": return
-	
-	var c = _get_cached_item(_classes, manager.draft_class_id)
-	var trained_count = c.get("trained_skills_count", 0) + int_mod
+	var trained_count = 0
+	if manager.draft_class_id != "":
+		var c = _get_cached_item(_classes, manager.draft_class_id)
+		trained_count = c.get("trained_skills_count", 0) + int_mod
 	
 	var lbl = Label.new()
 	lbl.text = "Trained Skills: " + str(trained_count)
