@@ -41,3 +41,6 @@
 ## 2024-07-24 - Avoid dictionary.keys() inside loops
 **Learning:** In Godot 4, calling `dictionary.keys()` creates and returns a brand new Array. When used inside iteration loops, especially O(N²) relational evaluations like the detection matrix, this causes repeated heap allocations and severe Garbage Collection pressure.
 **Action:** Iterate directly over the dictionary (e.g., `for key in my_dict:`) which traverses the keys natively without allocating a temporary Array.
+## 2026-07-27 - Never optimize Enum `.keys()` reverse lookups in GDScript
+**Learning:** In GDScript, Godot Enums are implemented as dictionaries that map `StringName` keys to integer values. To perform a reverse lookup (getting the string name given the integer value), the idiom is `Enum.keys()[integer_value]`. Trying to optimize this by removing `.keys()` (e.g., `Enum[integer_value]`) will cause a runtime crash because the dictionary does not have integer keys.
+**Action:** When optimizing dictionary iterations (e.g., changing `for key in dict.keys():` to `for key in dict:`), carefully audit the code to ensure you are not accidentally replacing enum reverse lookups.
