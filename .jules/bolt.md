@@ -37,3 +37,7 @@
 ## 2024-07-21 - [Singleton Pattern for Root Node]
 **Learning:** Checking for node existence with `has_node` and retrieving it via `get_node` on Engine.get_main_loop().root during runtime incurs expensive scene tree traversal overhead.
 **Action:** Implement static instance caching on globally accessed nodes to avoid overhead and reuse the instance.
+
+## 2024-07-24 - Avoid dictionary.keys() inside loops
+**Learning:** In Godot 4, calling `dictionary.keys()` creates and returns a brand new Array. When used inside iteration loops, especially O(N²) relational evaluations like the detection matrix, this causes repeated heap allocations and severe Garbage Collection pressure.
+**Action:** Iterate directly over the dictionary (e.g., `for key in my_dict:`) which traverses the keys natively without allocating a temporary Array.
