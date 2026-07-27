@@ -52,6 +52,8 @@ func _init():
 func _ready():
 	db = PFDatabase.get_instance()
 	_build_ui()
+	_rebuild_languages()
+	_rebuild_skills()
 	_populate_dropdowns()
 	_rebuild_abilities()
 	_rebuild_languages()
