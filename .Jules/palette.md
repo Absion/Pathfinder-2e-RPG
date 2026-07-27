@@ -34,6 +34,9 @@
 ## 2026-07-21 - LineEdit Interaction Feedback
 **Learning:** In Godot 4, `LineEdit` nodes do not have clear buttons or blinking carets enabled by default, reducing input interaction quality.
 **Action:** Always set `clear_button_enabled = true` and `caret_blink = true` when programmatically instantiating `LineEdit` for form inputs to match expected modern UX patterns.
+## 2024-07-28 - Preventing Layout Shifts in Dynamic Forms
+**Learning:** In Godot UI forms, dynamic sections collapse if left completely empty on initialization, causing jarring layout shifts when users begin interacting with earlier options that populate them.
+**Action:** Prevent this by explicitly calling dynamic rebuild methods (e.g., `_rebuild_skills()`) within `_ready()` to render 'zero states' instead of relying entirely on reactive user input to build the initial structure.
 ## 2026-07-24 - Explicit Empty States in Godot Forms
 **Learning:** Dynamic Godot UI sections completely collapse if left empty, causing major layout shifts when data is populated later.
 **Action:** Always call dynamic rebuild methods (e.g., _rebuild_skills) in _ready() and render 'zero states' instead of returning early.
