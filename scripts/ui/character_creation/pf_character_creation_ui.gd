@@ -122,6 +122,7 @@ func _build_ui():
 	line_name.text_changed.connect(_on_name_changed)
 	
 	opt_gender = _add_dropdown("Gender")
+	opt_gender.add_item("--- Select Gender ---", PFBiographyConstants.Gender.UNKNOWN)
 	opt_gender.add_item("Male", PFBiographyConstants.Gender.MALE)
 	opt_gender.add_item("Female", PFBiographyConstants.Gender.FEMALE)
 	opt_gender.add_item("Non-Binary", PFBiographyConstants.Gender.NON_BINARY)
