@@ -50,7 +50,7 @@ func on_equipped(wearer: PFActor) -> void:
 	if not "sheet" in wearer or not wearer.sheet: return
 	if not "attributes" in wearer or not wearer.attributes: return
 	
-	for stat_name in skill_bonus_data.keys():
+	for stat_name in skill_bonus_data:
 		var bonus = skill_bonus_data[stat_name]
 		var modifier = PFModifier.new(bonus, PFMathConstants.ModifierType.ITEM, entity_name)
 		
