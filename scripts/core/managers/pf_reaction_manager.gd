@@ -39,7 +39,8 @@ func register_listener(trigger_type: StringName, listener: PFActor, reaction_id:
 	active_triggers[trigger_type].append(ReactionRegistration.new(listener, reaction_id, condition_callback, execute_callback))
 
 func unregister_listener(listener: PFActor, reaction_id: StringName = &"") -> void:
-	for trigger in active_triggers.keys():
+	# ⚡ Bolt: Avoid dictionary.keys() allocation in hot loop
+	for trigger in active_triggers:
 		var arr = active_triggers[trigger]
 		for i in range(arr.size() - 1, -1, -1):
 			var r = arr[i]
