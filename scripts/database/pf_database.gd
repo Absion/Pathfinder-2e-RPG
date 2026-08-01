@@ -1773,7 +1773,8 @@ func update_player_knowledge(monster_id: String, updates: Dictionary) -> void:
 		database.query("INSERT OR IGNORE INTO player_knowledge (monster_id) VALUES ('" + monster_id + "');")
 		
 	var set_statements = []
-	for key in updates.keys():
+	# ⚡ Bolt: Iterate dictionary directly instead of using .keys() to avoid GC array allocation
+	for key in updates:
 		var val = updates[key]
 		if typeof(val) == TYPE_STRING:
 			# Escape single quotes

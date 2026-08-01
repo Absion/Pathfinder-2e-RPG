@@ -99,7 +99,8 @@ static func recalculate_spell_slots(actor: PFPlayerCharacter) -> void:
 			class_rep.spells_per_rank.clear()
 			var prog = PFMagicConstants.FULL_CASTER_PROGRESSION if actor.actor_class.spell_progression == PFMagicConstants.SpellProgression.FULL_CASTER else PFMagicConstants.BOUNDED_CASTER_PROGRESSION
 			if prog.has(actor.level):
-				for rank in prog[actor.level].keys():
+				# ⚡ Bolt: Iterate dictionary directly instead of using .keys() to avoid GC array allocation
+				for rank in prog[actor.level]:
 					class_rep.spells_per_rank[rank] = prog[actor.level][rank]
 
 	# Parse feats for archetype magic progression

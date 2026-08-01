@@ -45,7 +45,8 @@ func test_bestiary() -> void:
 	# We expect one of the fields to have been marked as '2' (FALSE)
 	var found_false_state = false
 	var false_field = ""
-	for k in current_knowledge.keys():
+	# ⚡ Bolt: Iterate dictionary directly instead of using .keys() to avoid GC array allocation
+	for k in current_knowledge:
 		if str(k).begins_with("state_") and current_knowledge[k] == 2:
 			found_false_state = true
 			false_field = str(k).replace("state_", "")

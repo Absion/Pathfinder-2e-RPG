@@ -13,7 +13,8 @@ func _ready() -> void:
 func _on_day_passed() -> void:
 	var completed_actors = []
 	
-	for actor in active_tasks.keys():
+	# ⚡ Bolt: Iterate dictionary directly instead of using .keys() to avoid GC array allocation
+	for actor in active_tasks:
 		var task = active_tasks[actor]
 		task.days_remaining -= 1
 		

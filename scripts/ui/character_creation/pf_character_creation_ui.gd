@@ -689,7 +689,8 @@ func _calculate_live_attributes():
 			var b = b_arr[0]
 			if scores.has(b): scores[b] += 2
 			
-	for stat in scores.keys():
+	# ⚡ Bolt: Iterate dictionary directly instead of using .keys() to avoid GC array allocation
+	for stat in scores:
 		if attr_labels.has(stat):
 			attr_labels[stat].text = str(stat) + ": " + str(scores[stat])
 			

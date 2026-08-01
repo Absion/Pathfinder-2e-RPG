@@ -50,7 +50,8 @@ static func evaluate(prereqs_json: String, actor: PFPlayerCharacter, feat_traits
 	if reqs.has(&"min_stats"):
 		var stats = reqs["min_stats"]
 		if typeof(stats) == TYPE_DICTIONARY:
-			for stat_name in stats.keys():
+			# ⚡ Bolt: Iterate dictionary directly instead of using .keys() to avoid GC array allocation
+			for stat_name in stats:
 				var required_val = stats[stat_name]
 				var actual_val = 10
 				match stat_name:
@@ -67,7 +68,8 @@ static func evaluate(prereqs_json: String, actor: PFPlayerCharacter, feat_traits
 	if reqs.has(&"min_proficiency"):
 		var profs = reqs["min_proficiency"]
 		if typeof(profs) == TYPE_DICTIONARY:
-			for skill_name in profs.keys():
+			# ⚡ Bolt: Iterate dictionary directly instead of using .keys() to avoid GC array allocation
+			for skill_name in profs:
 				var req_rank = profs[skill_name]
 				var actual_rank = actor.sheet.get_skill_rank(StringName(skill_name))
 				if actual_rank < req_rank:

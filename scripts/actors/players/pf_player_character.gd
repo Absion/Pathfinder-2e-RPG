@@ -297,7 +297,8 @@ func apply_class(class_id: StringName) -> void:
 		# Provide slots using helper progression
 		var progression = PFMagicConstants.FULL_CASTER_PROGRESSION if actor_class.spell_progression == PFMagicConstants.SpellProgression.FULL_CASTER else PFMagicConstants.BOUNDED_CASTER_PROGRESSION
 		if progression.has(level):
-			for rank in progression[level].keys():
+			# ⚡ Bolt: Iterate dictionary directly instead of using .keys() to avoid GC array allocation
+			for rank in progression[level]:
 				receptacle.spells_per_rank[rank] = progression[level][rank]
 		spellbook.add_receptacle(receptacle)
 		spellbook.restore_daily_slots()
