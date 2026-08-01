@@ -40,3 +40,6 @@
 ## 2026-07-24 - Explicit Empty States in Godot Forms
 **Learning:** Dynamic Godot UI sections completely collapse if left empty, causing major layout shifts when data is populated later.
 **Action:** Always call dynamic rebuild methods (e.g., _rebuild_skills) in _ready() and render 'zero states' instead of returning early.
+## 2026-08-01 - Default Unspecified Options in Godot Dropdowns
+**Learning:** In Godot UI forms, when creating optional dropdowns (OptionButton), omitting a default 'Unspecified' option can lead to users accidentally submitting the default top-most value.
+**Action:** Always include a default '--- Select ---' or 'Unspecified' item (mapped to an UNKNOWN or -1 value) as the first option to prevent accidental submissions.
