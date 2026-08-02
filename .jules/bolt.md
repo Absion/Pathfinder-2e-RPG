@@ -41,3 +41,6 @@
 ## 2024-07-24 - Avoid dictionary.keys() inside loops
 **Learning:** In Godot 4, calling `dictionary.keys()` creates and returns a brand new Array. When used inside iteration loops, especially O(N²) relational evaluations like the detection matrix, this causes repeated heap allocations and severe Garbage Collection pressure.
 **Action:** Iterate directly over the dictionary (e.g., `for key in my_dict:`) which traverses the keys natively without allocating a temporary Array.
+## 2026-08-05 - Avoid Dictionary.keys() inside loops
+**Learning:** In Godot 4, calling `Dictionary.keys()` allocates and returns a brand new Array. When used inside iteration loops, this causes unnecessary heap allocations and Garbage Collection pressure.
+**Action:** Iterate directly over the dictionary (e.g., `for key in my_dict:`) which traverses the keys natively without allocating a temporary Array.
