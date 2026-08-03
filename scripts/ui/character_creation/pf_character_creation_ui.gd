@@ -123,7 +123,6 @@ func _build_ui():
 	
 	opt_gender = _add_dropdown("Gender")
 	opt_gender.add_item("--- Select Gender ---", PFBiographyConstants.Gender.UNKNOWN)
-	opt_gender.set_item_disabled(0, true)
 	opt_gender.add_item("Male", PFBiographyConstants.Gender.MALE)
 	opt_gender.add_item("Female", PFBiographyConstants.Gender.FEMALE)
 	opt_gender.add_item("Non-Binary", PFBiographyConstants.Gender.NON_BINARY)
@@ -173,6 +172,7 @@ func _build_ui():
 	chk_alt_boosts = CheckBox.new()
 	chk_alt_boosts.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	chk_alt_boosts.text = "Use Alternate Ancestry Boosts (2 Free)"
+	chk_alt_boosts.tooltip_text = "Replaces the ancestry's standard boosts and flaws with two free ability boosts."
 	chk_alt_boosts.toggled.connect(_on_alt_boosts_toggled)
 	form_layout.add_child(chk_alt_boosts)
 	
@@ -384,10 +384,6 @@ func _update_ui_state():
 		opt_ethnicity.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		opt_heritage.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
-		opt_background.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		opt_ethnicity.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		opt_heritage.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-
 		opt_background.tooltip_text = ""
 		opt_ethnicity.tooltip_text = ""
 		opt_heritage.tooltip_text = ""
@@ -395,10 +391,6 @@ func _update_ui_state():
 		opt_background.disabled = true
 		opt_ethnicity.disabled = true
 		opt_heritage.disabled = true
-		opt_background.mouse_default_cursor_shape = Control.CURSOR_ARROW
-		opt_ethnicity.mouse_default_cursor_shape = Control.CURSOR_ARROW
-		opt_heritage.mouse_default_cursor_shape = Control.CURSOR_ARROW
-		
 		opt_background.mouse_default_cursor_shape = Control.CURSOR_ARROW
 		opt_ethnicity.mouse_default_cursor_shape = Control.CURSOR_ARROW
 		opt_heritage.mouse_default_cursor_shape = Control.CURSOR_ARROW
@@ -702,7 +694,7 @@ func _calculate_live_attributes():
 			var b = b_arr[0]
 			if scores.has(b): scores[b] += 2
 			
-	for stat in scores.keys():
+	for stat in scores:
 		if attr_labels.has(stat):
 			attr_labels[stat].text = str(stat) + ": " + str(scores[stat])
 			
