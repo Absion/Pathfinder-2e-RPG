@@ -28,7 +28,7 @@ func prepare_coda(actor: PFActor, base_charges: int, expend_slot_rank: int = 0) 
 func on_equipped(wearer: PFActor) -> void:
 	if not "attributes" in wearer or not wearer.attributes: return
 	
-	for stat_name in skill_bonus_data.keys():
+	for stat_name in skill_bonus_data:
 		var bonus = skill_bonus_data[stat_name]
 		var modifier = PFModifier.new(bonus, PFMathConstants.ModifierType.ITEM, entity_name)
 		

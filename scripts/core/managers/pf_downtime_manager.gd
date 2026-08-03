@@ -13,7 +13,7 @@ func _ready() -> void:
 func _on_day_passed() -> void:
 	var completed_actors = []
 	
-	for actor in active_tasks.keys():
+	for actor in active_tasks:
 		var task = active_tasks[actor]
 		task.days_remaining -= 1
 		
