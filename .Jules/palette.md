@@ -44,3 +44,6 @@
 ## 2024-07-29 - Default Options for Optional Dropdowns
 **Learning:** In Godot UI forms, when creating optional dropdowns (OptionButton), omitting a default 'Unspecified' option forces the top-most valid choice to be selected by default, leading to accidental incorrect submissions.
 **Action:** Always include a default '--- Select ---' item (mapped to an UNKNOWN or -1 value) as the first option to prevent users from accidentally submitting the default top-most value.
+## 2026-08-05 - Disable Dropdown Placeholders
+**Learning:** Users might accidentally submit default placeholder options (like '--- Select ---') if they are not explicitly disabled, leading to invalid states or confusion.
+**Action:** Always set the placeholder option at index 0 to disabled using `set_item_disabled(0, true)` in Godot OptionButtons.
