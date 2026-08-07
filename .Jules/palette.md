@@ -44,3 +44,6 @@
 ## 2024-07-29 - Default Options for Optional Dropdowns
 **Learning:** In Godot UI forms, when creating optional dropdowns (OptionButton), omitting a default 'Unspecified' option forces the top-most valid choice to be selected by default, leading to accidental incorrect submissions.
 **Action:** Always include a default '--- Select ---' item (mapped to an UNKNOWN or -1 value) as the first option to prevent users from accidentally submitting the default top-most value.
+## 2026-08-01 - Focus State Clobbering by Mouse Events
+**Learning:** In Godot 4 programmatic UI, binding both `focus_exited` and `mouse_exited` to visually reset a control's state (e.g., clearing hover/focus colors) can lead to 'state clobbering'. If a user focuses an element with the keyboard, but their mouse pointer happens to drift off the element, the `mouse_exited` event fires and resets the visual styling, incorrectly making it look like the element lost focus.
+**Action:** Unify visual state updates for hover and focus into a single function. In that function, check both `has_focus()` and mouse intersection (`get_global_rect().has_point(get_global_mouse_position())`) before resetting the visual state. This ensures keyboard focus always takes visual precedence.

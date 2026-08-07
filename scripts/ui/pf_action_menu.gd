@@ -103,10 +103,10 @@ func _ready():
 	
 	# Optional: make the condition panel clickable
 	conditions_panel.gui_input.connect(_on_conditions_gui_input)
-	conditions_panel.mouse_entered.connect(func(): conditions_panel.modulate = Color(1.2, 1.2, 1.2))
-	conditions_panel.mouse_exited.connect(func(): conditions_panel.modulate = Color.WHITE)
-	conditions_panel.focus_entered.connect(func(): conditions_panel.modulate = Color(1.2, 1.2, 1.2))
-	conditions_panel.focus_exited.connect(func(): conditions_panel.modulate = Color.WHITE)
+	conditions_panel.mouse_entered.connect(func(): _update_conditions_panel_visuals(conditions_panel))
+	conditions_panel.mouse_exited.connect(func(): _update_conditions_panel_visuals(conditions_panel))
+	conditions_panel.focus_entered.connect(func(): _update_conditions_panel_visuals(conditions_panel))
+	conditions_panel.focus_exited.connect(func(): _update_conditions_panel_visuals(conditions_panel))
 	
 	var spacer2 = Control.new()
 	spacer2.custom_minimum_size = Vector2(0, 10)
@@ -274,6 +274,12 @@ func _on_conditions_gui_input(event: InputEvent):
 	var is_key = event is InputEventKey and event.pressed and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)
 	if is_click or is_key:
 		print("Expanded condition view!")
+
+func _update_conditions_panel_visuals(panel: PanelContainer):
+	if panel.has_focus() or panel.get_global_rect().has_point(panel.get_global_mouse_position()):
+		panel.modulate = Color(1.2, 1.2, 1.2)
+	else:
+		panel.modulate = Color.WHITE
 
 func _apply_position():
 	# Clear old margins
