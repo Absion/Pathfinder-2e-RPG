@@ -45,10 +45,15 @@ func process_auras(all_actors: Array[PFActor]) -> void:
 		var radius_units = aura.radius_feet / 5.0
 		var radius_sq = radius_units * radius_units
 		
+		# ⚡ Bolt: Cache emitter capabilities outside the hot loop to avoid redundant string/hash lookups
+		var emitter_is_obj = typeof(aura.emitter) == TYPE_OBJECT
+		var emitter_can_check_ally = emitter_is_obj and aura.emitter.has_method("is_ally")
+		var emitter_can_check_enemy = emitter_is_obj and aura.emitter.has_method("is_enemy")
+
 		# Find who is in range
 		var in_range_actors: Array[PFActor] = []
 		for actor in all_actors:
-			if typeof(aura.emitter) == TYPE_OBJECT and actor == (aura.emitter as Object):
+			if emitter_is_obj and actor == (aura.emitter as Object):
 				in_range_actors.append(actor)
 				continue
 				
@@ -58,9 +63,9 @@ func process_auras(all_actors: Array[PFActor]) -> void:
 				# Check applies_to logic (simplified)
 				if aura.applies_to == "all":
 					in_range_actors.append(actor)
-				elif aura.applies_to == "allies" and aura.emitter.has_method("is_ally") and aura.emitter.is_ally(actor):
+				elif aura.applies_to == "allies" and emitter_can_check_ally and aura.emitter.is_ally(actor):
 					in_range_actors.append(actor)
-				elif aura.applies_to == "enemies" and aura.emitter.has_method("is_enemy") and aura.emitter.is_enemy(actor):
+				elif aura.applies_to == "enemies" and emitter_can_check_enemy and aura.emitter.is_enemy(actor):
 					in_range_actors.append(actor)
 					
 		# Remove condition from targets that left the aura
