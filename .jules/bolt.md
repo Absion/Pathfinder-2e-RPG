@@ -44,3 +44,6 @@
 ## 2026-07-27 - Never optimize Enum `.keys()` reverse lookups in GDScript
 **Learning:** In GDScript, Godot Enums are implemented as dictionaries that map `StringName` keys to integer values. To perform a reverse lookup (getting the string name given the integer value), the idiom is `Enum.keys()[integer_value]`. Trying to optimize this by removing `.keys()` (e.g., `Enum[integer_value]`) will cause a runtime crash because the dictionary does not have integer keys.
 **Action:** When optimizing dictionary iterations (e.g., changing `for key in dict.keys():` to `for key in dict:`), carefully audit the code to ensure you are not accidentally replacing enum reverse lookups.
+## 2024-08-12 - Extract string-based reflection checks outside hot loops
+**Learning:** In GDScript, checking string-based reflection (like `has_method("is_ally")`) inside a tight loop creates redundant string allocations and hash lookups, causing GC pressure.
+**Action:** Cache these string-based reflection calls outside the loop into boolean variables. Always guard these cached calls with type or null checks (e.g., `typeof(obj) == TYPE_OBJECT`) to prevent runtime crashes when the target might not be an object.

@@ -45,6 +45,10 @@ func process_auras(all_actors: Array[PFActor]) -> void:
 		var radius_units = aura.radius_feet / 5.0
 		var radius_sq = radius_units * radius_units
 		
+		# ⚡ Bolt: Extract loop-invariant string reflection checks outside hot loop
+		var emitter_has_is_ally = typeof(aura.emitter) == TYPE_OBJECT and aura.emitter.has_method("is_ally")
+		var emitter_has_is_enemy = typeof(aura.emitter) == TYPE_OBJECT and aura.emitter.has_method("is_enemy")
+
 		# Find who is in range
 		var in_range_actors: Array[PFActor] = []
 		for actor in all_actors:
@@ -58,9 +62,9 @@ func process_auras(all_actors: Array[PFActor]) -> void:
 				# Check applies_to logic (simplified)
 				if aura.applies_to == "all":
 					in_range_actors.append(actor)
-				elif aura.applies_to == "allies" and aura.emitter.has_method("is_ally") and aura.emitter.is_ally(actor):
+				elif aura.applies_to == "allies" and emitter_has_is_ally and aura.emitter.is_ally(actor):
 					in_range_actors.append(actor)
-				elif aura.applies_to == "enemies" and aura.emitter.has_method("is_enemy") and aura.emitter.is_enemy(actor):
+				elif aura.applies_to == "enemies" and emitter_has_is_enemy and aura.emitter.is_enemy(actor):
 					in_range_actors.append(actor)
 					
 		# Remove condition from targets that left the aura
