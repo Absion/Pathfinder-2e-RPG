@@ -94,6 +94,79 @@ func query_with_bindings(query_str: String, bindings: Array) -> bool:
 	query_result = []
 	return false
 
+func _ensure_ancestries_columns() -> void:
+	if not database:
+		return
+	var existing_cols: Array[String] = []
+	if database.query("PRAGMA table_info(ancestries)"):
+		for row in database.query_result:
+			if row.has("name"):
+				existing_cols.append(String(row["name"]).to_lower())
+
+	var required_cols: Dictionary = {
+		"rarity": "INTEGER DEFAULT 0",
+		"speed_fly": "INTEGER DEFAULT 0",
+		"speed_swim": "INTEGER DEFAULT 0",
+		"speed_climb": "INTEGER DEFAULT 0",
+		"speed_burrow": "INTEGER DEFAULT 0",
+		"alternate_boosts": "TEXT",
+		"known_languages": "TEXT",
+		"vision": "INTEGER DEFAULT 0",
+		"additional_senses": "TEXT",
+		"ethnicities": "TEXT",
+		"heritages": "TEXT",
+		"physical_description": "TEXT",
+		"societal_description": "TEXT",
+		"common_beliefs": "TEXT",
+		"common_edicts": "TEXT",
+		"common_anathema": "TEXT",
+		"common_names": "TEXT",
+		"granted_abilities": "TEXT",
+		"starting_gold": "INTEGER DEFAULT 15"
+	}
+
+	for col_name in required_cols.keys():
+		if not existing_cols.has(col_name):
+			database.query("ALTER TABLE ancestries ADD COLUMN " + col_name + " " + required_cols[col_name])
+
+func _parse_stringname_array(val: Variant) -> Array[StringName]:
+	var result: Array[StringName] = []
+	if val == null:
+		return result
+	var s_val = String(val).strip_edges()
+	if s_val == "":
+		return result
+	if s_val.begins_with("["):
+		var parsed = JSON.parse_string(s_val)
+		if parsed is Array:
+			for item in parsed:
+				result.append(StringName(item))
+	else:
+		for item in s_val.split(","):
+			var trimmed = item.strip_edges()
+			if trimmed != "":
+				result.append(StringName(trimmed))
+	return result
+
+func _parse_string_array(val: Variant) -> Array[String]:
+	var result: Array[String] = []
+	if val == null:
+		return result
+	var s_val = String(val).strip_edges()
+	if s_val == "":
+		return result
+	if s_val.begins_with("["):
+		var parsed = JSON.parse_string(s_val)
+		if parsed is Array:
+			for item in parsed:
+				result.append(String(item))
+	else:
+		for item in s_val.split(","):
+			var trimmed = item.strip_edges()
+			if trimmed != "":
+				result.append(String(trimmed))
+	return result
+
 func _initialize_schema_if_needed():
 	# Tables will only be created if they do not exist, and default data will only be inserted if missing.
 	
@@ -434,13 +507,33 @@ func _initialize_schema_if_needed():
 		id TEXT PRIMARY KEY,
 		name TEXT,
 		traits TEXT,
-		hp INTEGER,
-		size TEXT,
-		speed INTEGER,
+		rarity INTEGER DEFAULT 0,
+		hp INTEGER DEFAULT 8,
+		size TEXT DEFAULT 'medium',
+		speed INTEGER DEFAULT 25,
+		speed_fly INTEGER DEFAULT 0,
+		speed_swim INTEGER DEFAULT 0,
+		speed_climb INTEGER DEFAULT 0,
+		speed_burrow INTEGER DEFAULT 0,
 		boosts TEXT,
 		flaws TEXT,
-		description TEXT
+		alternate_boosts TEXT,
+		known_languages TEXT,
+		vision INTEGER DEFAULT 0,
+		additional_senses TEXT,
+		ethnicities TEXT,
+		heritages TEXT,
+		description TEXT,
+		physical_description TEXT,
+		societal_description TEXT,
+		common_beliefs TEXT,
+		common_edicts TEXT,
+		common_anathema TEXT,
+		common_names TEXT,
+		granted_abilities TEXT,
+		starting_gold INTEGER DEFAULT 15
 	);")
+	_ensure_ancestries_columns()
 	
 	# Backgrounds
 	database.query("CREATE TABLE IF NOT EXISTS backgrounds (
@@ -529,18 +622,6 @@ func _initialize_schema_if_needed():
 		advanced_domain_spell_id TEXT,
 		apocryphal_spell_id TEXT,
 		advanced_apocryphal_spell_id TEXT
-	);")
-	
-	# Edicts
-	database.query("CREATE TABLE IF NOT EXISTS edicts (
-		id TEXT PRIMARY KEY,
-		description TEXT
-	);")
-	
-	# Anathemas
-	database.query("CREATE TABLE IF NOT EXISTS anathemas (
-		id TEXT PRIMARY KEY,
-		description TEXT
 	);")
 	
 	# Deities
@@ -701,23 +782,110 @@ func _seed_data():
 		
 	# Seed Beliefs
 	database.query("INSERT OR IGNORE INTO beliefs (id, name, type, mechanic_hook, description) VALUES 
-		('bring_civilization', 'Bring civilization to the frontiers', 'edict', '', 'Bring the light of civilization to the untamed wilderness.'),
-		('earn_wealth', 'Earn wealth through hard work and trade', 'edict', '', 'Acquire wealth and personal prosperity.'),
-		('follow_law', 'Follow the rule of law', 'edict', '', 'Strictly adhere to the laws of the land.'),
-		('create_art', 'Create art', 'edict', '', 'Create and preserve beautiful art.'),
-		('defend_nature', 'Defend nature', 'edict', '', 'Protect the natural world from destruction.'),
-		('protect_innocent', 'Protect the innocent', 'edict', '', 'Shield those who cannot shield themselves.'),
-		('seek_knowledge', 'Seek knowledge', 'edict', '', 'Uncover hidden truths and ancient lore.'),
-		('destroy_undead', 'Destroy undead', 'edict', '', 'Eradicate the undead wherever they are found.'),
-		('banditry_piracy', 'Engage in banditry or piracy', 'anathema', '', 'Plunder and steal from others on the roads or high seas.'),
-		('steal', 'Steal', 'anathema', '', 'Take what belongs to others for yourself.'),
-		('undermine_court', 'Undermine a law-abiding court', 'anathema', '', 'Subvert and disrupt legal proceedings or royalty.'),
-		('create_undead', 'Create undead', 'anathema', '', 'Raise the dead to serve your will.'),
-		('despoil_nature', 'Despoil nature', 'anathema', '', 'Corrupt or destroy the natural world.'),
-		('harm_innocent', 'Harm the innocent', 'anathema', '', 'Inflict pain on those who have done no wrong.'),
-		('destroy_knowledge', 'Destroy knowledge', 'anathema', '', 'Burn books and erase history.'),
-		('lie', 'Tell a lie', 'anathema', '', 'Deceive others for your own gain.'),
-		('break_promise', 'Break a promise', 'anathema', '', 'Go back on your given word.');")
+		('bring_civilization', 'Bring civilization to the frontiers', 'edict', 'deity_edict', 'Bring the light of civilization to the untamed wilderness.'),
+		('earn_wealth', 'Earn wealth through hard work and trade', 'edict', 'deity_edict', 'Acquire wealth and personal prosperity.'),
+		('follow_law', 'Follow the rule of law', 'edict', 'deity_edict', 'Strictly adhere to the laws of the land.'),
+		('create_art', 'Create art', 'edict', 'deity_edict', 'Create and preserve beautiful art.'),
+		('defend_nature', 'Defend nature', 'edict', 'deity_edict', 'Protect the natural world from destruction.'),
+		('protect_innocent', 'Protect the innocent', 'edict', 'deity_edict', 'Shield those who cannot shield themselves.'),
+		('seek_knowledge', 'Seek knowledge', 'edict', 'deity_edict', 'Uncover hidden truths and ancient lore.'),
+		('destroy_undead', 'Destroy undead', 'edict', 'deity_edict', 'Eradicate the undead wherever they are found.'),
+		('edict_healing', 'Heal the sick and wounded', 'edict', 'deity_edict', 'destroy the undead, protect your allies, heal the sick and wounded'),
+		('edict_redemption', 'Seek and allow redemption', 'edict', 'deity_edict', 'seek and allow redemption'),
+		('edict_study', 'Study the cosmos and ancient magical lore', 'edict', 'deity_edict', 'Study the cosmos and ancient magical lore'),
+		('edict_time_acceptance', 'Accept the natural flow of time', 'edict', 'deity_edict', 'Accept the natural flow of time'),
+		('edict_pattern_recognition', 'Look for patterns in seemingly random events', 'edict', 'deity_edict', 'Look for patterns in seemingly random events'),
+		('edict_protect_weak', 'Protect the weak and defenseless', 'edict', 'deity_edict', 'Protect the weak and defenseless'),
+		('edict_confront_horrors', 'Confront the horrors that lurk in the dark', 'edict', 'deity_edict', 'Confront the horrors that lurk in the dark'),
+		('edict_greet_dawn', 'Greet the dawn', 'edict', 'deity_edict', 'Greet the dawn'),
+		('edict_stand_ground', 'Stand your ground when others flee', 'edict', 'deity_edict', 'Stand your ground when others flee'),
+		('edict_allow_rot', 'Allow rot and disease to take their natural course', 'edict', 'deity_edict', 'Allow rot and disease to take their natural course'),
+		('edict_spread_sickness', 'Spread sickness to humble the arrogant and powerful', 'edict', 'deity_edict', 'Spread sickness to humble the arrogant and powerful'),
+		('edict_embrace_decay', 'Embrace the grim beauty of decay', 'edict', 'deity_edict', 'Embrace the grim beauty of decay'),
+		('edict_travel_new_road', 'Travel a road you have never walked', 'edict', 'deity_edict', 'Travel a road you have never walked'),
+		('edict_trust_chance', 'Trust your fate to chance', 'edict', 'deity_edict', 'Trust your fate to chance'),
+		('edict_share_story', 'Share a drink or a story with a stranger', 'edict', 'deity_edict', 'Share a drink or a story with a stranger'),
+		('edict_defy_tyrants', 'Defy tyrants and strict schedules', 'edict', 'deity_edict', 'Defy tyrants and strict schedules'),
+		('edict_build_structures', 'Build structures meant to outlast you', 'edict', 'deity_edict', 'Build structures meant to outlast you'),
+		('edict_fair_trade', 'Engage in fair and prosperous trade', 'edict', 'deity_edict', 'Engage in fair and prosperous trade'),
+		('edict_respect_laws', 'Respect the foundational laws of the land', 'edict', 'deity_edict', 'Respect the foundational laws of the land'),
+		('edict_invest_civilization', 'Invest in civilization', 'edict', 'deity_edict', 'Invest in civilization'),
+		('edict_crush_opposition', 'Crush those who oppose your rule', 'edict', 'deity_edict', 'Crush those who oppose your rule'),
+		('edict_inspire_fear', 'Demonstrate absolute power to inspire fear', 'edict', 'deity_edict', 'Demonstrate absolute power to inspire fear'),
+		('edict_strike_without_warning', 'Strike without warning like a sudden storm', 'edict', 'deity_edict', 'Strike without warning like a sudden storm'),
+		('edict_comfort_grieving', 'Comfort the grieving', 'edict', 'deity_edict', 'Comfort the grieving'),
+		('edict_proper_burial', 'Ensure the dead receive proper burial rites', 'edict', 'deity_edict', 'Ensure the dead receive proper burial rites'),
+		('edict_embrace_quiet', 'Embrace the quiet and stillness of the dark', 'edict', 'deity_edict', 'Embrace the quiet and stillness of the dark'),
+		('edict_trust_intuition', 'Trust your intuition and visions over cold logic', 'edict', 'deity_edict', 'Trust your intuition and visions over cold logic'),
+		('edict_create_subconscious_art', 'Create art inspired by the subconscious', 'edict', 'deity_edict', 'Create art inspired by the subconscious'),
+		('edict_sleep_beneath_moonlight', 'Sleep beneath the moonlight', 'edict', 'deity_edict', 'Sleep beneath the moonlight'),
+		('edict_hunt_survival', 'Hunt for your own survival', 'edict', 'deity_edict', 'Hunt for your own survival'),
+		('edict_embrace_primal', 'Embrace your primal emotions and instincts', 'edict', 'deity_edict', 'Embrace your primal emotions and instincts'),
+		('edict_allow_wild_reclaim', 'Allow the wild to reclaim the ruins of civilization', 'edict', 'deity_edict', 'Allow the wild to reclaim the ruins of civilization'),
+		('edict_speak_truth', 'Speak only the absolute truth', 'edict', 'deity_edict', 'Speak only the absolute truth'),
+		('edict_hone_mind_body', 'Continuously hone your mind and body through strict discipline', 'edict', 'deity_edict', 'Continuously hone your mind and body through strict discipline'),
+		('edict_judge_by_actions', 'Judge others solely by their actions', 'edict', 'deity_edict', 'Judge others solely by their actions'),
+		('edict_keep_secrets', 'Keep secrets entrusted to you', 'edict', 'deity_edict', 'Keep secrets entrusted to you'),
+		('edict_seek_forbidden_lore', 'Seek out forbidden or forgotten lore from the depths', 'edict', 'deity_edict', 'Seek out forbidden or forgotten lore from the depths'),
+		('edict_embrace_cold_isolation', 'Embrace the cold and isolation of the deep', 'edict', 'deity_edict', 'Embrace the cold and isolation of the deep'),
+		('edict_seize_leadership', 'Seize leadership when others falter', 'edict', 'deity_edict', 'Seize leadership when others falter'),
+		('edict_improve_station', 'Constantly seek to improve your station and wealth', 'edict', 'deity_edict', 'Constantly seek to improve your station and wealth'),
+		('edict_assert_superiority', 'Assert your superiority through undeniable deeds', 'edict', 'deity_edict', 'Assert your superiority through undeniable deeds'),
+		('edict_protect_bloodline', 'Protect your bloodline and chosen family at all costs', 'edict', 'deity_edict', 'Protect your bloodline and chosen family at all costs'),
+		('edict_honor_ancestors', 'Honor ancestral spirits', 'edict', 'deity_edict', 'Honor ancestral spirits'),
+		('edict_endure_pain', 'Endure physical pain to strengthen your resolve or save a loved one', 'edict', 'deity_edict', 'Endure physical pain to strengthen your resolve or save a loved one'),
+		('anathema_undead', 'Create undead', 'anathema', 'deity_anathema', 'create undead'),
+		('anathema_lies', 'Lie', 'anathema', 'deity_anathema', 'lie'),
+		('anathema_mercy', 'Deny mercy', 'anathema', 'deity_anathema', 'deny a repentant creature an opportunity for redemption'),
+		('anathema_fail_strike', 'Fail to strike down evil', 'anathema', 'deity_anathema', 'fail to strike down evil'),
+		('anathema_destroy_history', 'Destroy historical or magical records', 'anathema', 'deity_anathema', 'Destroy historical or magical records'),
+		('anathema_act_blindly', 'Act blindly without contemplating future consequences', 'anathema', 'deity_anathema', 'Act blindly without contemplating future consequences'),
+		('anathema_rewrite_past', 'Attempt to magically rewrite your own past', 'anathema', 'deity_anathema', 'Attempt to magically rewrite your own past'),
+		('anathema_flee_battle', 'Flee from battle while allies remain in danger', 'anathema', 'deity_anathema', 'Flee from battle while allies remain in danger'),
+		('anathema_allow_monsters', 'Allow monsters of the dark to flourish unchecked', 'anathema', 'deity_anathema', 'Allow monsters of the dark to flourish unchecked'),
+		('anathema_extinguish_flame', 'Extinguish a flame meant for warmth or safety', 'anathema', 'deity_anathema', 'Extinguish a flame meant for warmth or safety.'),
+		('anathema_cure_without_toll', 'Cure an ailment without extracting a heavy toll', 'anathema', 'deity_anathema', 'Cure an ailment without extracting a heavy toll'),
+		('anathema_preserve_corpse', 'Preserve a corpse unnaturally', 'anathema', 'deity_anathema', 'Preserve a corpse unnaturally'),
+		('anathema_construct_monuments', 'Construct monuments meant to last forever', 'anathema', 'deity_anathema', 'Construct monuments meant to last forever.'),
+		('anathema_own_property', 'Own property that ties you to one location', 'anathema', 'deity_anathema', 'Own property that ties you to one location'),
+		('anathema_refuse_gamble', 'Refuse a gamble when the stakes are thrilling', 'anathema', 'deity_anathema', 'Refuse a gamble when the stakes are thrilling'),
+		('anathema_enforce_laws', 'Enforce rigid laws upon others', 'anathema', 'deity_anathema', 'Enforce rigid laws upon others.'),
+		('anathema_destroy_building', 'Destroy a functional building or bridge', 'anathema', 'deity_anathema', 'Destroy a functional building or bridge'),
+		('anathema_break_contract', 'Break a binding contract or oath', 'anathema', 'deity_anathema', 'Break a binding contract or oath'),
+		('anathema_hoard_wealth', 'Hoard wealth without investing it back into the community', 'anathema', 'deity_anathema', 'Hoard wealth without investing it back into the community.'),
+		('anathema_show_mercy', 'Show mercy to a defeated rival', 'anathema', 'deity_anathema', 'Show mercy to a defeated rival'),
+		('anathema_allow_insult', 'Allow a public insult to go unpunished', 'anathema', 'deity_anathema', 'Allow a public insult to go unpunished'),
+		('anathema_submit_weaker', 'Submit to a weaker authority', 'anathema', 'deity_anathema', 'Submit to a weaker authority.'),
+		('anathema_deny_mourning', 'Deny someone their right to mourn', 'anathema', 'deity_anathema', 'Deny someone their right to mourn'),
+		('anathema_force_happiness', 'Force false happiness upon the sorrowful', 'anathema', 'deity_anathema', 'Force false happiness upon the sorrowful'),
+		('anathema_desecrate_tomb', 'Desecrate a tomb or grave', 'anathema', 'deity_anathema', 'Desecrate a tomb or grave.'),
+		('anathema_rely_empirical', 'Rely entirely on empirical evidence to solve a problem', 'anathema', 'deity_anathema', 'Rely entirely on empirical evidence to solve a problem'),
+		('anathema_wake_dreamer', 'Wake someone from a profound or prophetic dream', 'anathema', 'deity_anathema', 'Wake someone from a profound or prophetic dream'),
+		('anathema_suppress_hallucination', 'Suppress a hallucination', 'anathema', 'deity_anathema', 'Suppress a hallucination.'),
+		('anathema_domesticate_predator', 'Domesticate a wild predator', 'anathema', 'deity_anathema', 'Domesticate a wild predator'),
+		('anathema_suppress_instincts', 'Suppress your natural instincts for the sake of being civilized', 'anathema', 'deity_anathema', 'Suppress your natural instincts for the sake of being civilized'),
+		('anathema_destroy_nature', 'Destroy nature for pure monetary profit', 'anathema', 'deity_anathema', 'Destroy nature for pure monetary profit.'),
+		('anathema_tell_lie', 'Tell a lie', 'anathema', 'deity_anathema', 'Tell a lie (even a white lie to spare someone feelings)'),
+		('anathema_cloud_judgment', 'Allow emotion to cloud your judgment', 'anathema', 'deity_anathema', 'Allow emotion to cloud your judgment'),
+		('anathema_indulge_excess', 'Indulge in bodily excess or gluttony', 'anathema', 'deity_anathema', 'Indulge in bodily excess or gluttony.'),
+		('anathema_reveal_truth', 'Reveal a hidden truth to the unworthy', 'anathema', 'deity_anathema', 'Reveal a hidden truth to the unworthy'),
+		('anathema_show_fear', 'Show fear of the dark or deep water', 'anathema', 'deity_anathema', 'Show fear of the dark or deep water'),
+		('anathema_share_knowledge', 'Share your knowledge without demanding a steep price', 'anathema', 'deity_anathema', 'Share your knowledge without demanding a steep price.'),
+		('anathema_accept_subordinate', 'Accept a subordinate role when you have the power to lead', 'anathema', 'deity_anathema', 'Accept a subordinate role when you have the power to lead'),
+		('anathema_show_doubt', 'Show public self-doubt', 'anathema', 'deity_anathema', 'Show public self-doubt'),
+		('anathema_allow_outmaneuver', 'Allow a rival to outmaneuver you without retaliation', 'anathema', 'deity_anathema', 'Allow a rival to outmaneuver you without retaliation.'),
+		('anathema_betray_family', 'Betray a family member', 'anathema', 'deity_anathema', 'Betray a family member'),
+		('anathema_refuse_bloodshed', 'Refuse to shed blood when survival demands it', 'anathema', 'deity_anathema', 'Refuse to shed blood when survival demands it'),
+		('anathema_forget_ancestors', 'Allow your ancestral line to be forgotten', 'anathema', 'deity_anathema', 'Allow your ancestral line to be forgotten.'),
+		('banditry_piracy', 'Engage in banditry or piracy', 'anathema', 'deity_anathema', 'Plunder and steal from others on the roads or high seas.'),
+		('steal', 'Steal', 'anathema', 'deity_anathema', 'Take what belongs to others for yourself.'),
+		('undermine_court', 'Undermine a law-abiding court', 'anathema', 'deity_anathema', 'Subvert and disrupt legal proceedings or royalty.'),
+		('create_undead', 'Create undead', 'anathema', 'deity_anathema', 'Raise the dead to serve your will.'),
+		('despoil_nature', 'Despoil nature', 'anathema', 'deity_anathema', 'Corrupt or destroy the natural world.'),
+		('harm_innocent', 'Harm the innocent', 'anathema', 'deity_anathema', 'Inflict pain on those who have done no wrong.'),
+		('destroy_knowledge', 'Destroy knowledge', 'anathema', 'deity_anathema', 'Burn books and erase history.'),
+		('lie', 'Tell a lie', 'anathema', 'deity_anathema', 'Deceive others for your own gain.'),
+		('break_promise', 'Break a promise', 'anathema', 'deity_anathema', 'Go back on your given word.');")
 		
 	# Seed Skills & Lores
 	database.query("INSERT OR IGNORE INTO skills (id, name, key_ability, is_lore, description) VALUES 
@@ -912,10 +1080,6 @@ func _seed_data():
 		('anathema_mercy', 'deny a repentant creature an opportunity for redemption'),
 		('anathema_fail_strike', 'fail to strike down evil');")
 
-	# Seed Deities
-	database.query("INSERT OR IGNORE INTO deities (id, name, title, category, edicts, anathema, religious_symbol, sacred_animal, sacred_colors, divine_attributes, divine_font, divine_sanctification, divine_skill, favored_weapon, domains, alternate_domains, cleric_spells, boon_minor, boon_moderate, boon_major, curse_minor, curse_moderate, curse_major, description) VALUES 
-		('sarenrae', 'Sarenrae', 'The Dawnflower', 'core', '[\"edict_healing\",\"edict_redemption\"]', '[\"anathema_undead\",\"anathema_lies\",\"anathema_mercy\",\"anathema_fail_strike\"]', 'Ankh', 'Dove', '[\"blue\",\"gold\"]', '[\"WIS\",\"CHA\"]', '[\"heal\"]', '1', 'medicine', 'scimitar', '[\"fire\",\"healing\",\"sun\",\"truth\"]', '[]', '{\"1\":\"burning_hands\", \"3\":\"fireball\", \"4\":\"wall_of_fire\"}', '', '', '', '', '', '', 'The Dawnflower, goddess of healing, honesty, redemption, and the sun.');")
-
 	# Seed Regions
 	database.query("INSERT OR IGNORE INTO regions (id, name, description) VALUES 
 		('unknown', 'Unknown', 'An unknown region.'),
@@ -1005,8 +1169,8 @@ func _seed_data():
 		('steel_shield', 'Steel Shield', '', 1, 200, 1, 2, 0, 5, 20, 10, 'A sturdy shield made of wood and steel.');")
 		
 	# Seed Character Creation Data
-	database.query("INSERT OR IGNORE INTO ancestries (id, name, traits, hp, size, speed, boosts, flaws, description) VALUES 
-		('human', 'Human', 'human,humanoid', 8, 'medium', 25, '[\"FREE\", \"FREE\"]', '[]', 'Adaptable and ambitious, humans are the most populous ancestry in the world.');")
+	database.query("INSERT OR IGNORE INTO ancestries (id, name, traits, rarity, hp, size, speed, speed_fly, speed_swim, speed_climb, speed_burrow, boosts, flaws, alternate_boosts, known_languages, vision, additional_senses, ethnicities, heritages, description, physical_description, societal_description, common_beliefs, common_edicts, common_anathema, common_names, granted_abilities, starting_gold) VALUES 
+		('human', 'Human', 'human,humanoid', 0, 8, 'medium', 25, 0, 0, 0, 0, '[\"FREE\", \"FREE\"]', '[]', '[\"FREE\", \"FREE\"]', '[\"common\"]', 0, '[]', '[\"Keleshite\", \"Kellid\", \"Mwangi\", \"Taldan\", \"Tian\", \"Ulfen\", \"Varisian\"]', '[\"Skilled Human\", \"Versatile Human\"]', 'Adaptable and ambitious, humans are defined by their diversity and flexibility across the mortal realm.', 'Human physical features vary wildly.', 'Human societies range from tiny villages to vast empires.', 'Humans worship a wide array of deities.', '[]', '[]', '[\"Alexander\", \"Beatrice\", \"Charles\", \"Diana\"]', '[]', 15);")
 		
 	database.query("INSERT OR IGNORE INTO backgrounds (id, name, traits, boosts, skills, lores, description) VALUES 
 		('farmhand', 'Farmhand', '', '[\"CON|WIS\", \"FREE\"]', 'athletics', 'Farming Lore', 'You grew up working on a farm.');")
@@ -1047,18 +1211,21 @@ func _seed_data():
 	database.query("INSERT OR IGNORE INTO spell_variants (spell_id, action_cost, spell_range, target, duration, damage_dice, damage_faces, applied_conditions, special_effects, description) VALUES 
 		('creation', 4, 0, '', '1 hour', 0, 0, '[]', '', 'Form a temporary object out of magical energy.');")
 		
-	# Deity: Abadar
-	var abadar_edicts = JSON.stringify(["bring_civilization", "earn_wealth", "follow_law"])
-	var abadar_anathema = JSON.stringify(["banditry_piracy", "steal", "undermine_court"])
-	var abadar_colors = JSON.stringify(["gold", "silver"])
-	var abadar_attributes = JSON.stringify(["CON", "INT"])
-	var abadar_fonts = JSON.stringify(["harm", "heal"])
-	var abadar_domains = JSON.stringify(["cities", "earth", "travel", "wealth"])
-	var abadar_alt_domains = JSON.stringify(["creation", "duty", "metal", "toil"])
-	var abadar_spells = JSON.stringify({"1": "illusory_object", "4": "creation"})
-	
-	database.query("INSERT OR IGNORE INTO deities (id, name, title, category, edicts, anathema, religious_symbol, sacred_animal, sacred_colors, divine_attributes, divine_font, divine_sanctification, divine_skill, favored_weapon, domains, alternate_domains, cleric_spells, boon_minor, boon_moderate, boon_major, curse_minor, curse_moderate, curse_major, description) VALUES " + 
-	"('abadar', 'Abadar', 'The Master of the First Vault', 'Gods of the Inner Sea', '" + abadar_edicts + "', '" + abadar_anathema + "', 'golden key', 'monkey', '" + abadar_colors + "', '" + abadar_attributes + "', '" + abadar_fonts + "', 'can choose holy or unholy', 'society', 'crossbow', '" + abadar_domains + "', '" + abadar_alt_domains + "', '" + abadar_spells + "', '', '', '', '', '', '', 'The Master of the First Vault, god of cities, law, merchants, and wealth.');")
+	# Deity: The Thirteen
+	database.query("INSERT OR IGNORE INTO deities (id, name, title, category, edicts, anathema, religious_symbol, sacred_animal, sacred_colors, divine_attributes, divine_font, divine_sanctification, divine_skill, favored_weapon, domains, alternate_domains, cleric_spells, boon_minor, boon_moderate, boon_major, curse_minor, curse_moderate, curse_major, description) VALUES 
+		('aethelis', 'Aethelis', 'The Cosmic Weaver', 'The Thirteen', '[\"edict_study\", \"edict_time_acceptance\", \"edict_pattern_recognition\"]', '[\"anathema_destroy_history\", \"anathema_act_blindly\", \"anathema_rewrite_past\"]', 'Hourglass', 'Owl', '[\"Grey\", \"Blue\"]', '[\"INT\", \"WIS\"]', '[\"harm\", \"heal\"]', 0, 'arcana', 'staff', '[\"fate\", \"magic\", \"star\", \"time\"]', '[\"knowledge\", \"void\"]', '{\"1\": \"sure strike\", \"2\": \"augury\", \"3\": \"haste\"}', 'Once per day, you can roll twice on a check and take the higher result.', 'You can cast haste once per day as a divine innate spell.', 'You can cast time stop once per day as a divine innate spell.', 'Time slows around you. You take a -2 penalty to initiative rolls.', 'You are slowed 1 during the first round of any combat.', 'You age rapidly, taking a permanent -2 penalty to physical attributes.', 'A distant, calculating observer of the tapestry of reality, Aethelis is not prayed to for mercy, but for understanding.'),
+		('kaldian', 'Kaldian', 'The Sunlit Warden', 'The Thirteen', '[\"edict_protect_weak\", \"edict_confront_horrors\", \"edict_greet_dawn\", \"edict_stand_ground\"]', '[\"anathema_flee_battle\", \"anathema_allow_monsters\", \"anathema_extinguish_flame\"]', 'Rising Sun', 'Dog', '[\"Red\", \"Gold\"]', '[\"STR\", \"CON\"]', '[\"heal\"]', 4, 'survival', 'bastard sword', '[\"duty\", \"fire\", \"protection\", \"sun\"]', '[\"healing\", \"might\"]', '{\"1\": \"breathe fire\", \"2\": \"floating flame\", \"3\": \"fireball\"}', 'Your weapons shed bright light in a 20-foot radius.', 'You gain fire resistance 5.', 'You can cast sunburst once per day as a divine innate spell.', 'You are blinded by the light for 1 minute when you wake up.', 'You take double damage from cold and darkness effects.', 'You spontaneously combust, taking 10d6 fire damage every day at dawn.', 'A militant guardian deity of the dawn, Kaldian bears the cosmic burns of battling ancient, primordial horrors to keep the mortal realm safe.'),
+		('cankros', 'Cankros', 'The Whispering Blight', 'The Thirteen', '[\"edict_allow_rot\", \"edict_spread_sickness\", \"edict_embrace_decay\"]', '[\"anathema_cure_without_toll\", \"anathema_preserve_corpse\", \"anathema_construct_monuments\"]', 'Decomposing Skull', 'Locust', '[\"Green\", \"Black\"]', '[\"CON\", \"WIS\"]', '[\"harm\"]', 5, 'occultism', 'injection spear', '[\"death\", \"decay\", \"plague\", \"swarm\"]', '[\"pain\", \"undeath\"]', '{\"1\": \"enfeeble\", \"3\": \"stinking cloud\", \"5\": \"toxic cloud\"}', 'You gain resistance 2 to poison.', 'Your touch inflicts a debilitating disease.', 'You can cast horrid wilting once per day.', 'Food rots in your presence.', 'You emit a foul stench, taking a -2 penalty to Diplomacy.', 'You become a carrier of a deadly plague, infecting those around you.', 'An ancient, terrifying entity embodying the inevitable rot of the world...'),
+		('tavrin', 'Tavrin', 'The Laughing Vagabond', 'The Thirteen', '[\"edict_travel_new_road\", \"edict_trust_chance\", \"edict_share_story\", \"edict_defy_tyrants\"]', '[\"anathema_own_property\", \"anathema_refuse_gamble\", \"anathema_enforce_laws\"]', 'Pair of Ivory Dice', 'Mouse', '[\"Brown\", \"Yellow\"]', '[\"DEX\", \"CHA\"]', '[\"harm\", \"heal\"]', 0, 'diplomacy', 'battle lute', '[\"freedom\", \"indulgence\", \"luck\", \"travel\"]', '[\"confidence\", \"passion\"]', '{\"1\": \"fleet step\", \"2\": \"blur\", \"4\": \"translocate\"}', 'You gain a +10-foot status bonus to your Speed.', 'You can cast dimension door once per day.', 'You can cast teleport once per day.', 'You can never sleep in the same bed twice.', 'You become lost easily, taking a -4 penalty to Survival checks to navigate.', 'You are cursed to wander forever, unable to stay in one place for more than a day.', 'A trickster god of the open road, the rolling dice, and the bottom of a wine glass.'),
+		('brada', 'Brada', 'The Iron Architect', 'The Thirteen', '[\"edict_build_structures\", \"edict_fair_trade\", \"edict_respect_laws\", \"edict_invest_civilization\"]', '[\"anathema_destroy_building\", \"anathema_break_contract\", \"anathema_hoard_wealth\"]', 'Golden Abacus', 'Mole', '[\"Silver\", \"Copper\"]', '[\"STR\", \"INT\"]', '[\"harm\", \"heal\"]', 0, 'society', 'warhammer', '[\"cities\", \"creation\", \"earth\", \"wealth\"]', '[\"duty\", \"perfection\"]', '{\"1\": \"mending\", \"3\": \"earthbind\", \"5\": \"wall of stone\"}', 'You can appraise the value of any item perfectly.', 'You gain resistance 5 to physical damage.', 'You can cast earthquake once per day.', 'You must pay a toll to cross any bridge or enter any city.', 'You become obsessed with wealth, unable to part with coins.', 'You turn to stone.', 'The patron of builders, masons, and the relentless flow of coin that binds societies together.'),
+		('kragthor', 'Kragthor', 'The Storm-Crowned Tyrant', 'The Thirteen', '[\"edict_crush_opposition\", \"edict_inspire_fear\", \"edict_strike_without_warning\"]', '[\"anathema_show_mercy\", \"anathema_allow_insult\", \"anathema_submit_weaker\"]', 'Raging Storm Cloud', 'Hawk', '[\"Yellow\", \"Green\"]', '[\"STR\", \"CHA\"]', '[\"harm\"]', 2, 'athletics', 'greatpick', '[\"air\", \"destruction\", \"lightning\", \"tyranny\"]', '[\"might\", \"water\"]', '{\"1\": \"thunderstrike\", \"3\": \"lightning bolt\", \"6\": \"chain lightning\"}', 'You can deal 1d6 electricity damage with a touch.', 'You gain electricity resistance 5.', 'You can cast chain lightning once per day.', 'You are constantly shocked by static electricity.', 'You attract lightning strikes during storms.', 'You are deafened permanently by the sound of thunder.', 'A brutal deity of subjugation and the destructive, uncaring power of the hurricane.'),
+		('morwenna', 'Morwenna', 'The Veiled Mourner', 'The Thirteen', '[\"edict_comfort_grieving\", \"edict_proper_burial\", \"edict_embrace_quiet\"]', '[\"anathema_deny_mourning\", \"anathema_force_happiness\", \"anathema_desecrate_tomb\"]', 'Burning Incense', 'Raven', '[\"Black\", \"White\"]', '[\"WIS\", \"CHA\"]', '[\"heal\"]', 1, 'religion', 'rope dart', '[\"darkness\", \"repose\", \"sorrow\", \"soul\"]', '[\"cold\", \"healing\"]', '{\"1\": \"sanctuary\", \"2\": \"peaceful rest\", \"9\": \"Seize Soul\"}', 'You can see in darkness.', 'You gain resistance 5 to negative damage.', 'You can cast wail of the banshee once per day.', 'You weep constantly, taking a -1 penalty to Perception.', 'You are surrounded by an aura of gloom, making others unfriendly.', 'You are haunted by the spirits of the dead.', 'A quiet, somber deity who guides souls to the afterlife and comforts those left behind.'),
+		('oneris', 'Oneris', 'The Endless Trance', 'The Thirteen', '[\"edict_trust_intuition\", \"edict_create_subconscious_art\", \"edict_sleep_beneath_moonlight\"]', '[\"anathema_rely_empirical\", \"anathema_wake_dreamer\", \"anathema_suppress_hallucination\"]', 'Cloud Obscurred Moon', 'Sloth', '[\"Purple\", \"Cyan\"]', '[\"CHA\", \"WIS\"]', '[\"harm\", \"heal\"]', 0, 'performance', 'fighting fan', '[\"delirium\", \"dreams\", \"moon\", \"nightmares\"]', '[\"darkness\", \"star\"]', '{\"1\": \"sleep\", \"3\": \"dream message\", \"4\": \"nightmare\"}', 'You require only 2 hours of sleep.', 'You can cast dream message once per day.', 'You can cast Phantasmagoria once per day.', 'You suffer from vivid nightmares, becoming fatigued.', 'You have difficulty distinguishing dreams from reality.', 'You fall into a permanent coma.', 'An enigmatic, shifting entity residing deep within the shifting expanse of the Dreamlands.'),
+		('vurrok', 'Vurrok', 'The Primal Roar', 'The Thirteen', '[\"edict_hunt_survival\", \"edict_embrace_primal\", \"edict_allow_wild_reclaim\"]', '[\"anathema_domesticate_predator\", \"anathema_suppress_instincts\", \"anathema_destroy_nature\"]', 'Snarling Fanged Mouth', 'Wolf', '[\"Green\", \"Brown\"]', '[\"STR\", \"CON\"]', '[\"harm\", \"heal\"]', 3, 'nature', 'fist', '[\"change\", \"nature\", \"passion\", \"zeal\"]', '[\"earth\", \"might\"]', '{\"1\": \"runic body\", \"2\": \"animal form\", \"6\": \"cursed metamorphosis\"}', 'You gain a +2 circumstance bonus to Survival.', 'You can speak with animals at will.', 'You can cast nature''s reprisal once per day.', 'You must eat raw meat.', 'You lose the ability to speak humanoid languages.', 'You permanently transform into a wild beast.', 'A deity of the untamed wilds, raw emotion, and the endless, brutal cycle of predator and prey.'),
+		('severin', 'Severin', 'The Ashen Judge', 'The Thirteen', '[\"edict_speak_truth\", \"edict_hone_mind_body\", \"edict_judge_by_actions\"]', '[\"anathema_tell_lie\", \"anathema_cloud_judgment\", \"anathema_indulge_excess\"]', 'Shining Mirror', 'Fox', '[\"White\", \"Grey\"]', '[\"WIS\", \"DEX\"]', '[\"heal\"]', 1, 'acrobatics', 'bow staff', '[\"dust\", \"introspection\", \"perfection\", \"truth\"]', '[\"duty\", \"fate\"]', '{\"1\": \"command\", \"3\": \"ring of truth\", \"4\": \"discern lies\"}', 'You gain a +2 status bonus against illusions.', 'You can cast zone of truth once per day.', 'You can cast overwhelming presence once per day.', 'You cannot tell a lie, even to save a life.', 'You become rigidly inflexible, taking a -2 penalty to all Charisma checks.', 'You are turned to ash.', 'A severe, uncompromising deity of absolute truth and self-mastery.'),
+		('bathyos', 'Bathyos', 'The Abyssal Depth', 'The Thirteen', '[\"edict_keep_secrets\", \"edict_seek_forbidden_lore\", \"edict_embrace_cold_isolation\"]', '[\"anathema_reveal_truth\", \"anathema_show_fear\", \"anathema_share_knowledge\"]', 'Submerged Pair of Eyes', 'Octopus', '[\"Blue\", \"Black\"]', '[\"INT\", \"WIS\"]', '[\"harm\"]', 2, 'deception', 'garrote', '[\"cold\", \"secrecy\", \"void\", \"water\"]', '[\"darkness\", \"delirium\"]', '{\"1\": \"befuddle\", \"5\": \"slither\", \"7\": \"mask of terror\"}', 'You can breathe underwater.', 'You gain cold resistance 5.', 'You can cast polar ray once per day.', 'You are always freezing cold.', 'You suffer from claustrophobia in tight spaces.', 'You are dragged into the abyssal depths by unseen tentacles.', 'An eldritch intelligence dwelling in the crushing, lightless depths of the abyssal oceans.'),
+		('stryvan', 'Stryvan', 'The Ambitious Flame', 'The Thirteen', '[\"edict_seize_leadership\", \"edict_improve_station\", \"edict_assert_superiority\"]', '[\"anathema_accept_subordinate\", \"anathema_show_doubt\", \"anathema_allow_outmaneuver\"]', 'Golden Throne', 'Lion', '[\"Gold\", \"Purple\"]', '[\"STR\", \"CHA\"]', '[\"harm\", \"heal\"]', 3, 'intimidation', 'greatsword', '[\"ambition\", \"confidence\", \"knowledge\", \"might\"]', '[\"wealth\", \"zeal\"]', '{\"1\": \"sure strike\", \"2\": \"enlarge\", \"3\": \"heroism\"}', 'You gain a +1 status bonus to Intimidation.', 'You can cast heroism once per day.', 'You can cast divine decree once per day.', 'You become overly arrogant.', 'You refuse to accept help from others.', 'You are stripped of all your titles and wealth.', 'A deity of rising above one''s station through sheer will, intellect, and physical prowess.'),
+		('corvyna', 'Corvyna', 'The Crimson Matriarch', 'The Thirteen', '[\"edict_protect_bloodline\", \"edict_honor_ancestors\", \"edict_endure_pain\"]', '[\"anathema_betray_family\", \"anathema_refuse_bloodshed\", \"anathema_forget_ancestors\"]', 'Blood Soaked Flower', 'Bear', '[\"Red\", \"White\"]', '[\"CON\", \"WIS\"]', '[\"harm\", \"heal\"]', 3, 'medicine', 'sickle', '[\"family\", \"healing\", \"pain\", \"undeath\"]', '[\"protection\", \"sorrow\"]', '{\"2\": \"blood vendetta\", \"3\": \"vampiric feast\", \"6\": \"vampiric exsanguination\"}', 'You can stabilize a dying creature with a touch.', 'You can cast blood vendetta once per day.', 'You can cast regenerate once per day.', 'You bleed profusely from minor wounds.', 'You suffer the pain of your ancestors, becoming sickened 1.', 'Your bloodline is cursed to end with you.', 'A deeply polarizing deity representing the inescapable bonds of bloodlines.');")
 
 # ---------------------------------------------------------
 # CACHED DATA-DRIVEN FETCHERS
@@ -1577,19 +1744,45 @@ func get_ancestry(id: String) -> PFAncestry:
 			
 		row = database.query_result[0]
 		_ancestries_cache[id] = row
+
 	var new_ancestry = PFAncestry.new()
-	new_ancestry.entity_name = row["name"]
-	new_ancestry.hp = row["hp"]
-	new_ancestry.size_id = StringName(row["size"])
-	new_ancestry.speed = row["speed"]
-	
-	if row["boosts"] != "":
-		for b in row["boosts"].split(","):
-			new_ancestry.ability_boosts.append(StringName(b.strip_edges()))
-	if row["flaws"] != "":
-		for f in row["flaws"].split(","):
-			new_ancestry.ability_flaws.append(StringName(f.strip_edges()))
-			
+	new_ancestry.id = StringName(id)
+	new_ancestry.entity_name = row.get("name", "")
+	new_ancestry.description = row.get("description", "")
+	new_ancestry.rarity = int(row.get("rarity", 0)) as PFBiographyConstants.Rarity
+	new_ancestry.hp = int(row.get("hp", 8))
+	new_ancestry.size_id = StringName(row.get("size", "medium"))
+
+	new_ancestry.speed = int(row.get("speed", 25))
+	new_ancestry.speed_fly = int(row.get("speed_fly", 0))
+	new_ancestry.speed_swim = int(row.get("speed_swim", 0))
+	new_ancestry.speed_climb = int(row.get("speed_climb", 0))
+	new_ancestry.speed_burrow = int(row.get("speed_burrow", 0))
+
+	new_ancestry.vision = int(row.get("vision", 0)) as PFBiographyConstants.Vision
+	new_ancestry.starting_gold = int(row.get("starting_gold", 15))
+
+	new_ancestry.physical_description = row.get("physical_description", "")
+	new_ancestry.societal_description = row.get("societal_description", "")
+	new_ancestry.common_beliefs = row.get("common_beliefs", "")
+
+	new_ancestry.traits = _parse_stringname_array(row.get("traits", ""))
+	new_ancestry.ability_boosts = _parse_stringname_array(row.get("boosts", ""))
+	new_ancestry.ability_flaws = _parse_stringname_array(row.get("flaws", ""))
+
+	var alt_boosts = _parse_stringname_array(row.get("alternate_boosts", ""))
+	if not alt_boosts.is_empty():
+		new_ancestry.alternate_ancestry_boosts = alt_boosts
+
+	new_ancestry.known_languages = _parse_stringname_array(row.get("known_languages", ""))
+
+	new_ancestry.ethnicities = _parse_string_array(row.get("ethnicities", ""))
+	new_ancestry.heritages = _parse_string_array(row.get("heritages", ""))
+
+	new_ancestry.common_edicts = _parse_stringname_array(row.get("common_edicts", ""))
+	new_ancestry.common_anathema = _parse_stringname_array(row.get("common_anathema", ""))
+	new_ancestry.common_names = _parse_string_array(row.get("common_names", ""))
+
 	return new_ancestry
 
 func get_background(id: String) -> PFBackground:
@@ -1808,20 +2001,10 @@ func get_domain_data(domain_id: String) -> Dictionary:
 	return result[0]
 
 func get_edict_data(edict_id: String) -> Dictionary:
-	if _edicts_cache.has(edict_id): return _edicts_cache[edict_id]
-	database.query("SELECT * FROM edicts WHERE id = '" + edict_id + "';")
-	var result = database.query_result
-	if result.is_empty(): return {}
-	_edicts_cache[edict_id] = result[0]
-	return result[0]
+	return get_belief_data(StringName(edict_id))
 
 func get_anathema_data(anathema_id: String) -> Dictionary:
-	if _anathemas_cache.has(anathema_id): return _anathemas_cache[anathema_id]
-	database.query("SELECT * FROM anathemas WHERE id = '" + anathema_id + "';")
-	var result = database.query_result
-	if result.is_empty(): return {}
-	_anathemas_cache[anathema_id] = result[0]
-	return result[0]
+	return get_belief_data(StringName(anathema_id))
 
 # --- SPELL VARIANTS ---
 

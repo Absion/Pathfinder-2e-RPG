@@ -21,7 +21,6 @@ var ability_flaws: Array[StringName]
 var alternate_ancestry_boosts: Array[StringName] = [&"FREE", &"FREE"]
 
 var known_languages: Array[StringName]
-var bonus_language_options: Array[StringName]
 
 # --- SENSES ---
 var vision: PFBiographyConstants.Vision
@@ -32,7 +31,6 @@ var ethnicities: Array[String]
 var heritages: Array[String]
 
 # --- LORE & FLAVOR ---
-var ancestry_description: String
 var physical_description: String
 var societal_description: String
 var common_beliefs: String
@@ -43,8 +41,6 @@ var common_names: Array[String]
 # --- STARTING ASSETS ---
 # Holds PFAction or passive abilities (e.g., Kashrishi Horn unarmed attack)
 var granted_abilities: Array[PFEntity] 
-# Holds physical starting items (e.g., Dwarven Dagger)
-var granted_items: Array[PFItem]
 var starting_gold: int
 
 func _init(
@@ -55,7 +51,6 @@ func _init(
 		p_boosts: Array[StringName] = [], 
 		p_flaws: Array[StringName] = [], 
 		p_known_langs: Array[StringName] = [], 
-		p_bonus_langs: Array[StringName] = [], 
 		p_vision: PFBiographyConstants.Vision = PFBiographyConstants.Vision.NORMAL,
 		p_additional_senses: Array[PFSense] = [],
 		p_speed_fly: int = 0,   
@@ -64,7 +59,7 @@ func _init(
 		p_speed_burrow: int = 0,
 		p_ethnicities: Array[String] = [],
 		p_heritages: Array[String] = [],
-		p_ancestry_description: String = "",
+		p_description: String = "",
 		p_physical_description: String = "",
 		p_societal_description: String = "",
 		p_common_beliefs: String = "",
@@ -74,7 +69,6 @@ func _init(
 		p_traits: Array[StringName] = [], 
 		p_rarity: PFBiographyConstants.Rarity = PFBiographyConstants.Rarity.COMMON,
 		p_granted_abilities: Array[PFEntity] = [], 
-		p_granted_items: Array[PFItem] = [],
 		p_starting_gold: int = 15
 	):
 	
@@ -93,13 +87,12 @@ func _init(
 	ability_boosts = p_boosts
 	ability_flaws = p_flaws
 	known_languages = p_known_langs
-	bonus_language_options = p_bonus_langs
 	vision = p_vision
 	additional_senses = p_additional_senses
 	ethnicities = p_ethnicities
 	heritages = p_heritages
 	
-	ancestry_description = p_ancestry_description
+	description = p_description
 	physical_description = p_physical_description
 	societal_description = p_societal_description
 	common_beliefs = p_common_beliefs
@@ -116,14 +109,13 @@ func _init(
 	
 	common_names = p_common_names
 	granted_abilities = p_granted_abilities
-	granted_items = p_granted_items
 	starting_gold = p_starting_gold # Assign it here!
 
 # --- DATA SETTERS ---
 
 # Helper function to assign massive blocks of text cleanly after initialization
-func set_lore(p_ancestry_desc: String, p_physical_desc: String, p_societal_desc: String, p_beliefs: String, p_edicts: Array[StringName], p_anathema: Array[StringName], p_names: Array[String]) -> void:
-	ancestry_description = p_ancestry_desc
+func set_lore(p_desc: String, p_physical_desc: String, p_societal_desc: String, p_beliefs: String, p_edicts: Array[StringName], p_anathema: Array[StringName], p_names: Array[String]) -> void:
+	description = p_desc
 	physical_description = p_physical_desc
 	societal_description = p_societal_desc
 	common_beliefs = p_beliefs

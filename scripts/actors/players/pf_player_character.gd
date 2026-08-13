@@ -165,10 +165,6 @@ func apply_ancestry(new_ancestry: PFAncestry) -> void:
 		
 	senses.vision = ancestry.vision
 	
-	# NEW: Feed the Ancestry's special granted items straight into the inventory
-	for item in ancestry.granted_items:
-		inventory.add_item(item)
-	
 	# NEW: Grant starting wealth!
 	if ancestry.starting_gold > 0:
 		inventory.add_currency(ancestry.starting_gold)
@@ -186,10 +182,11 @@ func apply_ancestry(new_ancestry: PFAncestry) -> void:
 			
 	bonus_language_slots = maxi(0, attributes.int_mod)
 	
-	available_bonus_languages = ancestry.bonus_language_options.duplicate()
-	for common_lang in PFLanguage.get_all_common_languages():
-		if not available_bonus_languages.has(common_lang) and not languages.has(common_lang):
-			available_bonus_languages.append(common_lang)
+	available_bonus_languages.clear()
+	if bonus_language_slots > 0:
+		for lang_option in PFLanguage.get_all_common_languages():
+			if not languages.has(lang_option):
+				available_bonus_languages.append(lang_option)
 			
 	for t in ancestry.traits:
 		if not traits.has(t):
