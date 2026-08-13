@@ -95,6 +95,18 @@ func _ready():
 	conditions_panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	conditions_panel.tooltip_text = "View Conditions"
 	conditions_panel.focus_mode = Control.FOCUS_ALL
+
+	var _update_visuals = func():
+		if conditions_panel.has_focus() or conditions_panel.get_global_rect().has_point(conditions_panel.get_global_mouse_position()):
+			conditions_panel.modulate = Color(1.2, 1.2, 1.2)
+		else:
+			conditions_panel.modulate = Color(1.0, 1.0, 1.0)
+
+	conditions_panel.focus_entered.connect(_update_visuals)
+	conditions_panel.focus_exited.connect(_update_visuals)
+	conditions_panel.mouse_entered.connect(_update_visuals)
+	conditions_panel.mouse_exited.connect(_update_visuals)
+
 	mid_vbox.add_child(conditions_panel)
 	
 	conditions_hbox = HBoxContainer.new()

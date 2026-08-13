@@ -44,6 +44,10 @@
 ## 2024-07-29 - Default Options for Optional Dropdowns
 **Learning:** In Godot UI forms, when creating optional dropdowns (OptionButton), omitting a default 'Unspecified' option forces the top-most valid choice to be selected by default, leading to accidental incorrect submissions.
 **Action:** Always include a default '--- Select ---' item (mapped to an UNKNOWN or -1 value) as the first option to prevent users from accidentally submitting the default top-most value.
+
+## 2024-08-06 - Missing visual focus feedback on interactive panels
+**Learning:** In Godot 4, programmatic UI containers like `PanelContainer` lack built-in visual focus/hover feedback even when `focus_mode` is enabled. Without visual cues, keyboard users cannot tell when the element is focused.
+**Action:** Connect `focus_entered`, `focus_exited`, `mouse_entered`, and `mouse_exited` signals to visually indicate interactive states (e.g., modulating color) for interactive containers to support both keyboard navigation and mouse hover feedback.
 ## 2026-07-31 - Placeholder Option Disabling
 **Learning:** In Godot UI forms, when creating dropdowns (OptionButton), omitting a default '--- Select ---' placeholder option forces the top-most valid choice to be selected by default, leading to accidental incorrect submissions. However, if the placeholder isn't explicitly disabled, it can be accidentally selected and submitted.
 **Action:** Always include a default '--- Select ---' placeholder option (mapped to an UNKNOWN or -1 value) as the first item (index 0). Crucially, explicitly disable this item using `set_item_disabled(0, true)` so it acts purely as a visual prompt and cannot be selected.
