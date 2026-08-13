@@ -1,36 +1,32 @@
---- scripts/ui/character_creation/pf_character_creation_ui.gd
-+++ scripts/ui/character_creation/pf_character_creation_ui.gd
-@@ -34,6 +34,9 @@
-	_build_ui()
-	_populate_dropdowns()
-	_update_ui_state()
-+	_rebuild_abilities()
-+	_rebuild_languages()
-+	_rebuild_skills()
-	line_name.grab_focus()
+--- scripts/ui/pf_action_menu.gd
++++ scripts/ui/pf_action_menu.gd
+@@ -95,12 +95,24 @@
+	conditions_panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	conditions_panel.tooltip_text = "View Conditions"
+	conditions_panel.focus_mode = Control.FOCUS_ALL
 
- func _build_ui():
-@@ -107,6 +110,7 @@
-	chk_alt_boosts = CheckBox.new()
-	chk_alt_boosts.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	chk_alt_boosts.text = "Use Alternate Ancestry Boosts (2 Free)"
-+	chk_alt_boosts.tooltip_text = "Replaces your ancestry's default ability boosts and flaws with two free boosts."
-	chk_alt_boosts.toggled.connect(_on_alt_boosts_toggled)
-	form_layout.add_child(chk_alt_boosts)
+-	var _highlight = func(): conditions_panel.modulate = Color(1.2, 1.2, 1.2)
+-	var _reset = func(): conditions_panel.modulate = Color(1.0, 1.0, 1.0)
+-	conditions_panel.focus_entered.connect(_highlight)
+-	conditions_panel.focus_exited.connect(_reset)
+-	conditions_panel.mouse_entered.connect(_highlight)
+-	conditions_panel.mouse_exited.connect(_reset)
++	# More robust handling using Godot Theme overrides
++	var hover_style = StyleBoxFlat.new()
++	hover_style.bg_color = Color(1.2, 1.2, 1.2)
++	var focus_style = StyleBoxFlat.new()
++	focus_style.bg_color = Color(1.2, 1.2, 1.2)
++	# Unfortunately, PanelContainer theme variations are complex and we don't know the exact theme
++	# So let's refine the signal approach to avoid state clobbering
++	var _update_visuals = func():
++		if conditions_panel.has_focus() or conditions_panel.get_global_rect().has_point(conditions_panel.get_global_mouse_position()):
++			conditions_panel.modulate = Color(1.2, 1.2, 1.2)
++		else:
++			conditions_panel.modulate = Color(1.0, 1.0, 1.0)
++
++	conditions_panel.focus_entered.connect(_update_visuals)
++	conditions_panel.focus_exited.connect(_update_visuals)
++	conditions_panel.mouse_entered.connect(_update_visuals)
++	conditions_panel.mouse_exited.connect(_update_visuals)
 
-@@ -591,7 +595,14 @@
-		child.queue_free()
-	skill_opts.clear()
-
--	if manager.draft_class_id == "": return
-+	if manager.draft_class_id == "":
-+		var empty_state = Button.new()
-+		empty_state.text = "No skills available"
-+		empty_state.disabled = true
-+		empty_state.mouse_default_cursor_shape = Control.CURSOR_ARROW
-+		empty_state.tooltip_text = "Select a Class first to choose your trained skills."
-+		skills_container.add_child(empty_state)
-+		return
-
-	var c = _get_cached_item(_classes, manager.draft_class_id)
-	var trained_count = c.get("trained_skills_count", 0) + int_mod
+	mid_vbox.add_child(conditions_panel)

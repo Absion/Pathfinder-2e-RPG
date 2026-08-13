@@ -45,10 +45,19 @@ func process_auras(all_actors: Array[PFActor]) -> void:
 		var radius_units = aura.radius_feet / 5.0
 		var radius_sq = radius_units * radius_units
 		
+		# ⚡ Bolt: Cache loop-invariant reflection and type checks to minimize GDScript overhead
+		var emitter_is_object = typeof(aura.emitter) == TYPE_OBJECT
+		var emitter_obj = aura.emitter as Object if emitter_is_object else null
+		var applies_all = aura.applies_to == "all"
+		var applies_allies = aura.applies_to == "allies"
+		var applies_enemies = aura.applies_to == "enemies"
+		var has_is_ally = emitter_is_object and aura.emitter.has_method("is_ally")
+		var has_is_enemy = emitter_is_object and aura.emitter.has_method("is_enemy")
+
 		# Find who is in range
 		var in_range_actors: Array[PFActor] = []
 		for actor in all_actors:
-			if typeof(aura.emitter) == TYPE_OBJECT and actor == (aura.emitter as Object):
+			if emitter_is_object and actor == emitter_obj:
 				in_range_actors.append(actor)
 				continue
 				
@@ -56,11 +65,11 @@ func process_auras(all_actors: Array[PFActor]) -> void:
 			# to avoid expensive `sqrt` calls while maintaining 2D/3D compatibility
 			if actor.position.distance_squared_to(emitter_pos) <= radius_sq:
 				# Check applies_to logic (simplified)
-				if aura.applies_to == "all":
+				if applies_all:
 					in_range_actors.append(actor)
-				elif aura.applies_to == "allies" and aura.emitter.has_method("is_ally") and aura.emitter.is_ally(actor):
+				elif applies_allies and has_is_ally and aura.emitter.is_ally(actor):
 					in_range_actors.append(actor)
-				elif aura.applies_to == "enemies" and aura.emitter.has_method("is_enemy") and aura.emitter.is_enemy(actor):
+				elif applies_enemies and has_is_enemy and aura.emitter.is_enemy(actor):
 					in_range_actors.append(actor)
 					
 		# Remove condition from targets that left the aura
