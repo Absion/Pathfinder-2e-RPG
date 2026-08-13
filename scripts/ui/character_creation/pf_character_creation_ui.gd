@@ -123,6 +123,7 @@ func _build_ui():
 	
 	opt_gender = _add_dropdown("Gender")
 	opt_gender.add_item("--- Select Gender ---", PFBiographyConstants.Gender.UNKNOWN)
+	opt_gender.set_item_disabled(0, true)
 	opt_gender.add_item("Male", PFBiographyConstants.Gender.MALE)
 	opt_gender.add_item("Female", PFBiographyConstants.Gender.FEMALE)
 	opt_gender.add_item("Non-Binary", PFBiographyConstants.Gender.NON_BINARY)
@@ -646,6 +647,7 @@ func _create_stat_dropdown(options: Array) -> OptionButton:
 	var opt = OptionButton.new()
 	opt.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	opt.add_item("---", -1)
+	opt.set_item_disabled(0, true)
 	for i in range(options.size()):
 		opt.add_item(options[i], i)
 		opt.set_item_metadata(i+1, options[i])
