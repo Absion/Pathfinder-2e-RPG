@@ -48,3 +48,6 @@
 ## 2026-08-12 - Disable OptionButton Placeholder
 **Learning:** Dropdowns with a placeholder like '---' allow users to accidentally select an invalid or empty state if not disabled. Explicitly disabling index 0 ensures the placeholder acts only as a visual prompt.
 **Action:** Always use `set_item_disabled(0, true)` when adding a placeholder text as the first item in Godot OptionButtons.
+## 2024-08-15 - Prevent State Clobbering in Custom Focus Visuals
+**Learning:** When manually implementing visual focus/hover states for Godot UI containers, connecting simple lambdas for enter/exit signals causes state clobbering (e.g., mouse exiting clears keyboard focus).
+**Action:** Use a unified handler for all 4 mouse/focus signals that explicitly checks both `has_focus()` and `get_global_rect().has_point(get_global_mouse_position())` to determine the final visual state.
