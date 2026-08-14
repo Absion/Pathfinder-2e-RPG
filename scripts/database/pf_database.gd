@@ -125,7 +125,7 @@ func _ensure_ancestries_columns() -> void:
 		"starting_gold": "INTEGER DEFAULT 15"
 	}
 
-	for col_name in required_cols.keys():
+	for col_name in required_cols:
 		if not existing_cols.has(col_name):
 			database.query("ALTER TABLE ancestries ADD COLUMN " + col_name + " " + required_cols[col_name])
 

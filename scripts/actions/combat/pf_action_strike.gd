@@ -457,7 +457,7 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 		if weapon.has_trait(&"injection"):
 			print("    > Injection Trait triggers! Delivering payload: %s" % weapon.injection_payload.entity_name)
 		
-		if weapon.injection_payload.has_method("_apply_affliction"):
+		if weapon.injection_payload.has_method(&"_apply_affliction"):
 			var poison = weapon.injection_payload
 			print("    > The %s delivers %s into %s!" % [weapon.entity_name, poison.entity_name, target.entity_name])
 			poison._apply_affliction(target)
