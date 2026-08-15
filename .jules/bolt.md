@@ -47,3 +47,6 @@
 ## 2026-08-08 - Avoid string-based reflection (has_method) in hot loops
 **Learning:** In GDScript, using reflection methods like `has_method("string")` inside tight loops (like aura processing) forces Godot to perform expensive string allocations and hash lookups on every iteration, causing significant overhead.
 **Action:** Extract and cache string-based reflection checks (`has_method`) outside of iterative loops to minimize Godot VM boundary crossings.
+## 2026-08-15 - Use StringName literals for reflection in GDScript
+**Learning:** In GDScript (Godot 4), passing standard `String` literals (e.g., `"method_name"`) to reflection methods like `has_method()` inside hot loops forces Godot to allocate, hash, and convert the String into a `StringName` on every execution, causing significant GC pressure and overhead.
+**Action:** Always use `StringName` literals (e.g., `&"method_name"`) for built-in reflection methods to bypass this overhead, especially in frequently called pathfinding, combat grid, or aura processing loops.
