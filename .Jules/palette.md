@@ -48,3 +48,6 @@
 ## 2026-08-12 - Disable OptionButton Placeholder
 **Learning:** Dropdowns with a placeholder like '---' allow users to accidentally select an invalid or empty state if not disabled. Explicitly disabling index 0 ensures the placeholder acts only as a visual prompt.
 **Action:** Always use `set_item_disabled(0, true)` when adding a placeholder text as the first item in Godot OptionButtons.
+## 2026-08-16 - Visual Focus Feedback for Dynamic Buttons
+**Learning:** In Godot 4 programmatic UI, dynamically created `Button` nodes lack built-in visual focus and hover feedback (beyond text/icon changes if provided), making it hard for keyboard and mouse users to track the current active item without explicit styles.
+**Action:** Use a lambda connected to `focus_entered`, `focus_exited`, `mouse_entered`, and `mouse_exited` to modify the button's `modulate` color, providing subtle, immediate visual feedback that enhances discoverability and matches WCAG standards.
