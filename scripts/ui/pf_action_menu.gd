@@ -189,7 +189,7 @@ func _create_styled_button(text: String) -> Button:
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 	var _update_visuals = func():
-		if button.has_focus() or button.get_global_rect().has_point(button.get_global_mouse_position()):
+		if not button.disabled and (button.has_focus() or button.get_global_rect().has_point(button.get_global_mouse_position())):
 			button.modulate = Color(1.2, 1.2, 1.2)
 		else:
 			button.modulate = Color(1.0, 1.0, 1.0)

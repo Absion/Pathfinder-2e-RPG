@@ -54,3 +54,6 @@
 ## 2024-08-15 - Prevent State Clobbering in Custom Focus Visuals
 **Learning:** When manually implementing visual focus/hover states for Godot UI containers, connecting simple lambdas for enter/exit signals causes state clobbering (e.g., mouse exiting clears keyboard focus).
 **Action:** Use a unified handler for all 4 mouse/focus signals that explicitly checks both `has_focus()` and `get_global_rect().has_point(get_global_mouse_position())` to determine the final visual state.
+## 2024-08-17 - Prevent False Affordances on Disabled Custom Buttons
+**Learning:** In Godot 4 programmatic UI, when manually implementing hover/focus visual states (e.g., modifying modulate color) on Buttons via mouse/focus signals, the visual state changes even when the button is disabled, creating a false clickability affordance.
+**Action:** Always include a `not button.disabled` condition in the custom visual update handler so disabled buttons do not visually respond to hover or focus.
