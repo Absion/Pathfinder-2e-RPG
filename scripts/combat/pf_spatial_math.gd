@@ -11,9 +11,14 @@ static func is_flanking(attacker: PFActor, target: PFActor, ally: PFActor) -> bo
 	if ally.is_dead or ally.has_condition("unconscious") or ally.has_condition("paralyzed"):
 		return false
 		
+	# ⚡ Bolt: Cache node properties to avoid redundant Godot C++ boundary crossings
+	var attacker_pos = attacker.position
+	var ally_pos = ally.position
+	var target_pos = target.position
+
 	# Both must have the target within melee reach.
-	var dist_attacker = PFCombatGrid.get_distance_pf2e(attacker.position, target.position)
-	var dist_ally = PFCombatGrid.get_distance_pf2e(ally.position, target.position)
+	var dist_attacker = PFCombatGrid.get_distance_pf2e(attacker_pos, target_pos)
+	var dist_ally = PFCombatGrid.get_distance_pf2e(ally_pos, target_pos)
 	
 	var attacker_reach = 5 # Default melee reach
 	var ally_reach = 5
@@ -35,9 +40,9 @@ static func is_flanking(attacker: PFActor, target: PFActor, ally: PFActor) -> bo
 	# If the dot product is less than -0.5, they are generally on opposite sides.
 	# For a strict PF2e check on a grid, if the line intersects opposite edges of the target's bounding box.
 	
-	var a1 = Vector2(attacker.position.x, attacker.position.z)
-	var a2 = Vector2(ally.position.x, ally.position.z)
-	var target_pos2d = Vector2(target.position.x, target.position.z)
+	var a1 = Vector2(attacker_pos.x, attacker_pos.z)
+	var a2 = Vector2(ally_pos.x, ally_pos.z)
+	var target_pos2d = Vector2(target_pos.x, target_pos.z)
 	
 	# Simple PF2e logic for 1x1: A line between centers passes through opposite sides/corners.
 	# This means the target must be exactly between them in either the X or Z axis, or both.
