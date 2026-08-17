@@ -53,3 +53,6 @@
 ## 2024-08-14 - Optimization of String-based reflection checks
 **Learning:** Passing standard string literals to reflection methods like `has_method()` causes overhead by allocating, hashing, and converting the String into a StringName on every execution.
 **Action:** Always pass `StringName` literals (e.g., `&"method_name"`) instead of standard `String` literals to bypass the overhead.
+## 2023-10-25 - Cache Godot properties for heavy spatial math
+**Learning:** In GDScript, accessing built-in Node properties (like `position` or `global_position`) crosses the GDScript-to-C++ boundary. When these properties are accessed multiple times in mathematical functions like `is_flanking()`, it creates unnecessary overhead.
+**Action:** Always extract and cache node properties into local variables before executing spatial operations or tight loops to minimize redundant C++ property accesses.
