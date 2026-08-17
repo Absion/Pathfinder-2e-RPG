@@ -47,3 +47,9 @@
 ## 2026-08-08 - Avoid string-based reflection (has_method) in hot loops
 **Learning:** In GDScript, using reflection methods like `has_method("string")` inside tight loops (like aura processing) forces Godot to perform expensive string allocations and hash lookups on every iteration, causing significant overhead.
 **Action:** Extract and cache string-based reflection checks (`has_method`) outside of iterative loops to minimize Godot VM boundary crossings.
+## 2024-08-14 - Optimization of Dictionary keys usage in for loops
+**Learning:** Calling Dictionary.keys() in Godot 4 allocates and returns a new Array, causing unnecessary heap allocations and garbage collection pressure in hot loops.
+**Action:** Always iterate directly over the dictionary (e.g., `for key in my_dict:`) rather than using `.keys()` to avoid unnecessary allocations.
+## 2024-08-14 - Optimization of String-based reflection checks
+**Learning:** Passing standard string literals to reflection methods like `has_method()` causes overhead by allocating, hashing, and converting the String into a StringName on every execution.
+**Action:** Always pass `StringName` literals (e.g., `&"method_name"`) instead of standard `String` literals to bypass the overhead.

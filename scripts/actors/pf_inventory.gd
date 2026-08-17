@@ -86,7 +86,7 @@ func equip_item(item: PFItem) -> void:
 	worn_items.append(item)
 	item.carry_state = PFEquipmentConstants.CarryState.WORN
 	
-	if item.has_method("on_equipped"):
+	if item.has_method(&"on_equipped"):
 		item.on_equipped(owner)
 		
 	_emit_inventory_update()
@@ -102,7 +102,7 @@ func unequip_item(item: PFItem) -> void:
 	if worn_items.has(item):
 		worn_items.erase(item)
 		item.carry_state = PFEquipmentConstants.CarryState.STOWED
-		if item.has_method("on_unequipped"):
+		if item.has_method(&"on_unequipped"):
 			item.on_unequipped(owner)
 		print("    > %s unequipped %s." % [owner.entity_name, item.entity_name])
 		_emit_inventory_update()
@@ -117,12 +117,12 @@ func replace_tattoo(old_tattoo: PFItem, new_tattoo: PFItem) -> void:
 		
 	worn_items.erase(old_tattoo)
 	old_tattoo.carry_state = PFEquipmentConstants.CarryState.STOWED
-	if old_tattoo.has_method("on_unequipped"):
+	if old_tattoo.has_method(&"on_unequipped"):
 		old_tattoo.on_unequipped(owner)
 		
 	worn_items.append(new_tattoo)
 	new_tattoo.carry_state = PFEquipmentConstants.CarryState.WORN
-	if new_tattoo.has_method("on_equipped"):
+	if new_tattoo.has_method(&"on_equipped"):
 		new_tattoo.on_equipped(owner)
 		
 	print("    > %s replaced tattoo %s with %s." % [owner.entity_name, old_tattoo.entity_name, new_tattoo.entity_name])
@@ -138,12 +138,12 @@ func upgrade_graft(old_graft: PFItem, new_graft: PFItem) -> void:
 		
 	worn_items.erase(old_graft)
 	old_graft.carry_state = PFEquipmentConstants.CarryState.STOWED
-	if old_graft.has_method("on_unequipped"):
+	if old_graft.has_method(&"on_unequipped"):
 		old_graft.on_unequipped(owner)
 		
 	worn_items.append(new_graft)
 	new_graft.carry_state = PFEquipmentConstants.CarryState.WORN
-	if new_graft.has_method("on_equipped"):
+	if new_graft.has_method(&"on_equipped"):
 		new_graft.on_equipped(owner)
 		
 	print("    > %s upgraded graft %s to %s." % [owner.entity_name, old_graft.entity_name, new_graft.entity_name])
@@ -163,7 +163,7 @@ func hold_item(item: PFItem, main_hand: bool = true) -> void:
 				print("    > [ERROR] %s is cursed and refuses to leave the hand!" % held_main_hand.entity_name)
 				return
 			held_main_hand.carry_state = PFEquipmentConstants.CarryState.DROPPED
-			if held_main_hand.has_method("on_unequipped"): held_main_hand.on_unequipped(owner)
+			if held_main_hand.has_method(&"on_unequipped"): held_main_hand.on_unequipped(owner)
 			print("    > %s drops %s to hold %s." % [owner.entity_name, held_main_hand.entity_name, item.entity_name])
 		held_main_hand = item
 	else:
@@ -172,12 +172,12 @@ func hold_item(item: PFItem, main_hand: bool = true) -> void:
 				print("    > [ERROR] %s is cursed and refuses to leave the hand!" % held_off_hand.entity_name)
 				return
 			held_off_hand.carry_state = PFEquipmentConstants.CarryState.DROPPED
-			if held_off_hand.has_method("on_unequipped"): held_off_hand.on_unequipped(owner)
+			if held_off_hand.has_method(&"on_unequipped"): held_off_hand.on_unequipped(owner)
 			print("    > %s drops %s to hold %s." % [owner.entity_name, held_off_hand.entity_name, item.entity_name])
 		held_off_hand = item
 		
 	item.carry_state = PFEquipmentConstants.CarryState.HELD
-	if item.has_method("on_equipped"): item.on_equipped(owner)
+	if item.has_method(&"on_equipped"): item.on_equipped(owner)
 	print("    > %s is now holding %s." % [owner.entity_name, item.entity_name])
 	_emit_inventory_update()
 
@@ -188,7 +188,7 @@ func release_item(main_hand: bool = true) -> void:
 			print("    > [ERROR] %s is cursed and refuses to leave the hand!" % item.entity_name)
 			return
 		item.carry_state = PFEquipmentConstants.CarryState.DROPPED
-		if item.has_method("on_unequipped"): item.on_unequipped(owner)
+		if item.has_method(&"on_unequipped"): item.on_unequipped(owner)
 	
 	if main_hand:
 		held_main_hand = null
@@ -207,13 +207,13 @@ func equip_weapon(weapon: PFItem, hands: int = 1, main_hand: bool = true) -> voi
 				print("    > [ERROR] %s is cursed!" % held_main_hand.entity_name)
 				return
 			held_main_hand.carry_state = PFEquipmentConstants.CarryState.DROPPED
-			if held_main_hand.has_method("on_unequipped"): held_main_hand.on_unequipped(owner)
+			if held_main_hand.has_method(&"on_unequipped"): held_main_hand.on_unequipped(owner)
 		if held_off_hand: 
 			if held_off_hand.traits.has(&"cursed"):
 				print("    > [ERROR] %s is cursed!" % held_off_hand.entity_name)
 				return
 			held_off_hand.carry_state = PFEquipmentConstants.CarryState.DROPPED
-			if held_off_hand.has_method("on_unequipped"): held_off_hand.on_unequipped(owner)
+			if held_off_hand.has_method(&"on_unequipped"): held_off_hand.on_unequipped(owner)
 		two_handed_item = weapon
 		held_main_hand = null
 		held_off_hand = null
@@ -223,11 +223,11 @@ func equip_weapon(weapon: PFItem, hands: int = 1, main_hand: bool = true) -> voi
 				print("    > [ERROR] %s is cursed!" % held_main_hand.entity_name)
 				return
 			held_main_hand.carry_state = PFEquipmentConstants.CarryState.DROPPED
-			if held_main_hand.has_method("on_unequipped"): held_main_hand.on_unequipped(owner)
+			if held_main_hand.has_method(&"on_unequipped"): held_main_hand.on_unequipped(owner)
 		held_main_hand = weapon
 		if two_handed_item: 
 			two_handed_item.carry_state = PFEquipmentConstants.CarryState.DROPPED
-			if two_handed_item.has_method("on_unequipped"): two_handed_item.on_unequipped(owner)
+			if two_handed_item.has_method(&"on_unequipped"): two_handed_item.on_unequipped(owner)
 		two_handed_item = null
 	else:
 		if held_off_hand: 
@@ -235,15 +235,15 @@ func equip_weapon(weapon: PFItem, hands: int = 1, main_hand: bool = true) -> voi
 				print("    > [ERROR] %s is cursed!" % held_off_hand.entity_name)
 				return
 			held_off_hand.carry_state = PFEquipmentConstants.CarryState.DROPPED
-			if held_off_hand.has_method("on_unequipped"): held_off_hand.on_unequipped(owner)
+			if held_off_hand.has_method(&"on_unequipped"): held_off_hand.on_unequipped(owner)
 		held_off_hand = weapon
 		if two_handed_item: 
 			two_handed_item.carry_state = PFEquipmentConstants.CarryState.DROPPED
-			if two_handed_item.has_method("on_unequipped"): two_handed_item.on_unequipped(owner)
+			if two_handed_item.has_method(&"on_unequipped"): two_handed_item.on_unequipped(owner)
 		two_handed_item = null
 		
 	weapon.carry_state = PFEquipmentConstants.CarryState.HELD
-	if weapon.has_method("on_equipped"): weapon.on_equipped(owner)
+	if weapon.has_method(&"on_equipped"): weapon.on_equipped(owner)
 	_emit_inventory_update()
 
 func wield_as_improvised(item: PFItem, main_hand: bool = true, damage_type: PFCombatConstants.DamageType = PFCombatConstants.DamageType.BLUDGEONING) -> void:

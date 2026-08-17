@@ -22,7 +22,7 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 		
 	# Check if target understands language (usually Demoralize takes a -4 penalty if they don't, but we'll assume they do for now or apply penalty if no common language)
 	var penalty = 0
-	if user.has_method("languages") and target.has_method("languages"):
+	if user.has_method(&"languages") and target.has_method(&"languages"):
 		var share_language = false
 		for lang in user.languages:
 			if target.languages.has(lang):

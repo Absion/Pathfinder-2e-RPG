@@ -25,7 +25,7 @@ func test_the_thirteen_deities_hydration():
 		db = PFDatabase.new()
 		add_child_autofree(db)
 
-	for deity_id in THE_THIRTEEN_DEITIES.keys():
+	for deity_id in THE_THIRTEEN_DEITIES:
 		var expected = THE_THIRTEEN_DEITIES[deity_id]
 		var deity = db.get_deity(deity_id)
 		

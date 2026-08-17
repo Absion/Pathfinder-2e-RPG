@@ -40,5 +40,5 @@ func on_consume(consumer: PFActor) -> bool:
 	return true
 
 func _apply_affliction(victim: PFActor) -> void:
-	if victim and victim.has_method("apply_affliction_by_id"):
+	if victim and victim.has_method(&"apply_affliction_by_id"):
 		victim.apply_affliction_by_id(affliction_id)
