@@ -59,9 +59,6 @@ func _ready():
 	_rebuild_languages()
 	_rebuild_skills()
 	_update_ui_state()
-	_rebuild_abilities()
-	_rebuild_languages()
-	_rebuild_skills()
 	line_name.grab_focus()
 
 func _build_ui():

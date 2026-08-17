@@ -187,6 +187,18 @@ func _create_styled_button(text: String) -> Button:
 	button.text = text
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+
+	var _update_visuals = func():
+		if button.has_focus() or button.get_global_rect().has_point(button.get_global_mouse_position()):
+			button.modulate = Color(1.2, 1.2, 1.2)
+		else:
+			button.modulate = Color(1.0, 1.0, 1.0)
+
+	button.focus_entered.connect(_update_visuals)
+	button.focus_exited.connect(_update_visuals)
+	button.mouse_entered.connect(_update_visuals)
+	button.mouse_exited.connect(_update_visuals)
+
 	return button
 
 func _open_submenu(menu_name: String):
