@@ -113,8 +113,8 @@ static func get_cover_level(attacker: PFActor, target: PFActor, space_state: Phy
 	var mask = 1 | 2 # Check both Environment and Actors
 	
 	var exclude = []
-	if attacker.has_method("get_rid"): exclude.append(attacker.get_rid())
-	if target.has_method("get_rid"): exclude.append(target.get_rid())
+	if attacker.has_method(&"get_rid"): exclude.append(attacker.get_rid())
+	if target.has_method(&"get_rid"): exclude.append(target.get_rid())
 	var query = PhysicsRayQueryParameters3D.create(start_pos, end_pos, mask, exclude)
 	var result = space_state.intersect_ray(query)
 	

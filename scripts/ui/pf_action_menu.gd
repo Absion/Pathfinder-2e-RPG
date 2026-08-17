@@ -96,29 +96,24 @@ func _ready():
 	conditions_panel.tooltip_text = "View Conditions"
 	conditions_panel.focus_mode = Control.FOCUS_ALL
 
+	mid_vbox.add_child(conditions_panel)
+
+	conditions_hbox = HBoxContainer.new()
+	conditions_hbox.custom_minimum_size = Vector2(0, 32)
+	conditions_panel.add_child(conditions_hbox)
+
+	# Optional: make the condition panel clickable
+	conditions_panel.gui_input.connect(_on_conditions_gui_input)
+
 	var _update_visuals = func():
 		if conditions_panel.has_focus() or conditions_panel.get_global_rect().has_point(conditions_panel.get_global_mouse_position()):
 			conditions_panel.modulate = Color(1.2, 1.2, 1.2)
 		else:
 			conditions_panel.modulate = Color(1.0, 1.0, 1.0)
-
 	conditions_panel.focus_entered.connect(_update_visuals)
 	conditions_panel.focus_exited.connect(_update_visuals)
 	conditions_panel.mouse_entered.connect(_update_visuals)
 	conditions_panel.mouse_exited.connect(_update_visuals)
-
-	mid_vbox.add_child(conditions_panel)
-	
-	conditions_hbox = HBoxContainer.new()
-	conditions_hbox.custom_minimum_size = Vector2(0, 32)
-	conditions_panel.add_child(conditions_hbox)
-	
-	# Optional: make the condition panel clickable
-	conditions_panel.gui_input.connect(_on_conditions_gui_input)
-	conditions_panel.mouse_entered.connect(func(): conditions_panel.modulate = Color(1.2, 1.2, 1.2))
-	conditions_panel.mouse_exited.connect(func(): conditions_panel.modulate = Color.WHITE)
-	conditions_panel.focus_entered.connect(func(): conditions_panel.modulate = Color(1.2, 1.2, 1.2))
-	conditions_panel.focus_exited.connect(func(): conditions_panel.modulate = Color.WHITE)
 	
 	var spacer2 = Control.new()
 	spacer2.custom_minimum_size = Vector2(0, 10)

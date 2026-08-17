@@ -35,7 +35,7 @@ func cast_wand(actor: PFActor) -> bool:
 		var roll = 10 
 		if actor.has_meta("test_flat_check"):
 			roll = actor.get_meta("test_flat_check")
-		elif actor.has_method("roll_flat_check"):
+		elif actor.has_method(&"roll_flat_check"):
 			var res = actor.roll_flat_check()
 			if typeof(res) == TYPE_DICTIONARY:
 				roll = res.get("total", res.get("roll", 1))

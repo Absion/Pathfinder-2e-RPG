@@ -53,9 +53,9 @@ func rest_actor(actor: PFActor, is_long_term_rest: bool = false) -> void:
 	if "inventory" in actor and actor.get(&"inventory") != null:
 		var inventory = actor.get(&"inventory")
 		for item in inventory.items:
-			if item.has_method("reset_for_day"):
+			if item.has_method(&"reset_for_day"):
 				item.reset_for_day()
-			if item.has_method("clear_charges"):
+			if item.has_method(&"clear_charges"):
 				item.clear_charges()
 				
 	# Sleeping in Armor Rule (Pathfinder 2e Remaster)

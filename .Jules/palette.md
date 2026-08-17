@@ -51,3 +51,6 @@
 ## 2026-08-16 - Visual Focus Feedback for Dynamic Buttons
 **Learning:** In Godot 4 programmatic UI, dynamically created `Button` nodes lack built-in visual focus and hover feedback (beyond text/icon changes if provided), making it hard for keyboard and mouse users to track the current active item without explicit styles.
 **Action:** Use a lambda connected to `focus_entered`, `focus_exited`, `mouse_entered`, and `mouse_exited` to modify the button's `modulate` color, providing subtle, immediate visual feedback that enhances discoverability and matches WCAG standards.
+## 2024-08-15 - Prevent State Clobbering in Custom Focus Visuals
+**Learning:** When manually implementing visual focus/hover states for Godot UI containers, connecting simple lambdas for enter/exit signals causes state clobbering (e.g., mouse exiting clears keyboard focus).
+**Action:** Use a unified handler for all 4 mouse/focus signals that explicitly checks both `has_focus()` and `get_global_rect().has_point(get_global_mouse_position())` to determine the final visual state.
