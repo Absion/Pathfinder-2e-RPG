@@ -109,10 +109,14 @@ func set_ethnicity(new_ethnicity: StringName) -> bool:
 		var eth_data = database.get_ethnicity_data(new_ethnicity)
 		if not eth_data.is_empty():
 			var required = eth_data.get(&"required_traits", [])
-			# Check if character has ALL required traits
-			for req_trait in required:
-				if not traits.has(StringName(req_trait)):
-					push_warning("Cannot set ethnicity %s. Missing required trait: %s" % [new_ethnicity, req_trait])
+			if not required.is_empty():
+				var has_valid_trait = false
+				for req_trait in required:
+					if traits.has(StringName(req_trait)):
+						has_valid_trait = true
+						break
+				if not has_valid_trait:
+					push_warning("Cannot set ethnicity %s. None of required traits present: %s" % [new_ethnicity, required])
 					return false
 	
 	ethnicity = new_ethnicity

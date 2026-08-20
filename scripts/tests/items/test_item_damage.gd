@@ -27,8 +27,10 @@ func before_each():
 
 func after_each():
 	PFContext.cleanup_shared_services()
-	user.queue_free()
-	target.queue_free()
+	if is_instance_valid(user):
+		user.free()
+	if is_instance_valid(target):
+		target.free()
 
 func test_item_damage_logic():
 	assert_false(shield.is_broken(), "Shield should not start broken")

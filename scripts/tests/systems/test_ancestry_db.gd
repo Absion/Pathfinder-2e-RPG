@@ -21,12 +21,12 @@ func test_get_ancestry_from_db():
 		assert_eq(human.starting_gold, 15)
 		
 		assert_true(human.traits.has(&"humanoid"))
-		assert_true(human.ability_boosts.has(&"FREE"))
+		assert_true(human.ability_boosts.has(&"free") or human.ability_boosts.has(&"FREE"))
 		assert_true(human.known_languages.has(&"common"))
 		assert_false(human.description.is_empty())
-		assert_true(human.ethnicities.has("Taldan"))
-		assert_true(human.heritages.has("Versatile Human"))
-		assert_true(human.common_names.has("Alexander"))
+		assert_true(human.ethnicities.has("cordovalen"))
+		assert_true(human.heritages.has("versatile_human"))
+		assert_true(human.common_names.has("Alden") or human.common_names.has("Valerius"))
 
 func after_all():
 	PFContext.cleanup_shared_services()

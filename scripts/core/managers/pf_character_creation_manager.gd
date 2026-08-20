@@ -7,6 +7,7 @@ signal draft_updated(character: PFPlayerCharacter)
 
 var draft_name: String = "Unknown Hero"
 var draft_ancestry_id: String = ""
+var draft_heritage_id: String = ""
 var draft_background_id: String = ""
 var draft_class_id: String = ""
 var draft_bio: Dictionary = {
@@ -40,13 +41,18 @@ func generate_draft_character() -> PFPlayerCharacter:
 	if draft_bio["birthplace_id"] != "":
 		pc.birthplace = draft_bio["birthplace_id"]
 	
-	# 3. Apply Ancestry
+	# 3. Apply Ancestry & Heritage
 	if draft_ancestry_id != "":
 		var ancestry = db.get_ancestry(draft_ancestry_id)
 		if ancestry:
 			pc.apply_ancestry(ancestry)
 			for b in selected_ancestry_free_boosts:
 				pc.attributes.apply_ancestry_boost(b)
+				
+		if draft_heritage_id != "":
+			var heritage = db.get_heritage(draft_heritage_id)
+			if heritage:
+				pc.apply_heritage(heritage)
 				
 	# 4. Apply Background
 	if draft_background_id != "":

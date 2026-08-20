@@ -41,6 +41,7 @@ var skill_opts: Array[OptionButton] = []
 
 # Caches
 var _ancestries: Array[Dictionary] = []
+var _heritages: Array[Dictionary] = []
 var _backgrounds: Array[Dictionary] = []
 var _classes: Array[Dictionary] = []
 var _ethnicities: Array[Dictionary] = []
@@ -315,24 +316,57 @@ func _on_ancestry_selected(index: int):
 		var item = _ancestries[index - 1]
 		_update_info_panel(item["name"], item.get("description", "No description available."))
 		
-		# Now fetch compatible ethnicities
+		# Fetch ancestry entity to get traits
+		var ancestry = db.get_ancestry(a_id)
+		var traits: Array[StringName] = []
+		if ancestry:
+			traits = ancestry.traits
+		
+		# 1. Populate Heritages for this Ancestry (+ Versatile Heritages)
+		opt_heritage.clear()
+		opt_heritage.add_item("--- Select Heritage ---", -1)
+		opt_heritage.set_item_disabled(0, true)
+		_heritages = db.get_available_heritages_for_ancestry(a_id)
+		for i in range(_heritages.size()):
+			var h_label = _heritages[i]["name"]
+			if _heritages[i].get("is_versatile", 0) == 1:
+				h_label += " (Versatile)"
+			opt_heritage.add_item(h_label, i)
+			opt_heritage.set_item_metadata(i + 1, _heritages[i]["id"])
+		
+		# 2. Populate compatible Ethnicities
 		opt_ethnicity.clear()
 		opt_ethnicity.add_item("--- Select Ethnicity ---", -1)
 		opt_ethnicity.set_item_disabled(0, true)
-		var t_list: Array[StringName] = []
-		_ethnicities = db.get_available_ethnicities_for_traits(t_list)
+		_ethnicities = db.get_available_ethnicities_for_traits(traits)
 		for i in range(_ethnicities.size()):
 			opt_ethnicity.add_item(_ethnicities[i]["name"], i)
-			opt_ethnicity.set_item_metadata(i+1, _ethnicities[i]["id"])
+			opt_ethnicity.set_item_metadata(i + 1, _ethnicities[i]["id"])
 	else:
 		manager.draft_ancestry_id = ""
+		manager.draft_heritage_id = ""
+		manager.draft_bio["ethnicity_id"] = ""
+		opt_heritage.clear()
+		opt_heritage.add_item("--- Select Heritage ---", -1)
+		opt_heritage.set_item_disabled(0, true)
+		opt_ethnicity.clear()
+		opt_ethnicity.add_item("--- Select Ethnicity ---", -1)
+		opt_ethnicity.set_item_disabled(0, true)
+		_heritages.clear()
+		_ethnicities.clear()
 	_update_ui_state()
-	
-func _on_heritage_selected(_index: int):
-	pass # Handle heritage
-	
+
+func _on_heritage_selected(index: int):
+	if index > 0 and index - 1 < _heritages.size():
+		manager.draft_heritage_id = opt_heritage.get_item_metadata(index)
+		var item = _heritages[index - 1]
+		_update_info_panel(item["name"], item.get("description", "No description available."))
+	else:
+		manager.draft_heritage_id = ""
+	_update_ui_state()
+
 func _on_ethnicity_selected(index: int):
-	if index > 0: 
+	if index > 0 and index - 1 < _ethnicities.size(): 
 		manager.draft_bio["ethnicity_id"] = opt_ethnicity.get_item_metadata(index)
 		var item = _ethnicities[index - 1]
 		_update_info_panel(item["name"], item.get("description", "No description available."))
@@ -358,17 +392,6 @@ func _on_class_selected(index: int):
 		_update_info_panel(item["name"], item.get("description", "No description available."))
 	else: manager.draft_class_id = ""
 	_update_ui_state()
-	
-func _populate_ethnicities(ancestry_id: String):
-	opt_ethnicity.clear()
-	opt_ethnicity.add_item("--- Select Ethnicity ---", -1)
-	opt_ethnicity.set_item_disabled(0, true)
-	var ancestry = db.get_ancestry(ancestry_id)
-	if ancestry:
-		var ethnicities = db.get_available_ethnicities_for_traits(ancestry.traits)
-		for i in range(ethnicities.size()):
-			opt_ethnicity.add_item(ethnicities[i]["name"], i)
-			opt_ethnicity.set_item_metadata(i+1, ethnicities[i]["id"])
 
 func _update_ui_state():
 	# Cascading enable/disable logic based on strict A-B-C-D enforcement

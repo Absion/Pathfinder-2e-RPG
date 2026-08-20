@@ -1,4 +1,4 @@
-﻿# test_prerequisite_engine.gd
+# test_prerequisite_engine.gd
 class_name TestPrerequisiteEngine
 extends GutTest
 
@@ -18,7 +18,7 @@ func after_all():
 
 func test_ethnicity_requirements():
 	var hero = autofree(PFPlayerCharacter.new("Valeros", [&"human", &"fighter"], 1, 20, 2, 2, 2))
-	var shadow_data = database.get_feat_data(&"nidalese_shadowcaster")
+	var shadow_data = database.get_feat_data(&"ashen_shadowcaster")
 	
 	var shadow_traits_raw = JSON.parse_string(shadow_data["traits"]) as Array
 	var shadow_traits: Array[StringName] = []
@@ -26,12 +26,12 @@ func test_ethnicity_requirements():
 	# Expected fail, default ethnicity is unknown
 	assert_false(PFPrerequisiteEngine.evaluate(shadow_data["prerequisites"], hero, shadow_traits))
 	
-	# Set to Mualijae (wrong ethnicity)
-	hero.ethnicity = &"mualijae"
+	# Set to Torvallan (wrong ethnicity)
+	hero.ethnicity = &"torvallan"
 	assert_false(PFPrerequisiteEngine.evaluate(shadow_data["prerequisites"], hero, shadow_traits))
 	
-	# Set to Nidalese (correct ethnicity)
-	hero.ethnicity = &"nidalese"
+	# Set to Ashen Nomad (correct ethnicity)
+	hero.ethnicity = &"ashen_nomad"
 	assert_true(PFPrerequisiteEngine.evaluate(shadow_data["prerequisites"], hero, shadow_traits))
 	
 func test_archetype_dedication_lock():

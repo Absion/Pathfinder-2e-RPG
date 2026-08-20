@@ -29,7 +29,8 @@ func before_each():
 
 func after_each():
 	PFContext.cleanup_shared_services()
-	actor.queue_free()
+	if is_instance_valid(actor):
+		actor.free()
 
 func test_draw_weapon():
 	var ActionInteract = load("res://scripts/actions/combat/pf_action_interact.gd")
@@ -106,7 +107,7 @@ func test_pass_item():
 	await action_pass.execute(actor, ally)
 	assert_null(actor.inventory.held_main_hand, "Actor should not hold potion")
 	assert_eq(ally.inventory.held_main_hand, potion, "Ally should hold potion")
-	ally.queue_free()
+	ally.free()
 
 func test_throw_item():
 	var enemy = PFNpc.new("enemy_1", "Enemy", [&"humanoid"], 1, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -118,7 +119,7 @@ func test_throw_item():
 	await action_throw.execute(actor, enemy)
 	assert_null(actor.inventory.held_main_hand, "Actor should not hold potion")
 	assert_eq(potion.current_hp, 0, "Consumable potion should shatter")
-	enemy.queue_free()
+	enemy.free()
 
 func test_change_grip():
 	actor.inventory.hold_item(sword, true)

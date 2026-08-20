@@ -1,8 +1,10 @@
 extends GutTest
 
+var database: PFDatabase
+
 func before_all():
 	PFContext.init_shared_services()
-	var database = PFDatabase.get_instance()
+	database = PFDatabase.get_instance()
 	if database == null:
 		database = PFDatabase.new()
 		add_child_autofree(database)
@@ -18,7 +20,10 @@ func test_ancestry_weapon_familiarity():
 	elf.feats.append(feat)
 	
 	# Give them an ancestry
-	elf.ancestry = PFAncestry.new("Elf", 6, &"medium", 30, [], [], [], [], PFBiographyConstants.Vision.LOW_LIGHT, [], 0, 0, 0, 0, [], [], "", "", "", "", [], [], [], [&"elf", &"humanoid"])
+	elf.ancestry = database.get_ancestry("elf")
+	if elf.ancestry == null:
+		elf.ancestry = PFAncestry.new("Elf", 6, &"medium", 30)
+		elf.ancestry.traits = [&"elf", &"humanoid"]
 	
 	
 	# Mock sheet and stats
@@ -53,4 +58,3 @@ func test_ancestry_weapon_familiarity():
 
 func after_all():
 	PFContext.cleanup_shared_services()
-

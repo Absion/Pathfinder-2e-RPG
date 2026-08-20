@@ -37,8 +37,6 @@ var _backgrounds_cache: Dictionary = {}
 
 var _spell_variants_cache: Dictionary = {}
 var _domains_cache: Dictionary = {}
-var _edicts_cache: Dictionary = {}
-var _anathemas_cache: Dictionary = {}
 var _deities_cache: Dictionary = {}
 
 static var _instance_cache: PFDatabase = null
@@ -131,40 +129,63 @@ func _ensure_ancestries_columns() -> void:
 
 func _parse_stringname_array(val: Variant) -> Array[StringName]:
 	var result: Array[StringName] = []
-	if val == null:
+	if val == null: return result
+	if val is Array:
+		for item in val:
+			result.append(StringName(str(item).strip_edges()))
 		return result
-	var s_val = String(val).strip_edges()
-	if s_val == "":
-		return result
-	if s_val.begins_with("["):
-		var parsed = JSON.parse_string(s_val)
+	var s = str(val).strip_edges()
+	if s == "" or s == "[]": return result
+	
+	if s.begins_with("[") and s.contains('"'):
+		var parsed = JSON.parse_string(s)
 		if parsed is Array:
 			for item in parsed:
-				result.append(StringName(item))
-	else:
-		for item in s_val.split(","):
-			var trimmed = item.strip_edges()
-			if trimmed != "":
-				result.append(StringName(trimmed))
+				result.append(StringName(str(item).strip_edges()))
+			return result
+			
+	if s.to_lower().contains("two free"):
+		result.append(&"FREE")
+		result.append(&"FREE")
+		return result
+		
+	s = s.trim_prefix("[").trim_suffix("]")
+	for part in s.split(","):
+		var cleaned = part.strip_edges().trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'")
+		if cleaned != "":
+			var upper = cleaned.to_upper()
+			var lower = cleaned.to_lower()
+			if upper in ["STR", "DEX", "CON", "INT", "WIS", "CHA", "FREE"]:
+				result.append(StringName(upper))
+			elif lower in ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma", "free"]:
+				var m = {"strength": &"STR", "dexterity": &"DEX", "constitution": &"CON", "intelligence": &"INT", "wisdom": &"WIS", "charisma": &"CHA", "free": &"FREE"}
+				result.append(m[lower])
+			else:
+				result.append(StringName(lower))
 	return result
 
 func _parse_string_array(val: Variant) -> Array[String]:
 	var result: Array[String] = []
-	if val == null:
+	if val == null: return result
+	if val is Array:
+		for item in val:
+			result.append(str(item).strip_edges())
 		return result
-	var s_val = String(val).strip_edges()
-	if s_val == "":
-		return result
-	if s_val.begins_with("["):
-		var parsed = JSON.parse_string(s_val)
+	var s = str(val).strip_edges()
+	if s == "" or s == "[]": return result
+	
+	if s.begins_with("[") and s.contains('"'):
+		var parsed = JSON.parse_string(s)
 		if parsed is Array:
 			for item in parsed:
-				result.append(String(item))
-	else:
-		for item in s_val.split(","):
-			var trimmed = item.strip_edges()
-			if trimmed != "":
-				result.append(String(trimmed))
+				result.append(str(item).strip_edges())
+			return result
+			
+	s = s.trim_prefix("[").trim_suffix("]")
+	for part in s.split(","):
+		var cleaned = part.strip_edges().trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'")
+		if cleaned != "":
+			result.append(cleaned)
 	return result
 
 func _initialize_schema_if_needed():
@@ -1083,31 +1104,33 @@ func _seed_data():
 	# Seed Regions
 	database.query("INSERT OR IGNORE INTO regions (id, name, description) VALUES 
 		('unknown', 'Unknown', 'An unknown region.'),
-		('linvarre', 'Linvarre', 'A coastal nation known for its bustling ports and diverse trade.'),
-		('absalom', 'Absalom', 'The City at the Center of the World, a massive metropolis on the Isle of Kortos.'),
-		('andoran', 'Andoran', 'A fledgling democracy that threw off the shackles of Chelaxian rule.'),
-		('cheliax', 'Cheliax', 'An infernal empire where devil-binding is practiced openly by the nobility.'),
-		('taldor', 'Taldor', 'A declining empire clinging to the glory of its past.'),
-		('qadira', 'Qadira', 'The westernmost satrapy of the vast Padishah Empire of Kelesh.');")
+		('cordoval', 'Grand Duchy of Cordoval', 'A proud Mediterranean civilization of grand aqueducts, sunlit cathedrals, and terraced vineyards.'),
+		('torvalla', 'Frost-Marked Concordat of Torvalla', 'A resilient alpine confederation of fjord settlements, runic blacksmiths, and disciplined shield-walls.'),
+		('calatara', 'Sun-Gilded League of Calatara', 'A vibrant cosmopolitan coalition of tropical archipelago ports, floating markets, and merchant fleets.'),
+		('shahrazar', 'Grand Sultanate of Shahrazar', 'An ancient desert empire of glass domes, oasis bazaars, and alchemical observatories.'),
+		('qing_ling', 'Jade Hegemony of Qing-Ling', 'An isolated mountain realm immersed in martial asceticism, celestial divination, and jade artistry.'),
+		('caerwen', 'Freeholds of Caerwen', 'Sprawling primeval woodlands governed by agrarian communes and ancient druidic circles.'),
+		('mal_kharum', 'Ashen Cradle of Mal-Kharum', 'Scorched volcanic badlands and fractured leylines where hardy prospectors and nomads survive.');")
 		
 	# Seed Heritages
 	# vision_override: -1 (no change), 0 (Normal), 1 (Low-Light), 2 (Darkvision)
 	database.query("INSERT OR IGNORE INTO heritages (id, name, traits, rarity, ancestry_id, is_versatile, hp_bonus, size_id, speed_bonus, vision_override, granted_traits, granted_items, granted_abilities, description) VALUES 
 		('forge_dwarf', 'Forge Dwarf', '[]', 0, 'dwarf', 0, 0, '', 0, -1, '[\"fire_resistance\"]', '[]', '[]', ''),
-		('undine', 'Undine', '[]', 0, '', 1, 0, '', 0, 1, '[\"undine\", \"amphibious\"]', '[]', '[]', 'You are descended from elemental beings of water.'),
-		('half_elf', 'Half-Elf', '[]', 0, '', 1, 0, '', 0, 1, '[\"elf\", \"half-elf\"]', '[]', '[]', 'You have both human and elven blood.'),
-		('skilled_heritage', 'Skilled Heritage', '[]', 0, 'human', 0, 0, '', 0, -1, '[]', '[]', '[]', 'Your ingenuity allows you to train in a wide variety of skills.'),
-		('versatile_heritage', 'Versatile Heritage', '[]', 0, 'human', 0, 0, '', 0, -1, '[]', '[]', '[]', 'Humanity''s versatility grants you an extra general feat.');")
+		('nephilim', 'Nephilim', '[\"nephilim\", \"planar\"]', 0, '', 1, 0, '', 0, 1, '[\"nephilim\"]', '[]', '[\"nephilim_feat_access\"]', 'Infused with planar cosmic, fiendish, or celestial essence, you gain low-light vision and access to nephilim lineage feats.'),
+		('half_elf', 'Half-Elf', '[\"aiuvarin\", \"elf\", \"humanoid\"]', 0, '', 1, 0, '', 0, 1, '[\"elf\"]', '[]', '[\"elf_feat_access\"]', 'Expressing mixed elven heritage alongside any mortal ancestry, you gain pointed ears, low-light vision, the elf trait, and access to elf feats.'),
+		('half_orc', 'Half-Orc', '[\"dromaar\", \"orc\", \"humanoid\"]', 0, '', 1, 0, '', 0, 1, '[\"orc\"]', '[]', '[\"orc_feat_access\"]', 'Expressing mixed orcish heritage alongside any mortal ancestry, you gain lower tusks, low-light vision, the orc trait, and access to orc feats.');")
 		
 	database.query("INSERT OR IGNORE INTO ethnicities (id, name, required_traits, description) VALUES 
-		('nidalese', 'Nidalese', '[\"human\"]', 'Humans from the shadowy nation of Nidal.'),
-		('keleshite', 'Keleshite', '[\"human\"]', 'Humans from the vast Padishah Empire of Kelesh.'),
-		('mualijae', 'Mualijae', '[\"elf\"]', 'Elves from the Mwangi Expanse.'),
-		('kellid', 'Kellid', '[\"human\"]', 'Rugged human survivors from the harsh northern reaches of Avistan.'),
-		('taldan', 'Taldan', '[\"human\"]', 'Humans originating from the mighty, though fading, empire of Taldor.'),
-		('varisian', 'Varisian', '[\"human\"]', 'Nomadic humans known for their deep connection to the ancient magics of Varisia.'),
-		('mwangi', 'Mwangi', '[\"human\"]', 'Humans from the diverse and vibrant Mwangi Expanse.'),
-		('tian', 'Tian', '[\"human\"]', 'Humans tracing their lineage back to the distant continent of Tian Xia.');")
+		('cordovalen', 'Cordovalen', '[\"human\", \"halfling\", \"catfolk\", \"dogfolk\"]', 'Descendants of the Sovereign Grand Duchy of Cordoval, accustomed to terraced vineyards, grand aqueducts, and strict civic order.'),
+		('torvallan', 'Torvallan', '[\"human\", \"dwarf\", \"orc\", \"titanborn\", \"bullfolk\"]', 'Hardy folk of the Frost-Marked Concordat of Torvalla, forged by harsh glacial winters, disciplined shield-walls, and runic crafts.'),
+		('calataran', 'Calataran', '[\"human\", \"halfling\", \"catfolk\", \"birdfolk\", \"monkeyfolk\", \"kobold\", \"lizardfolk\"]', 'Cosmopolitan mariners, merchant sailors, and archipelago navigators of the Sun-Gilded League of Calatara.'),
+		('shahrazari', 'Shahrazari', '[\"human\", \"gnome\", \"foxfolk\", \"snakefolk\", \"hyenafolk\"]', 'Desert scholars, glass artisans, and alchemical masters tracing lineage to the Grand Sultanate of Shahrazar and its oasis bazaars.'),
+		('qing_ling', 'Qing-Ling', '[\"human\", \"elf\", \"monkeyfolk\", \"foxfolk\", \"snakefolk\"]', 'Inhabitants of the isolated Jade Hegemony beyond the Serpent''s Maw, immersed in celestial astrology, martial asceticism, and jade craft.'),
+		('caerweni', 'Caerweni', '[\"human\", \"elf\", \"halfling\", \"leshy\", \"horsefolk\", \"dogfolk\", \"frogfolk\"]', 'Woodland agrarian folk of the Freeholds of Caerwen, living in harmony with primeval rainforests and ancient druidic groves.'),
+		('mal_kharumi', 'Mal-Kharumi', '[\"human\", \"orc\", \"goblin\", \"hobgoblin\", \"titanborn\", \"shadowman\"]', 'Frontier survivors and prospectors dwelling in the scorched volcanic badlands and ancient monoliths of the Ashen Cradle.'),
+		('ashen_nomad', 'Ashen Nomad', '[\"human\", \"orc\", \"shadowman\", \"hyenafolk\"]', 'Wandering wasteland tribes traversing the dust basins where ancient leylines shattered during the Resource Wars.'),
+		('fey_tethered', 'Fey-Tethered', '[\"gnome\", \"sprite\", \"kobold\", \"leshy\"]', 'Lineages retaining intense attunement to First World planar conduits and dream-resonating leylines.'),
+		('deep_delver', 'Deep Delver', '[\"dwarf\", \"goblin\", \"kobold\", \"ratfolk\"]', 'Subterranean clan-dwellers who have inhabited deep crystalline mines and volcanic caverns for generations.');")
 		
 	database.query("INSERT OR IGNORE INTO backgrounds (id, name, boosts, flaws, traits, granted_items, granted_abilities, description) VALUES 
 		('acolyte', 'Acolyte', '[\"WIS\", \"FREE\"]', '[]', '[]', '[]', '[]', 'You spent your early days in a religious monastery.');")
@@ -1127,7 +1150,7 @@ func _seed_data():
 		
 	database.query("INSERT OR IGNORE INTO feats (id, name, feat_type, level, traits, prerequisites, granted_rules, description) VALUES 
 		('natural_ambition', 'Natural Ambition', 0, 1, '[\"human\"]', '{\"ancestry\": \"human\"}', '{}', 'You gain an extra 1st-level class feat.'),
-		('nidalese_shadowcaster', 'Nidalese Shadowcaster', 0, 1, '[\"human\"]', '{\"ethnicity\": \"nidalese\"}', '{}', 'You harness the shadows of Nidal.'),
+		('ashen_shadowcaster', 'Ashen Shadowcaster', 0, 1, '[\"human\"]', '{\"ethnicity\": \"ashen_nomad\"}', '{}', 'You harness the planar shadow residue of the shattered leylines.'),
 		('acrobat_dedication', 'Acrobat Dedication', 4, 2, '[\"dedication\", \"archetype\", \"acrobat\"]', '{\"min_stats\": {\"dex\": 2}, \"min_proficiency\": {\"acrobatics\": 1}}', '{\"set_proficiency\": {\"acrobatics\": 2}}', 'You become an acrobat.'),
 		('dodge_away', 'Dodge Away', 4, 4, '[\"archetype\", \"acrobat\"]', '{\"requires_feat\": \"acrobat_dedication\"}', '{}', 'You dodge incoming attacks.'),
 		('acrobat_grace', 'Acrobat Grace', 4, 4, '[\"archetype\", \"acrobat\"]', '{\"requires_feat\": \"acrobat_dedication\"}', '{}', 'You move with extreme grace.'),
@@ -1365,27 +1388,55 @@ func get_ethnicity_data(ethnicity_id: StringName) -> Dictionary:
 		return data
 	return {}
 
+func get_available_heritages_for_ancestry(ancestry_id: String) -> Array[Dictionary]:
+	if database == null: return []
+	var result: Array[Dictionary] = []
+	var sql = "SELECT id, name, description, is_versatile, ancestry_id FROM heritages WHERE ancestry_id = '" + ancestry_id + "' OR is_versatile = 1 OR ancestry_id = '' ORDER BY is_versatile ASC, name ASC;"
+	if database.query(sql):
+		for row in database.query_result:
+			result.append(row)
+	return result
+
 func get_available_ethnicities_for_traits(actor_traits: Array[StringName]) -> Array[Dictionary]:
 	if database == null: return []
 	
-	database.query("SELECT * FROM ethnicities;")
+	database.query("SELECT * FROM ethnicities ORDER BY name ASC;")
 	var all_ethnicities = database.query_result
 	var valid_ethnicities: Array[Dictionary] = []
 	
+	var lower_actor_traits: Array[String] = []
+	for t in actor_traits:
+		lower_actor_traits.append(str(t).strip_edges().to_lower())
+	
 	for row in all_ethnicities:
-		var reqs = JSON.parse_string(row["required_traits"]) if row["required_traits"] != "" else []
-		var meets_reqs = true
-		for req in reqs:
-			if not actor_traits.has(StringName(req)):
-				meets_reqs = false
-				break
+		var reqs: Array = []
+		var raw_reqs = row.get("required_traits", "")
+		if raw_reqs != null and str(raw_reqs) != "":
+			var parsed = JSON.parse_string(str(raw_reqs))
+			if parsed is Array:
+				reqs = parsed
+			else:
+				var cleaned = str(raw_reqs).trim_prefix("[").trim_suffix("]")
+				for p in cleaned.split(","):
+					var c = p.strip_edges().trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'").to_lower()
+					if c != "": reqs.append(c)
+					
+		var meets_reqs = false
+		if reqs.is_empty():
+			meets_reqs = true
+		else:
+			for req in reqs:
+				var clean_req = str(req).strip_edges().to_lower()
+				if lower_actor_traits.has(clean_req):
+					meets_reqs = true
+					break
 		
 		if meets_reqs:
 			valid_ethnicities.append({
 				"id": StringName(row["id"]),
 				"name": row["name"],
 				"required_traits": reqs,
-				"description": row["description"]
+				"description": row.get("description", "")
 			})
 			
 	return valid_ethnicities
@@ -2005,6 +2056,58 @@ func get_edict_data(edict_id: String) -> Dictionary:
 
 func get_anathema_data(anathema_id: String) -> Dictionary:
 	return get_belief_data(StringName(anathema_id))
+
+func get_deity(id: String) -> PFDeity:
+	if _deities_cache.has(id):
+		return _deities_cache[id]
+		
+	database.query("SELECT * FROM deities WHERE id = '" + id + "'")
+	if database.query_result.size() == 0:
+		push_error("PFDatabase: Deity not found -> " + id)
+		return null
+		
+	var row = database.query_result[0]
+	var deity = PFDeity.new(row.get("name", ""), [], PFBiographyConstants.Rarity.COMMON)
+	deity.id = StringName(id)
+	deity.title = row.get("title", "")
+	deity.category = row.get("category", "")
+	deity.description = row.get("description", "")
+	deity.religious_symbol = row.get("religious_symbol", "")
+	deity.sacred_animal = row.get("sacred_animal", "")
+	deity.favored_weapon = StringName(row.get("favored_weapon", ""))
+	deity.divine_skill = StringName(row.get("divine_skill", ""))
+	
+	# Parse divine sanctification
+	var sanct_raw = str(row.get("divine_sanctification", "none")).strip_edges().to_lower()
+	if sanct_raw == "1" or sanct_raw == "must choose holy":
+		deity.divine_sanctification = PFBiographyConstants.DivineSanctification.MUST_CHOOSE_HOLY
+	elif sanct_raw == "2" or sanct_raw == "must choose unholy":
+		deity.divine_sanctification = PFBiographyConstants.DivineSanctification.MUST_CHOOSE_UNHOLY
+	elif sanct_raw == "3" or sanct_raw == "can choose holy":
+		deity.divine_sanctification = PFBiographyConstants.DivineSanctification.CAN_CHOOSE_HOLY
+	elif sanct_raw == "4" or sanct_raw == "can choose unholy":
+		deity.divine_sanctification = PFBiographyConstants.DivineSanctification.CAN_CHOOSE_UNHOLY
+	elif sanct_raw == "5" or sanct_raw == "can choose either" or sanct_raw == "can choose holy or unholy":
+		deity.divine_sanctification = PFBiographyConstants.DivineSanctification.CAN_CHOOSE_EITHER
+	else:
+		deity.divine_sanctification = PFBiographyConstants.DivineSanctification.NONE
+		
+	deity.edicts = _parse_stringname_array(row.get("edicts", ""))
+	deity.anathema = _parse_stringname_array(row.get("anathema", ""))
+	deity.domains = _parse_string_array(row.get("domains", ""))
+	deity.alternate_domains = _parse_string_array(row.get("alternate_domains", ""))
+	deity.sacred_colors = _parse_string_array(row.get("sacred_colors", ""))
+	deity.divine_font = _parse_string_array(row.get("divine_font", ""))
+	deity.divine_attributes = _parse_stringname_array(row.get("divine_attributes", ""))
+	
+	var spells_raw = row.get("cleric_spells", "")
+	if spells_raw != null and str(spells_raw) != "":
+		var json = JSON.new()
+		if json.parse(str(spells_raw)) == OK and json.data is Dictionary:
+			deity.cleric_spells = json.data
+			
+	_deities_cache[id] = deity
+	return deity
 
 # --- SPELL VARIANTS ---
 
