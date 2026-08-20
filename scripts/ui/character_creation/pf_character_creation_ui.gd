@@ -644,7 +644,7 @@ func _rebuild_abilities():
 	var hbox_total = HBoxContainer.new()
 	for s in stats:
 		var lbl = Label.new()
-		lbl.text = str(s) + ": 10 "
+		lbl.text = str(s) + ": 10 (+0)"
 		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		hbox_total.add_child(lbl)
 		attr_labels[s] = lbl
@@ -718,7 +718,10 @@ func _calculate_live_attributes():
 			
 	for stat in scores:
 		if attr_labels.has(stat):
-			attr_labels[stat].text = str(stat) + ": " + str(scores[stat])
+			var score = scores[stat]
+			var mod = int(floor((score - 10) / 2.0))
+			var mod_str = "+" + str(mod) if mod >= 0 else str(mod)
+			attr_labels[stat].text = "%s: %d (%s)" % [stat, score, mod_str]
 			
 	var new_int_mod = floor((scores["INT"] - 10) / 2.0)
 	if new_int_mod != int_mod:

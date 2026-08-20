@@ -57,3 +57,6 @@
 ## 2024-08-17 - Prevent False Affordances on Disabled Custom Buttons
 **Learning:** In Godot 4 programmatic UI, when manually implementing hover/focus visual states (e.g., modifying modulate color) on Buttons via mouse/focus signals, the visual state changes even when the button is disabled, creating a false clickability affordance.
 **Action:** Always include a `not button.disabled` condition in the custom visual update handler so disabled buttons do not visually respond to hover or focus.
+## 2026-08-20 - Displaying Derived Modifiers in Stat UI
+**Learning:** In RPG UI, displaying only raw ability scores without their derived modifiers forces users to mentally calculate the math, increasing cognitive load and hiding the actual system impact of their choices.
+**Action:** Always append the mathematically derived modifier (e.g., `+2` or `-1`) alongside raw ability scores in character creation and sheet UIs to provide immediate, actionable feedback.
