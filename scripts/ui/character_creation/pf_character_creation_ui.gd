@@ -327,9 +327,9 @@ func _format_ancestry_info(a_id: String) -> String:
 		PFBiographyConstants.Vision.LOW_LIGHT: vision_str = "Low-Light Vision"
 		PFBiographyConstants.Vision.DARKVISION: vision_str = "Darkvision"
 		_: vision_str = "Normal"
-	var senses_raw = str(raw.get("additional_senses", ""))
+	var senses_raw = str(raw.get("additional_senses", "")).strip_edges()
 	if senses_raw != "" and senses_raw != "None":
-		vision_str += " (%s)" % senses_raw
+		vision_str += ", " + senses_raw
 	out.append("[b]• Senses:[/b] %s" % vision_str)
 	
 	var langs_raw = str(raw.get("known_languages", ""))
@@ -365,12 +365,20 @@ func _format_ancestry_info(a_id: String) -> String:
 		out.append("[b][color=gold]Sample Names[/color][/b]")
 		var json = JSON.new()
 		if json.parse(names_raw) == OK and json.data is Dictionary:
+			var label_map = {
+				"male": "Male Names",
+				"female": "Female Names",
+				"clan": "Family / Clan Names",
+				"family": "Family / Clan Names",
+				"names": "Sample Names"
+			}
 			for cat in json.data.keys():
+				var label = label_map.get(str(cat).to_lower(), str(cat).capitalize() + " Names")
 				var names_list: Array = json.data[cat]
 				var formatted_list: Array[String] = []
 				for n in names_list:
 					formatted_list.append(str(n))
-				out.append("[b]• %s:[/b] %s" % [str(cat).capitalize(), ", ".join(formatted_list)])
+				out.append("[b]• %s:[/b] %s" % [label, ", ".join(formatted_list)])
 		else:
 			out.append(names_raw)
 			
