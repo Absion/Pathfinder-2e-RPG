@@ -404,6 +404,21 @@ func _parse_array_field(val: Variant) -> Array[String]:
 			result.append(cleaned)
 	return result
 
+func _format_feature_label(feature_id: String) -> String:
+	var s = feature_id.strip_edges()
+	var words = s.split("_")
+	var formatted_words: Array[String] = []
+	for w in words:
+		if w != "":
+			var low = w.to_lower()
+			if low in ["1d4", "1d6", "1d8", "1d10", "1d12", "5ft", "15ft", "30ft"]:
+				formatted_words.append("(%s)" % w.to_upper())
+			elif low == "2":
+				formatted_words.append("2")
+			else:
+				formatted_words.append(w.capitalize())
+	return " ".join(formatted_words)
+
 func _format_heritage_info(h_id: String) -> String:
 	var raw = db.get_heritage_raw_data(h_id)
 	if raw.is_empty():
@@ -462,7 +477,8 @@ func _format_heritage_info(h_id: String) -> String:
 		var parsed = _parse_array_field(g_abil)
 		if not parsed.is_empty():
 			var clean: Array[String] = []
-			for a in parsed: clean.append(a.replace("_", " ").capitalize())
+			for a in parsed:
+				clean.append(_format_feature_label(a))
 			out.append("[b]• Granted Features:[/b] [color=lightgreen]%s[/color]" % ", ".join(clean))
 			
 	return "\n".join(out)
