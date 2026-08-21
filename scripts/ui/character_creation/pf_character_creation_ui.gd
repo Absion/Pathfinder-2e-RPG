@@ -281,6 +281,101 @@ func _update_info_panel(title: String, desc: String, extra_stats: String = ""):
 		full_text += "\n\n[color=lightblue]" + extra_stats + "[/color]"
 	info_desc.text = full_text
 
+func _format_ancestry_info(a_id: String) -> String:
+	var raw = db.get_ancestry_raw_data(a_id)
+	var ancestry = db.get_ancestry(a_id)
+	if ancestry == null:
+		return "No details available."
+		
+	var out: Array[String] = []
+	
+	# Overview description
+	var desc = raw.get("description", "")
+	if desc == "":
+		desc = raw.get("ancestry_description", "")
+	if desc != "":
+		out.append(desc)
+		out.append("")
+		
+	# Mechanics summary
+	out.append("[b][color=gold]Ancestry Mechanics[/color][/b]")
+	out.append("[b]• Hit Points:[/b] %d" % ancestry.hp)
+	out.append("[b]• Size:[/b] %s" % str(ancestry.size_id).capitalize())
+	
+	var speed_str = "%d feet" % ancestry.speed
+	if ancestry.speed_fly > 0: speed_str += ", Fly %d ft" % ancestry.speed_fly
+	if ancestry.speed_swim > 0: speed_str += ", Swim %d ft" % ancestry.speed_swim
+	if ancestry.speed_climb > 0: speed_str += ", Climb %d ft" % ancestry.speed_climb
+	if ancestry.speed_burrow > 0: speed_str += ", Burrow %d ft" % ancestry.speed_burrow
+	out.append("[b]• Speed:[/b] %s" % speed_str)
+	
+	var boosts_raw = str(raw.get("boosts", ""))
+	if boosts_raw == "":
+		var b_list: Array[String] = []
+		for b in ancestry.ability_boosts:
+			b_list.append(str(b).capitalize())
+		boosts_raw = ", ".join(b_list)
+	out.append("[b]• Ability Boosts:[/b] [color=lightgreen]%s[/color]" % boosts_raw)
+	
+	var flaws_raw = str(raw.get("flaws", ""))
+	if flaws_raw == "":
+		flaws_raw = "None"
+	out.append("[b]• Ability Flaw:[/b] [color=coral]%s[/color]" % flaws_raw)
+	
+	var vision_str = "Normal"
+	match ancestry.vision:
+		PFBiographyConstants.Vision.LOW_LIGHT: vision_str = "Low-Light Vision"
+		PFBiographyConstants.Vision.DARKVISION: vision_str = "Darkvision"
+		PFBiographyConstants.Vision.GREATER_DARKVISION: vision_str = "Greater Darkvision"
+	var senses_raw = str(raw.get("additional_senses", ""))
+	if senses_raw != "" and senses_raw != "None":
+		vision_str += " (%s)" % senses_raw
+	out.append("[b]• Senses:[/b] %s" % vision_str)
+	
+	var langs_raw = str(raw.get("known_languages", ""))
+	if langs_raw == "":
+		langs_raw = "Common"
+	out.append("[b]• Languages:[/b] %s" % langs_raw)
+	
+	var traits_raw = str(raw.get("traits", "")).trim_prefix("[").trim_suffix("]").replace('"', '')
+	out.append("[b]• Traits:[/b] [color=lightblue]%s[/color]" % traits_raw)
+	out.append("")
+	
+	# Lore Details
+	var phys_desc = str(raw.get("physical_description", ""))
+	if phys_desc != "":
+		out.append("[b][color=gold]Physical Description[/color][/b]")
+		out.append(phys_desc)
+		out.append("")
+		
+	var soc_desc = str(raw.get("societal_description", ""))
+	if soc_desc != "":
+		out.append("[b][color=gold]Society & Culture[/color][/b]")
+		out.append(soc_desc)
+		out.append("")
+		
+	var beliefs = str(raw.get("common_beliefs", ""))
+	if beliefs != "":
+		out.append("[b][color=gold]Beliefs & Religion[/color][/b]")
+		out.append(beliefs)
+		out.append("")
+		
+	var names_raw = str(raw.get("common_names", ""))
+	if names_raw != "":
+		out.append("[b][color=gold]Sample Names[/color][/b]")
+		var json = JSON.new()
+		if json.parse(names_raw) == OK and json.data is Dictionary:
+			for cat in json.data.keys():
+				var names_list: Array = json.data[cat]
+				var formatted_list: Array[String] = []
+				for n in names_list:
+					formatted_list.append(str(n))
+				out.append("[b]• %s:[/b] %s" % [str(cat).capitalize(), ", ".join(formatted_list)])
+		else:
+			out.append(names_raw)
+			
+	return "\n".join(out)
+
 # --- Signals ---
 
 func _on_name_changed(new_text: String):
@@ -321,7 +416,7 @@ func _on_ancestry_selected(index: int):
 		var a_id = opt_ancestry.get_item_metadata(index)
 		manager.draft_ancestry_id = a_id
 		var item = _ancestries[index - 1]
-		_update_info_panel(item["name"], item.get("description", "No description available."))
+		_update_info_panel(item["name"], _format_ancestry_info(a_id))
 		
 		# Fetch ancestry entity to get traits
 		var ancestry = db.get_ancestry(a_id)

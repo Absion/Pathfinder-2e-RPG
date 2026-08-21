@@ -1836,6 +1836,12 @@ func get_ancestry(id: String) -> PFAncestry:
 
 	return new_ancestry
 
+func get_ancestry_raw_data(id: String) -> Dictionary:
+	if _ancestries_cache.has(id):
+		return _ancestries_cache[id]
+	get_ancestry(id)
+	return _ancestries_cache.get(id, {})
+
 func get_background(id: String) -> PFBackground:
 	var row: Dictionary
 	if _backgrounds_cache.has(id):
