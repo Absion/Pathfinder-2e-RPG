@@ -384,6 +384,89 @@ func _format_ancestry_info(a_id: String) -> String:
 			
 	return "\n".join(out)
 
+func _parse_array_field(val: Variant) -> Array[String]:
+	var result: Array[String] = []
+	if val == null: return result
+	if val is Array:
+		for item in val: result.append(str(item).strip_edges())
+		return result
+	var s = str(val).strip_edges()
+	if s == "" or s == "[]": return result
+	if s.begins_with("[") and s.contains('"'):
+		var json = JSON.new()
+		if json.parse(s) == OK and json.data is Array:
+			for item in json.data: result.append(str(item).strip_edges())
+			return result
+	s = s.trim_prefix("[").trim_suffix("]")
+	for part in s.split(","):
+		var cleaned = part.strip_edges().trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'")
+		if cleaned != "":
+			result.append(cleaned)
+	return result
+
+func _format_heritage_info(h_id: String) -> String:
+	var raw = db.get_heritage_raw_data(h_id)
+	if raw.is_empty():
+		return "No details available."
+		
+	var out: Array[String] = []
+	var desc = raw.get("description", "")
+	if desc != "":
+		out.append(desc)
+		out.append("")
+		
+	out.append("[b][color=gold]Heritage Mechanics[/color][/b]")
+	
+	var is_versatile = int(raw.get("is_versatile", 0)) == 1
+	var anc_id = str(raw.get("ancestry_id", ""))
+	if is_versatile:
+		out.append("[b]• Type:[/b] [color=lightblue]Versatile Heritage[/color] (Can be chosen by any ancestry)")
+	else:
+		var anc_display = anc_id.capitalize() if anc_id != "" else "Ancestry"
+		out.append("[b]• Type:[/b] %s Heritage" % anc_display)
+		
+	var rarity = int(raw.get("rarity", 0))
+	var rarity_names = ["Common", "Uncommon", "Rare", "Unique"]
+	var rarity_str = rarity_names[rarity] if rarity >= 0 and rarity < rarity_names.size() else "Common"
+	if rarity > 0:
+		out.append("[b]• Rarity:[/b] [color=gold]%s[/color]" % rarity_str)
+	else:
+		out.append("[b]• Rarity:[/b] %s" % rarity_str)
+		
+	var hp_b = int(raw.get("hp_bonus", 0))
+	if hp_b > 0:
+		out.append("[b]• Hit Points:[/b] +%d HP" % hp_b)
+		
+	var spd_b = int(raw.get("speed_bonus", 0))
+	if spd_b > 0:
+		out.append("[b]• Speed Bonus:[/b] +%d feet" % spd_b)
+		
+	# Only display vision if it grants darkvision or low-light vision
+	var vis_ovr = int(raw.get("vision_override", 0))
+	if is_versatile or vis_ovr > 0:
+		if vis_ovr == 1:
+			out.append("[b]• Senses:[/b] Grants Low-Light Vision")
+		elif vis_ovr == 2:
+			out.append("[b]• Senses:[/b] Grants Darkvision")
+		
+	var g_traits = raw.get("granted_traits", "")
+	if g_traits != null and str(g_traits) != "" and str(g_traits) != "[]":
+		var parsed = _parse_array_field(g_traits)
+		if not parsed.is_empty():
+			var clean: Array[String] = []
+			for t in parsed: clean.append(t.capitalize())
+			out.append("[b]• Granted Traits:[/b] [color=lightblue]%s[/color]" % ", ".join(clean))
+			
+	var g_abil = raw.get("granted_abilities", "")
+	if g_abil != null and str(g_abil) != "" and str(g_abil) != "[]":
+		var parsed = _parse_array_field(g_abil)
+		if not parsed.is_empty():
+			var clean: Array[String] = []
+			for a in parsed: clean.append(a.replace("_", " ").capitalize())
+			out.append("[b]• Granted Features:[/b] [color=lightgreen]%s[/color]" % ", ".join(clean))
+			
+	return "\n".join(out)
+
 # --- Signals ---
 
 func _on_name_changed(new_text: String):
@@ -469,11 +552,16 @@ func _on_ancestry_selected(index: int):
 
 func _on_heritage_selected(index: int):
 	if index > 0 and index - 1 < _heritages.size():
-		manager.draft_heritage_id = opt_heritage.get_item_metadata(index)
+		var h_id = str(opt_heritage.get_item_metadata(index))
+		manager.draft_heritage_id = h_id
 		var item = _heritages[index - 1]
-		_update_info_panel(item["name"], item.get("description", "No description available."))
+		_update_info_panel(item["name"], _format_heritage_info(h_id))
 	else:
 		manager.draft_heritage_id = ""
+		if manager.draft_ancestry_id != "" and opt_ancestry.selected > 0:
+			_update_info_panel(_ancestries[opt_ancestry.selected - 1]["name"], _format_ancestry_info(manager.draft_ancestry_id))
+		else:
+			_update_info_panel("Details", "Hover or select an option to see details.")
 	_update_ui_state()
 
 func _on_ethnicity_selected(index: int):

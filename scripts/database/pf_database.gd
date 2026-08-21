@@ -1388,10 +1388,17 @@ func get_ethnicity_data(ethnicity_id: StringName) -> Dictionary:
 		return data
 	return {}
 
+func get_heritage_raw_data(id: String) -> Dictionary:
+	if database == null: return {}
+	database.query("SELECT * FROM heritages WHERE id = '" + id + "'")
+	if database.query_result.size() > 0:
+		return database.query_result[0]
+	return {}
+
 func get_available_heritages_for_ancestry(ancestry_id: String) -> Array[Dictionary]:
 	if database == null: return []
 	var result: Array[Dictionary] = []
-	var sql = "SELECT id, name, description, is_versatile, ancestry_id FROM heritages WHERE ancestry_id = '" + ancestry_id + "' OR is_versatile = 1 OR ancestry_id = '' ORDER BY is_versatile ASC, name ASC;"
+	var sql = "SELECT * FROM heritages WHERE ancestry_id = '" + ancestry_id + "' OR is_versatile = 1 OR ancestry_id = '' ORDER BY is_versatile ASC, name ASC;"
 	if database.query(sql):
 		for row in database.query_result:
 			result.append(row)
