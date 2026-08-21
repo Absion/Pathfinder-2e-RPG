@@ -326,7 +326,7 @@ func _format_ancestry_info(a_id: String) -> String:
 	match ancestry.vision:
 		PFBiographyConstants.Vision.LOW_LIGHT: vision_str = "Low-Light Vision"
 		PFBiographyConstants.Vision.DARKVISION: vision_str = "Darkvision"
-		PFBiographyConstants.Vision.GREATER_DARKVISION: vision_str = "Greater Darkvision"
+		_: vision_str = "Normal"
 	var senses_raw = str(raw.get("additional_senses", ""))
 	if senses_raw != "" and senses_raw != "None":
 		vision_str += " (%s)" % senses_raw
