@@ -121,6 +121,7 @@ func _build_ui():
 	
 	opt_gender = _add_dropdown("Gender")
 	opt_gender.add_item("--- Select Gender ---", PFBiographyConstants.Gender.UNKNOWN)
+	opt_gender.set_item_disabled(0, true)
 	opt_gender.add_item("Male", PFBiographyConstants.Gender.MALE)
 	opt_gender.add_item("Female", PFBiographyConstants.Gender.FEMALE)
 	opt_gender.add_item("Non-Binary", PFBiographyConstants.Gender.NON_BINARY)
@@ -140,6 +141,7 @@ func _build_ui():
 	
 	opt_heritage = _add_dropdown("Heritage")
 	opt_heritage.add_item("--- Select Heritage ---", -1)
+	opt_heritage.set_item_disabled(0, true)
 	opt_heritage.item_selected.connect(_on_heritage_selected)
 	opt_heritage.disabled = true
 	opt_heritage.mouse_default_cursor_shape = Control.CURSOR_ARROW
@@ -147,6 +149,7 @@ func _build_ui():
 	
 	opt_ethnicity = _add_dropdown("Ethnicity (Ancestry Restricted)")
 	opt_ethnicity.add_item("--- Select Ethnicity ---", -1)
+	opt_ethnicity.set_item_disabled(0, true)
 	opt_ethnicity.item_selected.connect(_on_ethnicity_selected)
 	opt_ethnicity.disabled = true
 	opt_ethnicity.mouse_default_cursor_shape = Control.CURSOR_ARROW
@@ -240,6 +243,7 @@ func _add_dropdown(label_text: String) -> OptionButton:
 func _populate_dropdowns():
 	# Populate Ancestries
 	opt_ancestry.add_item("--- Select Ancestry ---", -1)
+	opt_ancestry.set_item_disabled(0, true)
 	_ancestries = db.get_all_ancestries()
 	for i in range(_ancestries.size()):
 		opt_ancestry.add_item(_ancestries[i]["name"], i)
@@ -248,6 +252,7 @@ func _populate_dropdowns():
 		
 	# Populate Backgrounds
 	opt_background.add_item("--- Select Background ---", -1)
+	opt_background.set_item_disabled(0, true)
 	_backgrounds = db.get_all_backgrounds()
 	for i in range(_backgrounds.size()):
 		opt_background.add_item(_backgrounds[i]["name"], i)
@@ -256,6 +261,7 @@ func _populate_dropdowns():
 		
 	# Populate Classes
 	opt_class.add_item("--- Select Class ---", -1)
+	opt_class.set_item_disabled(0, true)
 	_classes = db.get_all_classes()
 	for i in range(_classes.size()):
 		opt_class.add_item(_classes[i]["name"], i)
@@ -264,7 +270,9 @@ func _populate_dropdowns():
 		
 	# Populate Nationalities and Birthplaces
 	opt_nationality.add_item("--- Select Nationality ---", -1)
+	opt_nationality.set_item_disabled(0, true)
 	opt_birthplace.add_item("--- Select Birthplace ---", -1)
+	opt_birthplace.set_item_disabled(0, true)
 	_regions = db.get_all_regions()
 	for i in range(_regions.size()):
 		opt_nationality.add_item(_regions[i]["name"], i)
@@ -427,6 +435,7 @@ func _on_ancestry_selected(index: int):
 		# 1. Populate Heritages for this Ancestry (+ Versatile Heritages)
 		opt_heritage.clear()
 		opt_heritage.add_item("--- Select Heritage ---", -1)
+		opt_heritage.set_item_disabled(0, true)
 		_heritages = db.get_available_heritages_for_ancestry(a_id)
 		for i in range(_heritages.size()):
 			var h_label = _heritages[i]["name"]
@@ -439,6 +448,7 @@ func _on_ancestry_selected(index: int):
 		# 2. Populate compatible Ethnicities
 		opt_ethnicity.clear()
 		opt_ethnicity.add_item("--- Select Ethnicity ---", -1)
+		opt_ethnicity.set_item_disabled(0, true)
 		_ethnicities = db.get_available_ethnicities_for_traits(traits)
 		for i in range(_ethnicities.size()):
 			opt_ethnicity.add_item(_ethnicities[i]["name"], i)
@@ -450,9 +460,11 @@ func _on_ancestry_selected(index: int):
 		manager.draft_bio["ethnicity_id"] = ""
 		opt_heritage.clear()
 		opt_heritage.add_item("--- Select Heritage ---", -1)
+		opt_heritage.set_item_disabled(0, true)
 		opt_heritage.selected = 0
 		opt_ethnicity.clear()
 		opt_ethnicity.add_item("--- Select Ethnicity ---", -1)
+		opt_ethnicity.set_item_disabled(0, true)
 		opt_ethnicity.selected = 0
 		_heritages.clear()
 		_ethnicities.clear()
