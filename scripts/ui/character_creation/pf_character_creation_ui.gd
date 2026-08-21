@@ -365,7 +365,8 @@ func _format_ancestry_info(a_id: String) -> String:
 		out.append("[b][color=gold]Sample Names[/color][/b]")
 		var json = JSON.new()
 		if json.parse(names_raw) == OK and json.data is Dictionary:
-			for cat in json.data.keys():
+			# ⚡ Bolt: Iterate directly over the dictionary to avoid allocating an Array via .keys()
+			for cat in json.data:
 				var names_list: Array = json.data[cat]
 				var formatted_list: Array[String] = []
 				for n in names_list:
