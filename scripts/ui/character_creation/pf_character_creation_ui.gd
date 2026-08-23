@@ -372,7 +372,8 @@ func _format_ancestry_info(a_id: String) -> String:
 				"family": "Family / Clan Names",
 				"names": "Sample Names"
 			}
-			for cat in json.data.keys():
+			# ⚡ Bolt: Iterate directly over the dictionary to avoid allocating an Array via .keys()
+			for cat in json.data:
 				var label = label_map.get(str(cat).to_lower(), str(cat).capitalize() + " Names")
 				var names_list: Array = json.data[cat]
 				var formatted_list: Array[String] = []
