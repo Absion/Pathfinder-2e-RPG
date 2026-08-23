@@ -57,3 +57,7 @@
 ## 2024-08-17 - Prevent False Affordances on Disabled Custom Buttons
 **Learning:** In Godot 4 programmatic UI, when manually implementing hover/focus visual states (e.g., modifying modulate color) on Buttons via mouse/focus signals, the visual state changes even when the button is disabled, creating a false clickability affordance.
 **Action:** Always include a `not button.disabled` condition in the custom visual update handler so disabled buttons do not visually respond to hover or focus.
+
+## 2024-05-18 - Visual Prompting in Godot OptionButtons
+**Learning:** In Godot UI forms, default "--- Select ---" placeholders in OptionButtons can be clicked/submitted if they are not explicitly disabled, causing confusing UX.
+**Action:** Always explicitly call `set_item_disabled(0, true)` on placeholder index 0 after adding it, so it acts purely as a visual prompt and cannot be selected.
