@@ -57,3 +57,12 @@
 ## 2024-08-17 - Prevent False Affordances on Disabled Custom Buttons
 **Learning:** In Godot 4 programmatic UI, when manually implementing hover/focus visual states (e.g., modifying modulate color) on Buttons via mouse/focus signals, the visual state changes even when the button is disabled, creating a false clickability affordance.
 **Action:** Always include a `not button.disabled` condition in the custom visual update handler so disabled buttons do not visually respond to hover or focus.
+## 2024-05-18 - [Stat Modifiers in Character Creation]
+**Learning:** In RPG UI components (like character creation or stat sheets), always append the mathematically derived modifier (e.g., `+2` or `-1`) alongside raw ability scores to provide immediate, actionable feedback and reduce cognitive load.
+**Action:** Update the live attribute calculation in the character creation UI to display both the score and the modifier.
+## 2024-05-18 - [Dropdown Placeholders UX]
+**Learning:** In Godot UI forms, when creating optional dropdowns (OptionButton), always include a default --- Select --- placeholder as the first option (index 0). Crucially, you must explicitly disable this item using \`set_item_disabled(0, true)\` so it acts as a visual prompt and prevents users from submitting the placeholder as a valid selection.
+**Action:** Always verify that placeholder items in OptionButton have their disabled state explicitly set.
+## 2024-05-18 - [No Open UI Improvements Left]
+**Learning:** After a thorough search, all suitable UX/accessibility improvements in `pf_action_menu.gd` and `pf_character_creation_ui.gd` (e.g., tooltips, focus management, hover states, ARIA-like roles, proper cursor shapes, placeholder disabled states, stat modifiers) appear to be implemented or have open PRs covering them.
+**Action:** When no valid, non-duplicate UX enhancements can be identified, gracefully exit without proposing code changes to avoid regressions or redundant PRs.
