@@ -363,8 +363,8 @@ func _format_ancestry_info(a_id: String) -> String:
 	var names_raw = str(raw.get("common_names", ""))
 	if names_raw != "":
 		out.append("[b][color=gold]Sample Names[/color][/b]")
-		var json = JSON.new()
-		if json.parse(names_raw) == OK and json.data is Dictionary:
+		var parsed_data = JSON.parse_string(names_raw)
+		if typeof(parsed_data) == TYPE_DICTIONARY:
 			var label_map = {
 				"male": "Male Names",
 				"female": "Female Names",
@@ -372,9 +372,9 @@ func _format_ancestry_info(a_id: String) -> String:
 				"family": "Family / Clan Names",
 				"names": "Sample Names"
 			}
-			for cat in json.data.keys():
+			for cat in parsed_data.keys():
 				var label = label_map.get(str(cat).to_lower(), str(cat).capitalize() + " Names")
-				var names_list: Array = json.data[cat]
+				var names_list: Array = parsed_data[cat]
 				var formatted_list: Array[String] = []
 				for n in names_list:
 					formatted_list.append(str(n))
@@ -393,9 +393,9 @@ func _parse_array_field(val: Variant) -> Array[String]:
 	var s = str(val).strip_edges()
 	if s == "" or s == "[]": return result
 	if s.begins_with("[") and s.contains('"'):
-		var json = JSON.new()
-		if json.parse(s) == OK and json.data is Array:
-			for item in json.data: result.append(str(item).strip_edges())
+		var parsed_data = JSON.parse_string(s)
+		if typeof(parsed_data) == TYPE_ARRAY:
+			for item in parsed_data: result.append(str(item).strip_edges())
 			return result
 	s = s.trim_prefix("[").trim_suffix("]")
 	for part in s.split(","):

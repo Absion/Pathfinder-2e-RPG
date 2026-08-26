@@ -56,3 +56,6 @@
 ## 2023-10-25 - Cache Godot properties for heavy spatial math
 **Learning:** In GDScript, accessing built-in Node properties (like `position` or `global_position`) crosses the GDScript-to-C++ boundary. When these properties are accessed multiple times in mathematical functions like `is_flanking()`, it creates unnecessary overhead.
 **Action:** Always extract and cache node properties into local variables before executing spatial operations or tight loops to minimize redundant C++ property accesses.
+## 2026-08-26 - Avoid JSON object allocation overhead
+**Learning:** In Godot 4, instantiating `JSON.new()` and calling `.parse()` allocates unnecessary objects and increases Garbage Collection pressure for simple data parsing.
+**Action:** Use the static method `JSON.parse_string()` instead when simple parsing is needed, bypassing the object allocation overhead.

@@ -2115,9 +2115,9 @@ func get_deity(id: String) -> PFDeity:
 	
 	var spells_raw = row.get("cleric_spells", "")
 	if spells_raw != null and str(spells_raw) != "":
-		var json = JSON.new()
-		if json.parse(str(spells_raw)) == OK and json.data is Dictionary:
-			deity.cleric_spells = json.data
+		var parsed_data = JSON.parse_string(str(spells_raw))
+		if typeof(parsed_data) == TYPE_DICTIONARY:
+			deity.cleric_spells = parsed_data
 			
 	_deities_cache[id] = deity
 	return deity

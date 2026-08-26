@@ -22,13 +22,10 @@ func _init(p_action_id: StringName):
 	
 	# The traits come out as a JSON string like '["move"]'
 	if raw_traits != "" and raw_traits != "[]":
-		var json = JSON.new()
-		var parse_result = json.parse(raw_traits)
-		if parse_result == OK:
-			var arr = json.get_data()
-			if typeof(arr) == TYPE_ARRAY:
-				for t in arr:
-					traits_array.append(StringName(t))
+		var arr = JSON.parse_string(raw_traits)
+		if typeof(arr) == TYPE_ARRAY:
+			for t in arr:
+				traits_array.append(StringName(t))
 					
 	super._init(action_name, traits_array, action_cost)
 	action_id = p_action_id
