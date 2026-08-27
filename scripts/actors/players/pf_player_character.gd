@@ -244,6 +244,10 @@ func apply_background(new_background: PFBackground) -> void:
 	for t in background.traits:
 		if not traits.has(t):
 			traits.append(t)
+	for s in background.trained_skills:
+		sheet.set_skill_rank(StringName(str(s).to_lower()), PFMathConstants.ProficiencyRank.TRAINED)
+	for l in background.trained_lores:
+		sheet.set_skill_rank(StringName(str(l).to_lower()), PFMathConstants.ProficiencyRank.TRAINED)
 	print("    > %s was a %s!" % [entity_name, background.entity_name])
 
 func apply_class(class_id: StringName) -> void:

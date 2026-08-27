@@ -27,6 +27,7 @@ var btn_finalize: Button
 # Dynamic UI Containers & Elements
 var chk_alt_boosts: CheckBox
 var ability_container: VBoxContainer
+var free_warning_label: Label
 var attr_labels: Dictionary = {}
 var int_mod: int = 0
 var languages_container: VBoxContainer
@@ -169,17 +170,22 @@ func _build_ui():
 	opt_class.disabled = true
 	opt_class.mouse_default_cursor_shape = Control.CURSOR_ARROW
 	
-	# Ability Scores Section
-	_build_section_header("5. Ability Scores")
+	# Attributes Section (PF2e Remaster)
+	_build_section_header("5. Attribute Modifiers")
 	chk_alt_boosts = CheckBox.new()
 	chk_alt_boosts.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	chk_alt_boosts.text = "Use Alternate Ancestry Boosts (2 Free)"
-	chk_alt_boosts.tooltip_text = "Replaces the ancestry's standard boosts and flaws with two free ability boosts."
+	chk_alt_boosts.tooltip_text = "Replaces the ancestry's standard boosts and flaws with two free attribute boosts."
 	chk_alt_boosts.toggled.connect(_on_alt_boosts_toggled)
 	form_layout.add_child(chk_alt_boosts)
 	
 	ability_container = VBoxContainer.new()
 	form_layout.add_child(ability_container)
+	
+	free_warning_label = Label.new()
+	free_warning_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+	free_warning_label.visible = false
+	form_layout.add_child(free_warning_label)
 	
 	# Languages Section
 	_build_section_header("6. Languages")
@@ -491,6 +497,253 @@ func _format_heritage_info(h_id: String) -> String:
 			
 	return "\n".join(out)
 
+func _rank_name(rank_val: int) -> String:
+	match rank_val:
+		PFMathConstants.ProficiencyRank.UNTRAINED: return "Untrained"
+		PFMathConstants.ProficiencyRank.TRAINED: return "Trained"
+		PFMathConstants.ProficiencyRank.EXPERT: return "Expert"
+		PFMathConstants.ProficiencyRank.MASTER: return "Master"
+		PFMathConstants.ProficiencyRank.LEGENDARY: return "Legendary"
+		_: return "Untrained"
+
+func _format_background_info(bg_id: String) -> String:
+	var raw = db.get_background_raw_data(bg_id)
+	if raw.is_empty():
+		return "No details available."
+		
+	var out: Array[String] = []
+	var desc = raw.get("description", "")
+	if desc != "":
+		out.append(desc)
+		out.append("")
+		
+	out.append("[b][color=gold]Background Mechanics[/color][/b]")
+	
+	# Boosts
+	var boosts_raw = str(raw.get("boosts", "")).strip_edges()
+	if boosts_raw != "":
+		var boost_parts = _parse_boost_list(boosts_raw)
+		var clean_boosts: Array[String] = []
+		for b in boost_parts:
+			if b == "FREE":
+				clean_boosts.append("One Free Attribute Boost")
+			elif "|" in b:
+				var split_b = b.split("|")
+				var opt_names: Array[String] = []
+				for sb in split_b: opt_names.append(_normalize_stat(sb))
+				clean_boosts.append(" or ".join(opt_names))
+			else:
+				clean_boosts.append(_normalize_stat(b))
+		out.append("[b]• Attribute Boosts:[/b] [color=lightgreen]%s[/color]" % ", ".join(clean_boosts))
+		
+	# Skills
+	var skills_raw = str(raw.get("skills", "")).strip_edges()
+	if skills_raw != "":
+		var skill_parts = _parse_skill_names(skills_raw)
+		out.append("[b]• Trained Skill:[/b] [color=lightgreen]%s[/color]" % ", ".join(skill_parts))
+		
+	# Lores
+	var lores_raw = str(raw.get("lores", "")).strip_edges()
+	if lores_raw != "":
+		var lore_parts = _parse_skill_names(lores_raw)
+		var clean_lores: Array[String] = []
+		for l in lore_parts:
+			var l_str = l.replace("_", " ").capitalize()
+			if not l_str.to_lower().ends_with("lore"): l_str += " Lore"
+			clean_lores.append(l_str)
+		out.append("[b]• Trained Lore:[/b] [color=lightblue]%s[/color]" % ", ".join(clean_lores))
+		
+	# Granted Abilities / Feats
+	var feats_raw = str(raw.get("granted_abilities", "")).strip_edges()
+	if feats_raw != "" and feats_raw != "[]":
+		var feat_parts = _parse_array_field(feats_raw)
+		if not feat_parts.is_empty():
+			var clean_feats: Array[String] = []
+			for f in feat_parts: clean_feats.append(_format_feature_label(f))
+			out.append("[b]• Skill Feat:[/b] [color=gold]%s[/color]" % ", ".join(clean_feats))
+			
+	# Traits
+	var traits_raw = str(raw.get("traits", "")).strip_edges().trim_prefix("[").trim_suffix("]").replace('"', '')
+	if traits_raw != "":
+		out.append("[b]• Traits:[/b] [color=lightblue]%s[/color]" % traits_raw)
+		
+	return "\n".join(out)
+
+func _format_class_info(class_id: String) -> String:
+	var raw = db.get_class_raw_data(class_id)
+	var c = db.get_pf_class(class_id)
+	if raw.is_empty() and c == null:
+		return "No details available."
+		
+	var out: Array[String] = []
+	var desc = raw.get("description", "")
+	if desc != "":
+		out.append(desc)
+		out.append("")
+		
+	out.append("[b][color=gold]Class Mechanics[/color][/b]")
+	
+	# HP per level
+	var hp = raw.get("hp_per_level", 8)
+	out.append("[b]• Hit Points per Level:[/b] %d + Constitution modifier" % hp)
+	
+	# Key Attribute
+	var key_raw = str(raw.get("key_abilities", "")).strip_edges()
+	if key_raw != "":
+		var keys = _parse_boost_list(key_raw)
+		var key_display: Array[String] = []
+		for k in keys:
+			if "|" in k:
+				var sp = k.split("|")
+				var opt_k: Array[String] = []
+				for p in sp: opt_k.append(_normalize_stat(p))
+				key_display.append(" or ".join(opt_k))
+			elif k == "FREE":
+				key_display.append("Choice of Attribute")
+			else:
+				key_display.append(_normalize_stat(k))
+		out.append("[b]• Key Attribute:[/b] [color=lightgreen]%s[/color]" % ", ".join(key_display))
+		
+	out.append("")
+	out.append("[b][color=gold]Initial Proficiencies[/color][/b]")
+	
+	# Perception
+	var perc_rank = int(raw.get("perception_rank", 1))
+	out.append("[b]• Perception:[/b] %s" % _rank_name(perc_rank))
+	
+	# Saving Throws
+	var save_f = int(raw.get("save_fort", 1))
+	var save_r = int(raw.get("save_ref", 1))
+	var save_w = int(raw.get("save_will", 1))
+	out.append("[b]• Saving Throws:[/b] Fortitude [color=lightblue]%s[/color], Reflex [color=lightblue]%s[/color], Will [color=lightblue]%s[/color]" % [
+		_rank_name(save_f), _rank_name(save_r), _rank_name(save_w)
+	])
+	
+	# Class DC
+	var dc_rank = int(raw.get("class_dc_rank", 1))
+	out.append("[b]• Class DC:[/b] %s" % _rank_name(dc_rank))
+	
+	# Trained Skills Count
+	var skills_count = int(raw.get("trained_skills_count", 2))
+	out.append("[b]• Trained Skills:[/b] %d + Intelligence modifier" % skills_count)
+	
+	out.append("")
+	out.append("[b][color=gold]Attacks & Defenses[/color][/b]")
+	
+	# Weapons
+	var w_un = int(raw.get("weapon_unarmed", 1))
+	var w_si = int(raw.get("weapon_simple", 1))
+	var w_ma = int(raw.get("weapon_martial", 0))
+	var w_ad = int(raw.get("weapon_advanced", 0))
+	var weapons_desc: Array[String] = []
+	if w_un > 0: weapons_desc.append("%s in Unarmed" % _rank_name(w_un))
+	if w_si > 0: weapons_desc.append("%s in Simple Weapons" % _rank_name(w_si))
+	if w_ma > 0: weapons_desc.append("%s in Martial Weapons" % _rank_name(w_ma))
+	if w_ad > 0: weapons_desc.append("%s in Advanced Weapons" % _rank_name(w_ad))
+	if weapons_desc.is_empty(): weapons_desc.append("Untrained in all weapons")
+	out.append("[b]• Weapons:[/b] %s" % ", ".join(weapons_desc))
+	
+	# Armor
+	var a_un = int(raw.get("armor_unarmored", 1))
+	var a_li = int(raw.get("armor_light", 0))
+	var a_me = int(raw.get("armor_medium", 0))
+	var a_he = int(raw.get("armor_heavy", 0))
+	var armor_desc: Array[String] = []
+	if a_un > 0: armor_desc.append("%s in Unarmored Defense" % _rank_name(a_un))
+	if a_li > 0: armor_desc.append("%s in Light Armor" % _rank_name(a_li))
+	if a_me > 0: armor_desc.append("%s in Medium Armor" % _rank_name(a_me))
+	if a_he > 0: armor_desc.append("%s in Heavy Armor" % _rank_name(a_he))
+	if armor_desc.is_empty(): armor_desc.append("Untrained in all armor")
+	out.append("[b]• Armor:[/b] %s" % ", ".join(armor_desc))
+	
+	# Spellcasting
+	var is_caster = int(raw.get("is_spellcaster", 0)) == 1
+	if is_caster:
+		out.append("")
+		out.append("[b][color=gold]Spellcasting[/color][/b]")
+		var caster_type_val = int(raw.get("caster_type", 0))
+		var caster_type_str = "Prepared" if caster_type_val == PFMagicConstants.CasterType.PREPARED else ("Spontaneous" if caster_type_val == PFMagicConstants.CasterType.SPONTANEOUS else "Spellcaster")
+		
+		var tradition_val = int(raw.get("spell_tradition", 0))
+		var tradition_str = "Arcane"
+		match tradition_val:
+			PFMagicConstants.MagicTradition.ARCANE: tradition_str = "Arcane"
+			PFMagicConstants.MagicTradition.DIVINE: tradition_str = "Divine"
+			PFMagicConstants.MagicTradition.OCCULT: tradition_str = "Occult"
+			PFMagicConstants.MagicTradition.PRIMAL: tradition_str = "Primal"
+			_: tradition_str = "Magical"
+			
+		var spell_rank = int(raw.get("spell_proficiency", 1))
+		out.append("[b]• Spell Tradition:[/b] [color=lightblue]%s (%s)[/color]" % [tradition_str, caster_type_str])
+		out.append("[b]• Spell Attack & DC:[/b] %s" % _rank_name(spell_rank))
+		
+	# Forced Edicts / Anathema
+	var edicts_raw = str(raw.get("forced_edicts", "")).strip_edges()
+	if edicts_raw != "" and edicts_raw != "[]":
+		var edicts_arr = _parse_array_field(edicts_raw)
+		if not edicts_arr.is_empty():
+			out.append("")
+			out.append("[b][color=gold]Edicts & Anathema[/color][/b]")
+			out.append("[b]• Edicts:[/b] %s" % ", ".join(edicts_arr))
+			
+	var anathema_raw = str(raw.get("forced_anathema", "")).strip_edges()
+	if anathema_raw != "" and anathema_raw != "[]":
+		var anathema_arr = _parse_array_field(anathema_raw)
+		if not anathema_arr.is_empty():
+			out.append("[b]• Anathema:[/b] [color=coral]%s[/color]" % ", ".join(anathema_arr))
+			
+	return "\n".join(out)
+
+func _format_ethnicity_info(eth_id: String) -> String:
+	var raw = db.get_ethnicity_raw_data(eth_id)
+	if raw.is_empty():
+		return "No details available."
+		
+	var out: Array[String] = []
+	var desc = raw.get("description", "")
+	if desc != "":
+		out.append(desc)
+		out.append("")
+		
+	out.append("[b][color=gold]Ethnicity Details[/color][/b]")
+	
+	var traits_raw = str(raw.get("traits", "")).strip_edges().trim_prefix("[").trim_suffix("]").replace('"', '')
+	if traits_raw != "":
+		out.append("[b]• Associated Traits:[/b] [color=lightblue]%s[/color]" % traits_raw)
+		
+	var langs_raw = str(raw.get("languages", "")).strip_edges().trim_prefix("[").trim_suffix("]").replace('"', '')
+	if langs_raw != "":
+		out.append("[b]• Common Languages:[/b] %s" % langs_raw)
+		
+	var reg = str(raw.get("region_id", "")).strip_edges()
+	if reg != "":
+		out.append("[b]• Traditional Homeland:[/b] %s" % reg.capitalize())
+		
+	return "\n".join(out)
+
+func _format_region_info(region_id: String) -> String:
+	var raw = db.get_region_raw_data(region_id)
+	if raw.is_empty():
+		return "No details available."
+		
+	var out: Array[String] = []
+	var desc = raw.get("description", "")
+	if desc != "":
+		out.append(desc)
+		out.append("")
+		
+	out.append("[b][color=gold]Region Details[/color][/b]")
+	
+	var traits_raw = str(raw.get("traits", "")).strip_edges().trim_prefix("[").trim_suffix("]").replace('"', '')
+	if traits_raw != "":
+		out.append("[b]• Regional Traits:[/b] [color=lightblue]%s[/color]" % traits_raw)
+		
+	var langs_raw = str(raw.get("languages", "")).strip_edges().trim_prefix("[").trim_suffix("]").replace('"', '')
+	if langs_raw != "":
+		out.append("[b]• Primary Languages:[/b] %s" % langs_raw)
+		
+	return "\n".join(out)
+
 # --- Signals ---
 
 func _on_name_changed(new_text: String):
@@ -507,9 +760,10 @@ func _on_gender_selected(index: int):
 
 func _on_nationality_selected(index: int):
 	if index > 0: 
-		manager.draft_bio["nationality_id"] = opt_nationality.get_item_metadata(index)
+		var reg_id = opt_nationality.get_item_metadata(index)
+		manager.draft_bio["nationality_id"] = reg_id
 		var item = _regions[index - 1]
-		_update_info_panel(item["name"], item.get("description", "No description available."))
+		_update_info_panel(item["name"], _format_region_info(reg_id))
 	else:
 		manager.draft_bio["nationality_id"] = ""
 		_update_info_panel("Details", "Hover or select an option to see details.")
@@ -517,16 +771,16 @@ func _on_nationality_selected(index: int):
 	
 func _on_birthplace_selected(index: int):
 	if index > 0: 
-		manager.draft_bio["birthplace_id"] = opt_birthplace.get_item_metadata(index)
+		var reg_id = opt_birthplace.get_item_metadata(index)
+		manager.draft_bio["birthplace_id"] = reg_id
 		var item = _regions[index - 1]
-		_update_info_panel(item["name"], item.get("description", "No description available."))
+		_update_info_panel(item["name"], _format_region_info(reg_id))
 	else:
 		manager.draft_bio["birthplace_id"] = ""
 		_update_info_panel("Details", "Hover or select an option to see details.")
 	_update_ui_state()
 
 func _on_ancestry_selected(index: int):
-	_rebuild_abilities()
 	if index > 0:
 		var a_id = opt_ancestry.get_item_metadata(index)
 		manager.draft_ancestry_id = a_id
@@ -576,6 +830,9 @@ func _on_ancestry_selected(index: int):
 		_heritages.clear()
 		_ethnicities.clear()
 		_update_info_panel("Details", "Hover or select an option to see details.")
+	_rebuild_abilities()
+	_rebuild_languages()
+	_rebuild_skills()
 	_update_ui_state()
 
 func _on_heritage_selected(index: int):
@@ -594,35 +851,39 @@ func _on_heritage_selected(index: int):
 
 func _on_ethnicity_selected(index: int):
 	if index > 0 and index - 1 < _ethnicities.size(): 
-		manager.draft_bio["ethnicity_id"] = opt_ethnicity.get_item_metadata(index)
+		var eth_id = opt_ethnicity.get_item_metadata(index)
+		manager.draft_bio["ethnicity_id"] = eth_id
 		var item = _ethnicities[index - 1]
-		_update_info_panel(item["name"], item.get("description", "No description available."))
+		_update_info_panel(item["name"], _format_ethnicity_info(eth_id))
 	else:
 		manager.draft_bio["ethnicity_id"] = ""
+		_update_info_panel("Details", "Hover or select an option to see details.")
 	_update_ui_state()
 
 func _on_background_selected(index: int):
-	_rebuild_abilities()
 	if index > 0: 
-		manager.draft_background_id = opt_background.get_item_metadata(index)
+		var bg_id = opt_background.get_item_metadata(index)
+		manager.draft_background_id = bg_id
 		var item = _backgrounds[index - 1]
-		var stats = "Boosts: " + str(item.get("boosts", ""))
-		_update_info_panel(item["name"], item.get("description", "No description available."), stats)
+		_update_info_panel(item["name"], _format_background_info(bg_id))
 	else:
 		manager.draft_background_id = ""
 		_update_info_panel("Details", "Hover or select an option to see details.")
+	_rebuild_abilities()
+	_rebuild_skills()
 	_update_ui_state()
 
 func _on_class_selected(index: int):
-	_rebuild_abilities()
-	_rebuild_skills()
 	if index > 0: 
-		manager.draft_class_id = opt_class.get_item_metadata(index)
+		var class_id = opt_class.get_item_metadata(index)
+		manager.draft_class_id = class_id
 		var item = _classes[index - 1]
-		_update_info_panel(item["name"], item.get("description", "No description available."))
+		_update_info_panel(item["name"], _format_class_info(class_id))
 	else:
 		manager.draft_class_id = ""
 		_update_info_panel("Details", "Hover or select an option to see details.")
+	_rebuild_abilities()
+	_rebuild_skills()
 	_update_ui_state()
 
 func _update_ui_state():
@@ -663,23 +924,76 @@ func _update_ui_state():
 		opt_class.tooltip_text = "Requires Background selection first."
 		
 	# Finish Button requires everything
-	# Bypassing the 4-free boosts strict check for the simplified MVP
-	if manager.draft_name != "" and manager.draft_ancestry_id != "" and manager.draft_background_id != "" and manager.draft_class_id != "":
+	var missing = PackedStringArray()
+	if manager.draft_name.strip_edges() == "":
+		missing.append("Biography (Name)")
+	if manager.draft_ancestry_id == "":
+		missing.append("Ancestry")
+	if manager.draft_background_id == "":
+		missing.append("Background")
+	if manager.draft_class_id == "":
+		missing.append("Class")
+
+	var free_selected_count = 0
+	var free_seen: Array[String] = []
+	var has_duplicate_free = false
+	for opt in free_boost_opts:
+		if opt.selected > 0:
+			free_selected_count += 1
+			var s = str(opt.get_item_metadata(opt.selected))
+			if free_seen.has(s):
+				has_duplicate_free = true
+			free_seen.append(s)
+			
+	if free_selected_count < 4:
+		missing.append("4 Free Attribute Boosts (%d/4 chosen)" % free_selected_count)
+	elif has_duplicate_free:
+		missing.append("Unique Free Boosts (Duplicates detected)")
+
+	var trained_skills_target = 0
+	if manager.draft_class_id != "":
+		var c = _get_cached_item(_classes, manager.draft_class_id)
+		trained_skills_target = maxi(0, c.get("trained_skills_count", 0) + int_mod)
+
+	var skills_selected_count = 0
+	var skills_seen: Array[String] = []
+	var has_duplicate_skill = false
+	for opt in skill_opts:
+		if opt.selected > 0:
+			skills_selected_count += 1
+			var s = str(opt.get_item_metadata(opt.selected)).capitalize()
+			if skills_seen.has(s):
+				has_duplicate_skill = true
+			skills_seen.append(s)
+			
+	if skills_selected_count < trained_skills_target:
+		missing.append("Trained Skills (%d/%d chosen)" % [skills_selected_count, trained_skills_target])
+	elif has_duplicate_skill:
+		missing.append("Unique Trained Skills (Duplicates detected)")
+
+	var bonus_langs_target = maxi(0, int_mod)
+	var langs_selected_count = 0
+	var langs_seen: Array[String] = []
+	var has_duplicate_lang = false
+	for opt in language_opts:
+		if opt.selected > 0:
+			langs_selected_count += 1
+			var l = str(opt.get_item_metadata(opt.selected)).capitalize()
+			if langs_seen.has(l):
+				has_duplicate_lang = true
+			langs_seen.append(l)
+			
+	if langs_selected_count < bonus_langs_target:
+		missing.append("Bonus Languages (%d/%d chosen)" % [langs_selected_count, bonus_langs_target])
+	elif has_duplicate_lang:
+		missing.append("Unique Bonus Languages (Duplicates detected)")
+
+	if missing.is_empty():
 		btn_finalize.text = "Finish & Generate Character"
 		btn_finalize.disabled = false
 		btn_finalize.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		btn_finalize.tooltip_text = ""
 	else:
-		var missing = PackedStringArray()
-		if manager.draft_name == "":
-			missing.append("Biography (Name)")
-		if manager.draft_ancestry_id == "":
-			missing.append("Ancestry")
-		if manager.draft_background_id == "":
-			missing.append("Background")
-		if manager.draft_class_id == "":
-			missing.append("Class")
-
 		btn_finalize.disabled = true
 		btn_finalize.mouse_default_cursor_shape = Control.CURSOR_ARROW
 		btn_finalize.tooltip_text = "Missing required fields: " + ", ".join(missing) + "."
@@ -693,29 +1007,12 @@ func _on_finalize_pressed():
 	var bg_boosts: Array[StringName] = []
 	for opt in background_boost_opts:
 		if opt.selected > 0: bg_boosts.append(StringName(opt.get_item_metadata(opt.selected)))
-	if manager.draft_background_id != "":
-		var bg = _get_cached_item(_backgrounds, manager.draft_background_id)
-		var b_arr = JSON.parse_string(bg.get("boosts", "[]"))
-		if typeof(b_arr) == TYPE_ARRAY:
-			for b in b_arr:
-				if not "FREE" in b and not "|" in b:
-					bg_boosts.append(StringName(b))
 	manager.selected_background_boosts = bg_boosts
 	
-	if manager.draft_class_id != "":
-		var c = _get_cached_item(_classes, manager.draft_class_id)
-		var b_arr = JSON.parse_string(c.get("key_abilities", "[]"))
-		if typeof(b_arr) == TYPE_ARRAY and b_arr.size() > 0:
-			var b = b_arr[0]
-			if "|" in b:
-				if class_boost_opts.size() > 0 and class_boost_opts[0].selected > 0:
-					var chosen = class_boost_opts[0].get_item_metadata(class_boost_opts[0].selected)
-					# Manager doesn't have class boost property right now, so apply it directly after pc generation
-			else:
-				# Fixed class boost
-				pass
-	
-	# Pass class boost via a temporary array if it was a choice (for now, manager just handles free boosts)
+	if class_boost_opts.size() > 0 and class_boost_opts[0].selected > 0:
+		manager.selected_class_boost = StringName(class_boost_opts[0].get_item_metadata(class_boost_opts[0].selected))
+	else:
+		manager.selected_class_boost = &""
 	
 	var free_boosts: Array[StringName] = []
 	for opt in free_boost_opts:
@@ -724,18 +1021,6 @@ func _on_finalize_pressed():
 	
 	var pc = manager.generate_draft_character()
 	
-	# Apply Class Boost manually since manager doesn't track it
-	if manager.draft_class_id != "":
-		var c = _get_cached_item(_classes, manager.draft_class_id)
-		var b_arr = JSON.parse_string(c.get("key_abilities", "[]"))
-		if typeof(b_arr) == TYPE_ARRAY and b_arr.size() > 0:
-			var b = b_arr[0]
-			if "|" in b:
-				if class_boost_opts.size() > 0 and class_boost_opts[0].selected > 0:
-					pc.attributes.apply_class_boost(StringName(class_boost_opts[0].get_item_metadata(class_boost_opts[0].selected)))
-			else:
-				pc.attributes.apply_class_boost(StringName(b))
-				
 	# Apply Languages
 	for opt in language_opts:
 		if opt.selected > 0:
@@ -751,9 +1036,9 @@ func _on_finalize_pressed():
 	print("  - Ancestry: ", pc.ancestry.entity_name if pc.ancestry else "None")
 	print("  - Background: ", pc.background.entity_name if pc.background else "None")
 	print("  - Class: ", pc.actor_class.entity_name if pc.actor_class else "None")
-	print("  - Final Stats:")
-	print("      STR: ", pc.attributes.str_score, " DEX: ", pc.attributes.dex_score, " CON: ", pc.attributes.con_score)
-	print("      INT: ", pc.attributes.int_score, " WIS: ", pc.attributes.wis_score, " CHA: ", pc.attributes.cha_score)
+	print("  - Final Attribute Modifiers:")
+	print("      STR: %+d  DEX: %+d  CON: %+d" % [pc.attributes.str_mod, pc.attributes.dex_mod, pc.attributes.con_mod])
+	print("      INT: %+d  WIS: %+d  CHA: %+d" % [pc.attributes.int_mod, pc.attributes.wis_mod, pc.attributes.cha_mod])
 	print("  - Known Languages: ", pc.languages)
 	print("=======================================")
 
@@ -772,7 +1057,82 @@ func _get_cached_item(cache: Array, id: String) -> Dictionary:
 			return item
 	return {}
 
+func _normalize_stat(stat: String) -> String:
+	var s = stat.strip_edges().to_upper()
+	match s:
+		"STRENGTH": return "STR"
+		"DEXTERITY": return "DEX"
+		"CONSTITUTION": return "CON"
+		"INTELLIGENCE": return "INT"
+		"WISDOM": return "WIS"
+		"CHARISMA": return "CHA"
+		_: return s
 
+func _normalize_boost_entry(entry: String) -> String:
+	var s = entry.strip_edges().to_upper()
+	if "|" in s:
+		var parts = s.split("|")
+		var norm_parts: Array[String] = []
+		for p in parts:
+			norm_parts.append(_normalize_stat(p))
+		return "|".join(norm_parts)
+	return _normalize_stat(s)
+
+func _parse_boost_list(raw_val: Variant) -> Array[String]:
+	var result: Array[String] = []
+	if raw_val == null:
+		return result
+	if raw_val is Array:
+		for item in raw_val:
+			var s = _normalize_boost_entry(str(item))
+			if s != "": result.append(s)
+		return result
+	var s_val = str(raw_val).strip_edges()
+	if s_val == "" or s_val == "[]":
+		return result
+	var json = JSON.new()
+	if json.parse(s_val) == OK and json.data is Array:
+		for item in json.data:
+			var s = _normalize_boost_entry(str(item))
+			if s != "": result.append(s)
+		return result
+	s_val = s_val.trim_prefix("[").trim_suffix("]")
+	for part in s_val.split(","):
+		var cleaned = _normalize_boost_entry(part.strip_edges().trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'"))
+		if cleaned != "":
+			result.append(cleaned)
+	return result
+
+func _parse_skill_names(raw_val: Variant) -> Array[String]:
+	var result: Array[String] = []
+	if raw_val == null:
+		return result
+	if raw_val is Array:
+		for item in raw_val:
+			var s = str(item).strip_edges()
+			if s != "": result.append(s.capitalize())
+		return result
+	var s_val = str(raw_val).strip_edges()
+	if s_val == "" or s_val == "[]":
+		return result
+	var json = JSON.new()
+	if json.parse(s_val) == OK and json.data is Array:
+		for item in json.data:
+			var s = str(item).strip_edges()
+			if s != "": result.append(s.capitalize())
+		return result
+	s_val = s_val.trim_prefix("[").trim_suffix("]")
+	for part in s_val.split(","):
+		var cleaned = part.strip_edges().trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'")
+		if cleaned != "":
+			result.append(cleaned.capitalize())
+	return result
+
+func _create_badge(text: String, color: Color = Color.WHITE) -> Label:
+	var lbl = Label.new()
+	lbl.text = " " + text + " "
+	lbl.add_theme_color_override("font_color", color)
+	return lbl
 
 func _on_alt_boosts_toggled(button_pressed: bool):
 	manager.use_alternate_ancestry_boosts = button_pressed
@@ -789,6 +1149,7 @@ func _rebuild_abilities():
 	
 	var stats = ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
 	
+	# 1. Ancestry Boosts / Flaws
 	if manager.draft_ancestry_id != "":
 		var ancestry = _get_cached_item(_ancestries, manager.draft_ancestry_id)
 		var hbox = HBoxContainer.new()
@@ -800,71 +1161,70 @@ func _rebuild_abilities():
 				hbox.add_child(opt)
 				ancestry_boost_opts.append(opt)
 		else:
-			var raw = ancestry.get("boosts", "[]")
-			var parsed_boosts = JSON.parse_string(raw)
-			if typeof(parsed_boosts) == TYPE_ARRAY:
-				for b in parsed_boosts:
-					if b == "FREE":
-						var opt = _create_stat_dropdown(stats)
-						hbox.add_child(opt)
-						ancestry_boost_opts.append(opt)
-					else:
-						var lbl = _create_label("+" + str(b))
-						hbox.add_child(lbl)
-			
-			var flaws = JSON.parse_string(ancestry.get("flaws", "[]"))
-			if typeof(flaws) == TYPE_ARRAY:
-				for f in flaws:
-					var lbl = _create_label("-" + str(f))
-					lbl.add_theme_color_override("font_color", Color(1, 0.4, 0.4))
+			var parsed_boosts = _parse_boost_list(ancestry.get("boosts"))
+			for b in parsed_boosts:
+				if b == "FREE":
+					var opt = _create_stat_dropdown(stats)
+					hbox.add_child(opt)
+					ancestry_boost_opts.append(opt)
+				else:
+					var lbl = _create_badge("+" + b, Color(0.4, 0.9, 0.4))
 					hbox.add_child(lbl)
+			
+			var parsed_flaws = _parse_boost_list(ancestry.get("flaws"))
+			for f in parsed_flaws:
+				var lbl = _create_badge("-" + f, Color(1.0, 0.4, 0.4))
+				hbox.add_child(lbl)
 		
 		ability_container.add_child(hbox)
 		
+	# 2. Background Boosts
 	if manager.draft_background_id != "":
 		var bg = _get_cached_item(_backgrounds, manager.draft_background_id)
 		var hbox = HBoxContainer.new()
 		hbox.add_child(_create_label("Background:"))
 		
-		var raw = bg.get("boosts", "[]")
-		var parsed_boosts = JSON.parse_string(raw)
-		if typeof(parsed_boosts) == TYPE_ARRAY:
-			for b in parsed_boosts:
-				if b == "FREE":
-					var opt = _create_stat_dropdown(stats)
-					hbox.add_child(opt)
-					background_boost_opts.append(opt)
-				elif "|" in b:
-					var choices = b.split("|")
-					var opt = _create_stat_dropdown(choices)
-					hbox.add_child(opt)
-					background_boost_opts.append(opt)
-				else:
-					var lbl = _create_label("+" + str(b))
-					hbox.add_child(lbl)
+		var parsed_boosts = _parse_boost_list(bg.get("boosts"))
+		for b in parsed_boosts:
+			if b == "FREE":
+				var opt = _create_stat_dropdown(stats)
+				hbox.add_child(opt)
+				background_boost_opts.append(opt)
+			elif "|" in b:
+				var choices = b.split("|")
+				var opt = _create_stat_dropdown(choices)
+				hbox.add_child(opt)
+				background_boost_opts.append(opt)
+			else:
+				var lbl = _create_badge("+" + b, Color(0.4, 0.9, 0.4))
+				hbox.add_child(lbl)
 					
 		ability_container.add_child(hbox)
 
+	# 3. Class Key Attribute
 	if manager.draft_class_id != "":
 		var c = _get_cached_item(_classes, manager.draft_class_id)
 		var hbox = HBoxContainer.new()
 		hbox.add_child(_create_label("Class Key:"))
 		
-		var raw = c.get("key_abilities", "[]")
-		var parsed_boosts = JSON.parse_string(raw)
-		if typeof(parsed_boosts) == TYPE_ARRAY and parsed_boosts.size() > 0:
-			var b = parsed_boosts[0]
-			if "|" in b:
-				var choices = b.split("|")
+		var parsed_keys = _parse_boost_list(c.get("key_abilities"))
+		for k in parsed_keys:
+			if "|" in k:
+				var choices = k.split("|")
 				var opt = _create_stat_dropdown(choices)
 				hbox.add_child(opt)
 				class_boost_opts.append(opt)
+			elif k == "FREE":
+				var opt = _create_stat_dropdown(stats)
+				hbox.add_child(opt)
+				class_boost_opts.append(opt)
 			else:
-				var lbl = _create_label("+" + str(b))
+				var lbl = _create_badge("+" + k, Color(0.4, 0.9, 0.4))
 				hbox.add_child(lbl)
 				
 		ability_container.add_child(hbox)
 
+	# 4. Free Boosts (Step 4: 4 Free Boosts)
 	var hbox_free = HBoxContainer.new()
 	hbox_free.add_child(_create_label("Free Boosts:"))
 	for i in range(4):
@@ -873,10 +1233,11 @@ func _rebuild_abilities():
 		free_boost_opts.append(opt)
 	ability_container.add_child(hbox_free)
 
+	# 5. Attributes Total Row
 	var hbox_total = HBoxContainer.new()
 	for s in stats:
 		var lbl = Label.new()
-		lbl.text = str(s) + ": 10 "
+		lbl.text = str(s) + ": +0"
 		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		hbox_total.add_child(lbl)
 		attr_labels[s] = lbl
@@ -887,6 +1248,7 @@ func _rebuild_abilities():
 	for opt in class_boost_opts: opt.item_selected.connect(_on_ability_dropdown_changed)
 	for opt in free_boost_opts: opt.item_selected.connect(_on_ability_dropdown_changed)
 	
+	_refresh_boost_dropdown_states()
 	_calculate_live_attributes()
 
 func _create_label(text: String) -> Label:
@@ -898,100 +1260,391 @@ func _create_label(text: String) -> Label:
 func _create_stat_dropdown(options: Array) -> OptionButton:
 	var opt = OptionButton.new()
 	opt.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	opt.add_item("---", -1)
-	opt.set_item_disabled(0, true)
+	opt.add_item("---", 0)
 	for i in range(options.size()):
-		opt.add_item(options[i], i)
-		opt.set_item_metadata(i+1, options[i])
+		var stat_name = _normalize_stat(options[i])
+		opt.add_item(stat_name, i + 1)
+		opt.set_item_metadata(i + 1, stat_name)
+	opt.selected = 0
 	return opt
 
+func _create_skill_dropdown(options: Array) -> OptionButton:
+	var opt = OptionButton.new()
+	opt.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	opt.add_item("---", 0)
+	for i in range(options.size()):
+		var skill_name = str(options[i]).capitalize()
+		opt.add_item(skill_name, i + 1)
+		opt.set_item_metadata(i + 1, skill_name)
+	opt.selected = 0
+	return opt
+
+func _create_language_dropdown(options: Array) -> OptionButton:
+	var opt = OptionButton.new()
+	opt.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	opt.add_item("---", 0)
+	for i in range(options.size()):
+		var lang_name = str(options[i]).capitalize()
+		opt.add_item(lang_name, i + 1)
+		opt.set_item_metadata(i + 1, lang_name)
+	opt.selected = 0
+	return opt
+
+func _refresh_boost_dropdown_states():
+	# --- 1. Ancestry Boosts: Cannot boost an attribute already boosted by Ancestry ---
+	if manager.draft_ancestry_id != "":
+		var ancestry = _get_cached_item(_ancestries, manager.draft_ancestry_id)
+		var fixed_ancestry_boosts: Array[String] = []
+		if not manager.use_alternate_ancestry_boosts:
+			var b_list = _parse_boost_list(ancestry.get("boosts"))
+			for b in b_list:
+				if b != "FREE" and not "|" in b:
+					fixed_ancestry_boosts.append(b)
+					
+		for i in range(ancestry_boost_opts.size()):
+			var opt = ancestry_boost_opts[i]
+			var other_chosen: Array[String] = []
+			for j in range(ancestry_boost_opts.size()):
+				if i != j and ancestry_boost_opts[j].selected > 0:
+					other_chosen.append(str(ancestry_boost_opts[j].get_item_metadata(ancestry_boost_opts[j].selected)))
+			
+			for idx in range(1, opt.item_count):
+				var stat = str(opt.get_item_metadata(idx))
+				var should_disable = fixed_ancestry_boosts.has(stat) or other_chosen.has(stat)
+				opt.set_item_disabled(idx, should_disable)
+				if opt.selected == idx and should_disable:
+					opt.selected = 0
+	
+	# --- 2. Background Boosts: Cannot apply two background boosts to the same attribute ---
+	if manager.draft_background_id != "":
+		var bg = _get_cached_item(_backgrounds, manager.draft_background_id)
+		var fixed_bg_boosts: Array[String] = []
+		var b_list = _parse_boost_list(bg.get("boosts"))
+		for b in b_list:
+			if b != "FREE" and not "|" in b:
+				fixed_bg_boosts.append(b)
+				
+		for i in range(background_boost_opts.size()):
+			var opt = background_boost_opts[i]
+			var other_chosen: Array[String] = []
+			for j in range(background_boost_opts.size()):
+				if i != j and background_boost_opts[j].selected > 0:
+					other_chosen.append(str(background_boost_opts[j].get_item_metadata(background_boost_opts[j].selected)))
+			
+			for idx in range(1, opt.item_count):
+				var stat = str(opt.get_item_metadata(idx))
+				var should_disable = fixed_bg_boosts.has(stat) or other_chosen.has(stat)
+				opt.set_item_disabled(idx, should_disable)
+				if opt.selected == idx and should_disable:
+					opt.selected = 0
+					
+	# --- 3. Class Key Attribute Choices ---
+	if manager.draft_class_id != "":
+		for i in range(class_boost_opts.size()):
+			var opt = class_boost_opts[i]
+			var other_chosen: Array[String] = []
+			for j in range(class_boost_opts.size()):
+				if i != j and class_boost_opts[j].selected > 0:
+					other_chosen.append(str(class_boost_opts[j].get_item_metadata(class_boost_opts[j].selected)))
+			for idx in range(1, opt.item_count):
+				var stat = str(opt.get_item_metadata(idx))
+				var should_disable = other_chosen.has(stat)
+				opt.set_item_disabled(idx, should_disable)
+				if opt.selected == idx and should_disable:
+					opt.selected = 0
+
+	# --- 4. Level 1 Free Boosts: Each of the 4 boosts must apply to a different attribute ---
+	for i in range(free_boost_opts.size()):
+		var opt = free_boost_opts[i]
+		var other_chosen: Array[String] = []
+		for j in range(free_boost_opts.size()):
+			if i != j and free_boost_opts[j].selected > 0:
+				other_chosen.append(str(free_boost_opts[j].get_item_metadata(free_boost_opts[j].selected)))
+		
+		for idx in range(1, opt.item_count):
+			var stat = str(opt.get_item_metadata(idx))
+			var should_disable = other_chosen.has(stat)
+			opt.set_item_disabled(idx, should_disable)
+			if opt.selected == idx and should_disable:
+				opt.selected = 0
+
 func _on_ability_dropdown_changed(_idx: int):
+	_refresh_boost_dropdown_states()
 	_calculate_live_attributes()
 
 func _calculate_live_attributes():
-	var scores = {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10}
+	var mods = {"STR": 0, "DEX": 0, "CON": 0, "INT": 0, "WIS": 0, "CHA": 0}
 	
-	var all_opts = []
-	all_opts.append_array(ancestry_boost_opts)
-	all_opts.append_array(background_boost_opts)
-	all_opts.append_array(class_boost_opts)
-	all_opts.append_array(free_boost_opts)
+	# 1. Fixed Ancestry Boosts / Flaws
+	if manager.draft_ancestry_id != "":
+		var ancestry = _get_cached_item(_ancestries, manager.draft_ancestry_id)
+		if not manager.use_alternate_ancestry_boosts:
+			var b_list = _parse_boost_list(ancestry.get("boosts"))
+			for b in b_list:
+				if b != "FREE" and not "|" in b and mods.has(b):
+					mods[b] += 1
+			var f_list = _parse_boost_list(ancestry.get("flaws"))
+			for f in f_list:
+				if f != "FREE" and mods.has(f):
+					mods[f] -= 1
 	
-	for opt in all_opts:
+	# 2. Ancestry Dropdown Boosts
+	for opt in ancestry_boost_opts:
 		if opt.selected > 0:
 			var stat = opt.get_item_metadata(opt.selected)
-			if scores.has(stat):
-				scores[stat] += 2
+			if mods.has(stat):
+				mods[stat] += 1
 				
-	if manager.draft_ancestry_id != "" and not manager.use_alternate_ancestry_boosts:
-		var a = _get_cached_item(_ancestries, manager.draft_ancestry_id)
-		var b_arr = JSON.parse_string(a.get("boosts", "[]"))
-		if typeof(b_arr) == TYPE_ARRAY:
-			for b in b_arr:
-				if scores.has(b): scores[b] += 2
-		var f_arr = JSON.parse_string(a.get("flaws", "[]"))
-		if typeof(f_arr) == TYPE_ARRAY:
-			for f in f_arr:
-				if scores.has(f): scores[f] -= 2
-				
+	# 3. Fixed Background Boosts
 	if manager.draft_background_id != "":
 		var bg = _get_cached_item(_backgrounds, manager.draft_background_id)
-		var b_arr = JSON.parse_string(bg.get("boosts", "[]"))
-		if typeof(b_arr) == TYPE_ARRAY:
-			for b in b_arr:
-				if scores.has(b): scores[b] += 2
+		var b_list = _parse_boost_list(bg.get("boosts"))
+		for b in b_list:
+			if b != "FREE" and not "|" in b and mods.has(b):
+				mods[b] += 1
 				
+	# 4. Background Dropdown Boosts
+	for opt in background_boost_opts:
+		if opt.selected > 0:
+			var stat = opt.get_item_metadata(opt.selected)
+			if mods.has(stat):
+				mods[stat] += 1
+				
+	# 5. Fixed Class Key Boosts
 	if manager.draft_class_id != "":
 		var c = _get_cached_item(_classes, manager.draft_class_id)
-		var b_arr = JSON.parse_string(c.get("key_abilities", "[]"))
-		if typeof(b_arr) == TYPE_ARRAY and b_arr.size() > 0:
-			var b = b_arr[0]
-			if scores.has(b): scores[b] += 2
-			
-	for stat in scores:
+		var k_list = _parse_boost_list(c.get("key_abilities"))
+		for k in k_list:
+			if k != "FREE" and not "|" in k and mods.has(k):
+				mods[k] += 1
+				
+	# 6. Class Dropdown Boosts
+	for opt in class_boost_opts:
+		if opt.selected > 0:
+			var stat = opt.get_item_metadata(opt.selected)
+			if mods.has(stat):
+				mods[stat] += 1
+				
+	# 7. Level 1 Free Boosts
+	for opt in free_boost_opts:
+		if opt.selected > 0:
+			var stat = opt.get_item_metadata(opt.selected)
+			if mods.has(stat):
+				mods[stat] += 1
+				
+	# Update Labels
+	for stat in mods:
 		if attr_labels.has(stat):
-			attr_labels[stat].text = str(stat) + ": " + str(scores[stat])
+			var val = mods[stat]
+			var formatted = ("+" + str(val)) if val >= 0 else str(val)
+			attr_labels[stat].text = "%s: %s" % [stat, formatted]
 			
-	var new_int_mod = floor((scores["INT"] - 10) / 2.0)
+	# Check Free Boosts duplicates warning (backup check)
+	var free_chosen: Array[String] = []
+	var has_duplicate_free = false
+	for opt in free_boost_opts:
+		if opt.selected > 0:
+			var s = str(opt.get_item_metadata(opt.selected))
+			if free_chosen.has(s):
+				has_duplicate_free = true
+			free_chosen.append(s)
+	
+	if free_warning_label:
+		if has_duplicate_free:
+			free_warning_label.text = "⚠ Duplicate Free Boosts: Each level 1 free boost must apply to a different attribute."
+			free_warning_label.visible = true
+		else:
+			free_warning_label.text = ""
+			free_warning_label.visible = false
+
+	var new_int_mod = mods["INT"]
 	if new_int_mod != int_mod:
 		int_mod = new_int_mod
 		_rebuild_languages()
 		_rebuild_skills()
+		
+	_update_ui_state()
 
 func _rebuild_languages():
 	for child in languages_container.get_children():
 		child.queue_free()
 	language_opts.clear()
 	
+	var known_langs: Array[String] = []
+	# 1. Base Known Languages from Ancestry (+ Common by default)
+	if manager.draft_ancestry_id != "":
+		var anc = _get_cached_item(_ancestries, manager.draft_ancestry_id)
+		var langs_field = anc.get("known_languages")
+		if langs_field == null or str(langs_field) == "":
+			var raw = db.get_ancestry_raw_data(manager.draft_ancestry_id)
+			langs_field = raw.get("known_languages")
+		var parsed = _parse_skill_names(langs_field)
+		for pl in parsed:
+			if not known_langs.has(pl):
+				known_langs.append(pl)
+				
+	if not known_langs.has("Common"):
+		known_langs.insert(0, "Common")
+		
+	var hbox_known = HBoxContainer.new()
+	hbox_known.add_child(_create_label("Known Languages:"))
+	for kl in known_langs:
+		var lbl = _create_badge("[Known] " + kl, Color(0.4, 0.9, 0.4))
+		hbox_known.add_child(lbl)
+	languages_container.add_child(hbox_known)
+	
+	# 2. Bonus Languages from INT modifier
 	var num_languages = maxi(0, int_mod)
-	var lbl = Label.new()
-	lbl.text = "Bonus Languages: " + str(num_languages)
-	languages_container.add_child(lbl)
+	var lbl_bonus = Label.new()
+	if num_languages > 0:
+		var int_sign = ("+" + str(int_mod)) if int_mod >= 0 else str(int_mod)
+		lbl_bonus.text = "Bonus Languages (%s INT mod = %d):" % [int_sign, num_languages]
+	else:
+		lbl_bonus.text = "Bonus Languages (0 from +0 INT mod):"
+	lbl_bonus.add_theme_color_override("font_color", Color(0.8, 0.8, 1.0))
+	languages_container.add_child(lbl_bonus)
 	
 	if num_languages > 0:
-		var available_langs = ["Common", "Draconic", "Elven", "Dwarven", "Goblin", "Orcish", "Sylvan", "Undercommon"]
+		var all_bonus_langs = [
+			"Draconic", "Dwarven", "Elven", "Gnomish", "Goblin", 
+			"Halfling", "Orcish", "Fey", "Shadowtongue",
+			"Birdfolk", "Bullfolk", "Catfolk", "Dogfolk", "Foxfolk", 
+			"Frogfolk", "Horsefolk", "Hyenafolk", "Lizardfolk", 
+			"Monkeyfolk", "Ratfolk", "Snakefolk",
+			"Cordovalen", "Torvallan", "Calataran", "Shahrazari",
+			"Qingling", "Caerwenic", "Kharumic",
+			"Pyric", "Thalassic", "Sussuran", "Petran",
+			"Empyrean", "Diabolic", "Chthonian", "Necril", "Jotun", "Aklo"
+		]
+		# Filter out languages already known by base ancestry/character
+		var available_langs: Array[String] = []
+		for l in all_bonus_langs:
+			if not known_langs.has(l):
+				available_langs.append(l)
+				
 		for i in range(num_languages):
-			var opt = _create_stat_dropdown(available_langs)
+			var opt = _create_language_dropdown(available_langs)
 			languages_container.add_child(opt)
 			language_opts.append(opt)
+			opt.item_selected.connect(_on_language_dropdown_changed)
+			
+	_refresh_language_dropdown_states()
+
+func _refresh_language_dropdown_states():
+	var known_langs: Array[String] = []
+	if manager.draft_ancestry_id != "":
+		var anc = _get_cached_item(_ancestries, manager.draft_ancestry_id)
+		var langs_field = anc.get("known_languages")
+		if langs_field == null or str(langs_field) == "":
+			var raw = db.get_ancestry_raw_data(manager.draft_ancestry_id)
+			langs_field = raw.get("known_languages")
+		known_langs = _parse_skill_names(langs_field)
+	if not known_langs.has("Common"):
+		known_langs.append("Common")
+		
+	for i in range(language_opts.size()):
+		var opt = language_opts[i]
+		var other_chosen: Array[String] = []
+		for j in range(language_opts.size()):
+			if i != j and language_opts[j].selected > 0:
+				other_chosen.append(str(language_opts[j].get_item_metadata(language_opts[j].selected)).capitalize())
+				
+		for idx in range(1, opt.item_count):
+			var lang_name = str(opt.get_item_metadata(idx)).capitalize()
+			var should_disable = known_langs.has(lang_name) or other_chosen.has(lang_name)
+			opt.set_item_disabled(idx, should_disable)
+			if opt.selected == idx and should_disable:
+				opt.selected = 0
+
+func _on_language_dropdown_changed(_idx: int):
+	_refresh_language_dropdown_states()
+	_update_ui_state()
 
 func _rebuild_skills():
 	for child in skills_container.get_children():
 		child.queue_free()
 	skill_opts.clear()
 	
-	var trained_count = 0
+	var bg_skills: Array[String] = []
+	var bg_lores: Array[String] = []
+	
+	# 1. Background Granted Skills & Lores
+	if manager.draft_background_id != "":
+		var bg = _get_cached_item(_backgrounds, manager.draft_background_id)
+		bg_skills = _parse_skill_names(bg.get("skills"))
+		bg_lores = _parse_skill_names(bg.get("lores"))
+		
+		var hbox_bg = HBoxContainer.new()
+		hbox_bg.add_child(_create_label("Background:"))
+		
+		for s in bg_skills:
+			var lbl = _create_badge("[Trained] " + s, Color(0.4, 0.9, 0.4))
+			hbox_bg.add_child(lbl)
+			
+		for l in bg_lores:
+			var lore_display = l.replace("_", " ").capitalize()
+			if not lore_display.to_lower().ends_with("lore"):
+				lore_display += " Lore"
+			var lbl = _create_badge("[Trained] " + lore_display, Color(0.4, 0.8, 1.0))
+			hbox_bg.add_child(lbl)
+			
+		skills_container.add_child(hbox_bg)
+
+	# 2. Class Trained Skills Choices
+	var base_class_skills = 0
+	var total_trained_skills = 0
 	if manager.draft_class_id != "":
 		var c = _get_cached_item(_classes, manager.draft_class_id)
-		trained_count = c.get("trained_skills_count", 0) + int_mod
+		base_class_skills = c.get("trained_skills_count", 0)
+		total_trained_skills = maxi(0, base_class_skills + int_mod)
 	
-	var lbl = Label.new()
-	lbl.text = "Trained Skills: " + str(trained_count)
-	skills_container.add_child(lbl)
+	var lbl_class = Label.new()
+	if manager.draft_class_id != "":
+		var int_sign = ("+" + str(int_mod)) if int_mod >= 0 else str(int_mod)
+		lbl_class.text = "Class Trained Choices (%d base %s INT mod = %d):" % [
+			base_class_skills,
+			int_sign,
+			total_trained_skills
+		]
+	else:
+		lbl_class.text = "Class Trained Choices:"
+	lbl_class.add_theme_color_override("font_color", Color(0.8, 0.8, 1.0))
+	skills_container.add_child(lbl_class)
 	
-	if trained_count > 0:
-		var available_skills = ["Acrobatics", "Arcana", "Athletics", "Crafting", "Deception", "Diplomacy", "Intimidation", "Medicine", "Nature", "Occultism", "Performance", "Religion", "Society", "Stealth", "Survival", "Thievery"]
-		for i in range(trained_count):
-			var opt = _create_stat_dropdown(available_skills)
+	if total_trained_skills > 0:
+		var available_skills = [
+			"Acrobatics", "Arcana", "Athletics", "Crafting", "Deception", 
+			"Diplomacy", "Intimidation", "Medicine", "Nature", "Occultism", 
+			"Performance", "Religion", "Society", "Stealth", "Survival", "Thievery"
+		]
+		for i in range(total_trained_skills):
+			var opt = _create_skill_dropdown(available_skills)
 			skills_container.add_child(opt)
 			skill_opts.append(opt)
+			opt.item_selected.connect(_on_skill_dropdown_changed)
+			
+	_refresh_skill_dropdown_states()
+
+func _refresh_skill_dropdown_states():
+	var bg_skills: Array[String] = []
+	if manager.draft_background_id != "":
+		var bg = _get_cached_item(_backgrounds, manager.draft_background_id)
+		bg_skills = _parse_skill_names(bg.get("skills"))
+	
+	for i in range(skill_opts.size()):
+		var opt = skill_opts[i]
+		var other_chosen: Array[String] = []
+		for j in range(skill_opts.size()):
+			if i != j and skill_opts[j].selected > 0:
+				other_chosen.append(str(skill_opts[j].get_item_metadata(skill_opts[j].selected)).capitalize())
+				
+		for idx in range(1, opt.item_count):
+			var skill_name = str(opt.get_item_metadata(idx)).capitalize()
+			var should_disable = bg_skills.has(skill_name) or other_chosen.has(skill_name)
+			opt.set_item_disabled(idx, should_disable)
+			if opt.selected == idx and should_disable:
+				opt.selected = 0
+
+func _on_skill_dropdown_changed(_idx: int):
+	_refresh_skill_dropdown_states()
+	_update_ui_state()

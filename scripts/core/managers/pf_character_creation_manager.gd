@@ -20,6 +20,7 @@ var draft_bio: Dictionary = {
 # Selections for boosts
 var selected_ancestry_free_boosts: Array[StringName] = []
 var selected_background_boosts: Array[StringName] = []
+var selected_class_boost: StringName = &""
 var selected_level_1_boosts: Array[StringName] = []
 
 # Optional Rules
@@ -47,7 +48,8 @@ func generate_draft_character() -> PFPlayerCharacter:
 		if ancestry:
 			pc.apply_ancestry(ancestry)
 			for b in selected_ancestry_free_boosts:
-				pc.attributes.apply_ancestry_boost(b)
+				if b != &"":
+					pc.attributes.apply_ancestry_boost(StringName(str(b).to_lower()))
 				
 		if draft_heritage_id != "":
 			var heritage = db.get_heritage(draft_heritage_id)
@@ -58,33 +60,48 @@ func generate_draft_character() -> PFPlayerCharacter:
 	if draft_background_id != "":
 		var background = db.get_background(draft_background_id)
 		if background:
-			# Base background apply handles lores and skills
 			pc.apply_background(background)
+			# Apply fixed background boosts
+			for b in background.ability_boosts:
+				var b_str = str(b)
+				if b_str.to_upper() != "FREE" and not "|" in b_str:
+					pc.attributes.apply_background_boost(StringName(b_str.to_lower()))
 			for b in selected_background_boosts:
-				pc.attributes.apply_background_boost(b)
+				if b != &"":
+					pc.attributes.apply_background_boost(StringName(str(b).to_lower()))
 				
 	# 5. Apply Class
 	if draft_class_id != "":
 		var c = db.get_pf_class(draft_class_id)
 		if c:
 			pc.apply_class(c.id)
-			# Class boost is automatically handled in PFPlayerCharacter.apply_class() if key_ability is an array and we pick one.
-			# But for simplicity, we assume apply_class handles the primary key ability boost for now.
+			if selected_class_boost != &"":
+				pc.attributes.apply_class_boost(StringName(str(selected_class_boost).to_lower()))
+			elif c.key_abilities.size() > 0:
+				var first_k = str(c.key_abilities[0])
+				if not "|" in first_k and first_k.to_upper() != "FREE":
+					pc.attributes.apply_class_boost(StringName(first_k.to_lower()))
 			
 	# 6. Apply Level 1 Free Boosts
 	for b in selected_level_1_boosts:
-		pc.attributes.apply_level_boost(1, b)
+		if b != &"":
+			pc.attributes.apply_free_boost(StringName(str(b).to_lower()))
 		
 	draft_updated.emit(pc)
 	return pc
 
 ## Validates if the current state forms a complete, legal Level 1 Character
 func is_valid_character() -> bool:
-	if draft_name == "" or draft_ancestry_id == "" or draft_background_id == "" or draft_class_id == "":
+	if draft_name.strip_edges() == "" or draft_ancestry_id == "" or draft_background_id == "" or draft_class_id == "":
 		return false
 		
-	# Check 4 free boosts
+	# Check 4 free boosts without duplicates
 	if selected_level_1_boosts.size() != 4:
 		return false
+	var seen: Array[StringName] = []
+	for b in selected_level_1_boosts:
+		if b == &"" or seen.has(b):
+			return false
+		seen.append(b)
 		
 	return true

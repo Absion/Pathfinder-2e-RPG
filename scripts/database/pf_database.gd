@@ -1756,21 +1756,21 @@ func get_adjustment(id: String) -> PFAdjustment:
 
 func get_all_ancestries() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	if database.query("SELECT id, name, description FROM ancestries ORDER BY name ASC"):
+	if database.query("SELECT id, name, description, boosts, flaws, alternate_boosts, hp, speed, vision, traits, known_languages, ethnicities, heritages FROM ancestries ORDER BY name ASC"):
 		for row in database.query_result:
 			result.append(row)
 	return result
 
 func get_all_backgrounds() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	if database.query("SELECT id, name, description, boosts, skills, lores FROM backgrounds ORDER BY name ASC"):
+	if database.query("SELECT id, name, description, boosts, flaws, skills, lores FROM backgrounds ORDER BY name ASC"):
 		for row in database.query_result:
 			result.append(row)
 	return result
 
 func get_all_classes() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	if database.query("SELECT id, name, description FROM classes ORDER BY name ASC"):
+	if database.query("SELECT id, name, description, key_abilities, hp_per_level, trained_skills_count, is_spellcaster FROM classes ORDER BY name ASC"):
 		for row in database.query_result:
 			result.append(row)
 	return result
@@ -1848,6 +1848,30 @@ func get_ancestry_raw_data(id: String) -> Dictionary:
 		return _ancestries_cache[id]
 	get_ancestry(id)
 	return _ancestries_cache.get(id, {})
+
+func get_background_raw_data(id: String) -> Dictionary:
+	if _backgrounds_cache.has(id):
+		return _backgrounds_cache[id]
+	get_background(id)
+	return _backgrounds_cache.get(id, {})
+
+func get_class_raw_data(id: String) -> Dictionary:
+	database.query("SELECT * FROM classes WHERE id = '" + id + "'")
+	if database.query_result.size() > 0:
+		return database.query_result[0]
+	return {}
+
+func get_ethnicity_raw_data(id: String) -> Dictionary:
+	database.query("SELECT * FROM ethnicities WHERE id = '" + id + "'")
+	if database.query_result.size() > 0:
+		return database.query_result[0]
+	return {}
+
+func get_region_raw_data(id: String) -> Dictionary:
+	database.query("SELECT * FROM regions WHERE id = '" + id + "'")
+	if database.query_result.size() > 0:
+		return database.query_result[0]
+	return {}
 
 func get_background(id: String) -> PFBackground:
 	var row: Dictionary
