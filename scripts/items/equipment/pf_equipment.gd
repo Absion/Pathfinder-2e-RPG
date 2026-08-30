@@ -42,9 +42,9 @@ func _init(p_id: String):
 		
 		var raw_skill_data = item_data.get(&"skill_bonus_data", "{}")
 		if raw_skill_data and raw_skill_data != "":
-			var json = JSON.new()
-			if json.parse(raw_skill_data) == OK:
-				skill_bonus_data = json.data
+			var parsed_skill_data = JSON.parse_string(raw_skill_data)
+			if parsed_skill_data != null:
+				skill_bonus_data = parsed_skill_data
 
 func on_equipped(wearer: PFActor) -> void:
 	if not "sheet" in wearer or not wearer.sheet: return
