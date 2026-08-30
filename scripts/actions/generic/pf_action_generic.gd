@@ -21,11 +21,9 @@ func _init(p_action_id: StringName):
 	var raw_traits = data.get(&"traits", "[]")
 	var traits_array: Array[StringName] = []
 	if raw_traits != "" and raw_traits != "[]":
-		var json = JSON.new()
-		if json.parse(raw_traits) == OK:
-			var arr = json.get_data()
-			if typeof(arr) == TYPE_ARRAY:
-				for t in arr: traits_array.append(StringName(t))
+		var arr = JSON.parse_string(raw_traits)
+		if typeof(arr) == TYPE_ARRAY:
+			for t in arr: traits_array.append(StringName(t))
 					
 	super._init(action_name, traits_array, action_cost)
 	action_id = p_action_id
