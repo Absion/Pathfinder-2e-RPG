@@ -25,9 +25,9 @@ func _init(p_id: StringName, p_initial_value: int = 1, p_source_dc: int = 0):
 		max_stage = data.get(&"max_stage", 1)
 		stage_interval = data.get(&"stage_interval", 1)
 		var stages_json = data.get(&"stages", "[]")
-		var json = JSON.new()
-		if json.parse(stages_json) == OK:
-			stages_data = json.get_data()
+		var parsed = JSON.parse_string(stages_json)
+		if parsed != null:
+			stages_data = parsed
 	else:
 		condition_name = str(p_id)
 		
