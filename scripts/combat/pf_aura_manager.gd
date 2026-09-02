@@ -75,22 +75,19 @@ func process_auras(all_actors: Array[PFActor]) -> void:
 		# Remove condition from targets that left the aura
 		for target in aura.current_targets:
 			if not in_range_actors.has(target):
-				if target.has_method(&"remove_condition"):
-					target.remove_condition(aura.condition_id)
+				target.remove_condition(aura.condition_id)
 				print("    > [AURA] %s left aura, removed %s." % [target.entity_name, aura.condition_id])
 					
 		# Add condition to targets that entered the aura
 		for target in in_range_actors:
 			if not aura.current_targets.has(target):
-				if target.has_method(&"apply_condition"):
-					var cond = PFCondition.create(aura.condition_id)
-					if cond: target.apply_condition(cond)
+				var cond = PFCondition.create(aura.condition_id)
+				if cond: target.apply_condition(cond)
 				print("    > [AURA] %s entered aura, applied %s." % [target.entity_name, aura.condition_id])
 				
 		aura.current_targets = in_range_actors
 
 func _clear_aura_from_targets(aura: AuraInstance) -> void:
 	for target in aura.current_targets:
-		if target.has_method(&"remove_condition"):
-			target.remove_condition(aura.condition_id)
+		target.remove_condition(aura.condition_id)
 	aura.current_targets.clear()
