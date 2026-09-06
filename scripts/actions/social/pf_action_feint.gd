@@ -16,7 +16,7 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 		print("    > [ERROR] Target is too far for a melee Feint (%d ft > %d ft)!" % [sqrt(distance_sq), reach])
 		return false
 			
-	var base_bonus = user.get_skill_bonus(&"deception") if user.has_method(&"get_skill_bonus") else 0
+	var base_bonus = user.get_skill_bonus(&"deception")
 	
 	var nat_roll = PFDice.roll_d20()
 	var roll_total = nat_roll + base_bonus

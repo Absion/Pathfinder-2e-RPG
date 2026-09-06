@@ -360,7 +360,7 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 	if degree == PFMathConstants.DegreeOfSuccess.CRIT_SUCCESS:
 		print("    *** CRITICAL HIT! ***")
 		
-		if user.has_method(&"has_critical_specialization") and user.has_critical_specialization(weapon.group):
+		if user.has_critical_specialization(weapon.group):
 			print("    *** CRITICAL SPECIALIZATION TRIGGERED! ***")
 			_apply_critical_specialization(user, target)
 			
@@ -442,7 +442,7 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 	if has_splash and (degree == PFMathConstants.DegreeOfSuccess.SUCCESS or degree == PFMathConstants.DegreeOfSuccess.CRIT_SUCCESS):
 		var splash_radius = 5.0
 		# Bomb Specialization increases splash radius to 10 feet
-		if user.has_method(&"has_critical_specialization") and user.has_critical_specialization(weapon.group) and weapon.group == PFEquipmentConstants.WeaponGroup.BOMB:
+		if user.has_critical_specialization(weapon.group) and weapon.group == PFEquipmentConstants.WeaponGroup.BOMB:
 			splash_radius = 10.0
 			
 		var space_state = target.get_world_3d().direct_space_state if target.is_inside_tree() else null

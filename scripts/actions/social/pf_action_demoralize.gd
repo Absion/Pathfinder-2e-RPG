@@ -32,7 +32,7 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 			penalty = -4
 			print("    > (No shared language: -4 penalty to Demoralize)")
 			
-	var base_bonus = user.get_skill_bonus(&"intimidation") if user.has_method(&"get_skill_bonus") else 0
+	var base_bonus = user.get_skill_bonus(&"intimidation")
 	var total_bonus = base_bonus + penalty
 	
 	var nat_roll = PFDice.roll_d20()
