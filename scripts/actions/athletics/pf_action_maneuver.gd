@@ -61,7 +61,7 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 			print("    > [ERROR] You need at least one free hand to %s!" % maneuver_trait)
 			return false
 			
-		base_bonus = user.get_skill_bonus(&"athletics") if user.has_method(&"get_skill_bonus") else 0
+		base_bonus = user.get_skill_bonus(&"athletics")
 
 	var map_penalty = mini(user.action_economy.attack_stacks, 2) * -5
 	var total_bonus = base_bonus + map_penalty

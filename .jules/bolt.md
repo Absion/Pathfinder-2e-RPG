@@ -56,3 +56,6 @@
 ## 2023-10-25 - Cache Godot properties for heavy spatial math
 **Learning:** In GDScript, accessing built-in Node properties (like `position` or `global_position`) crosses the GDScript-to-C++ boundary. When these properties are accessed multiple times in mathematical functions like `is_flanking()`, it creates unnecessary overhead.
 **Action:** Always extract and cache node properties into local variables before executing spatial operations or tight loops to minimize redundant C++ property accesses.
+## 2026-09-06 - Remove redundant has_method checks on typed variables
+**Learning:** In Godot 4 GDScript, if a variable is explicitly statically typed (e.g., user: PFActor), the parser guarantees at compile-time that its class methods exist. Runtime reflection checks like has_method() on these typed variables are redundant, incur unnecessary string hashing overhead, and should be removed.
+**Action:** Always omit has_method() checks when calling methods on strictly typed variables that guarantee the method's existence.

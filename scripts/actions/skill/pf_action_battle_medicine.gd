@@ -32,7 +32,7 @@ func execute(user: PFActor, target: Variant = null) -> bool:
 		print("    > %s is immune to %s's Battle Medicine for today!" % [target.entity_name, user.entity_name])
 		return false
 			
-	var base_bonus = user.get_skill_bonus(&"medicine") if user.has_method(&"get_skill_bonus") else 0
+	var base_bonus = user.get_skill_bonus(&"medicine")
 	
 	var nat_roll = PFDice.roll_d20()
 	var roll_total = nat_roll + base_bonus
