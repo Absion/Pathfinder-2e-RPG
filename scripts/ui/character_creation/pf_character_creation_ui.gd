@@ -205,6 +205,18 @@ func _build_ui():
 	btn_finalize.tooltip_text = "Fill out Biography, Ancestry, Background, and Class to continue."
 	btn_finalize.mouse_default_cursor_shape = Control.CURSOR_ARROW
 	btn_finalize.pressed.connect(_on_finalize_pressed)
+
+	var _update_visuals = func():
+		if not btn_finalize.disabled and (btn_finalize.has_focus() or btn_finalize.get_global_rect().has_point(btn_finalize.get_global_mouse_position())):
+			btn_finalize.modulate = Color(1.2, 1.2, 1.2)
+		else:
+			btn_finalize.modulate = Color(1.0, 1.0, 1.0)
+
+	btn_finalize.focus_entered.connect(_update_visuals)
+	btn_finalize.focus_exited.connect(_update_visuals)
+	btn_finalize.mouse_entered.connect(_update_visuals)
+	btn_finalize.mouse_exited.connect(_update_visuals)
+
 	form_layout.add_child(btn_finalize)
 
 func _build_section_header(text: String):

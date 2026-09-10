@@ -60,3 +60,6 @@
 ## 2026-08-20 - Disable OptionButton Placeholder Selection
 **Learning:** Dropdowns with a placeholder like '--- Select ---' allow users to accidentally select an invalid or empty state if not disabled. Explicitly disabling index 0 ensures the placeholder acts only as a visual prompt.
 **Action:** Always use `set_item_disabled(0, true)` when adding a placeholder text as the first item in Godot OptionButtons, both during static initialization and dynamic repopulation.
+## $(date +%Y-%m-%d) - Prevent False Affordances on Disabled Custom Buttons
+**Learning:** In Godot 4 programmatic UI, when manually implementing hover/focus visual states (e.g., modifying modulate color) on Buttons via mouse/focus signals, the visual state changes even when the button is disabled, creating a false clickability affordance.
+**Action:** Always include a `not button.disabled` condition in the custom visual update handler so disabled buttons do not visually respond to hover or focus.
