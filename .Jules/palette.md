@@ -60,3 +60,6 @@
 ## 2026-08-20 - Disable OptionButton Placeholder Selection
 **Learning:** Dropdowns with a placeholder like '--- Select ---' allow users to accidentally select an invalid or empty state if not disabled. Explicitly disabling index 0 ensures the placeholder acts only as a visual prompt.
 **Action:** Always use `set_item_disabled(0, true)` when adding a placeholder text as the first item in Godot OptionButtons, both during static initialization and dynamic repopulation.
+## $(date +%Y-%m-%d) - Disable OptionButton Placeholder Selection (Helper Methods)
+**Learning:** Dropdowns created programmatically with a placeholder like '---' allow users to accidentally select an invalid or empty state if not explicitly disabled at the point of creation.
+**Action:** Always use `set_item_disabled(0, true)` immediately after adding a placeholder text as the first item in Godot OptionButtons, particularly when standardizing this through factory/helper methods like `_create_stat_dropdown`.
