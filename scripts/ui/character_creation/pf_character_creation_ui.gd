@@ -1262,6 +1262,7 @@ func _create_stat_dropdown(options: Array) -> OptionButton:
 	var opt = OptionButton.new()
 	opt.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	opt.add_item("---", 0)
+	opt.set_item_disabled(0, true)
 	for i in range(options.size()):
 		var stat_name = _normalize_stat(options[i])
 		opt.add_item(stat_name, i + 1)
@@ -1273,6 +1274,7 @@ func _create_skill_dropdown(options: Array) -> OptionButton:
 	var opt = OptionButton.new()
 	opt.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	opt.add_item("---", 0)
+	opt.set_item_disabled(0, true)
 	for i in range(options.size()):
 		var skill_name = str(options[i]).capitalize()
 		opt.add_item(skill_name, i + 1)
@@ -1284,6 +1286,7 @@ func _create_language_dropdown(options: Array) -> OptionButton:
 	var opt = OptionButton.new()
 	opt.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	opt.add_item("---", 0)
+	opt.set_item_disabled(0, true)
 	for i in range(options.size()):
 		var lang_name = str(options[i]).capitalize()
 		opt.add_item(lang_name, i + 1)
