@@ -124,8 +124,7 @@ func next_turn() -> void:
 	
 	# End current turn
 	print("--- %s ends their turn. ---" % current_actor.entity_name)
-	if current_actor.has_method(&"end_turn"):
-		current_actor.end_turn()
+	current_actor.end_turn()
 		
 	# Process Sustained Spells Expiration
 	if active_sustained_spells.has(current_actor):
@@ -170,8 +169,7 @@ func _start_current_turn() -> void:
 	print("--- %s starts their turn. ---" % current_actor.entity_name)
 	
 	# Fire actor's internal start turn hooks (conditions, action refresh)
-	if current_actor.has_method(&"start_turn"):
-		current_actor.start_turn()
+	current_actor.start_turn()
 		
 	var cond_mgr = PFConditionManager.get_instance()
 	if cond_mgr: cond_mgr.tick_turn_started(current_actor)
@@ -198,8 +196,7 @@ func pop_sub_turn() -> void:
 	var actor = sub_turn_stack.pop_back()
 	print("--- %s's Sub-Turn ends. ---" % actor.entity_name)
 	
-	if actor.has_method(&"end_turn"):
-		actor.end_turn()
+	actor.end_turn()
 		
 	var cond_mgr = PFConditionManager.get_instance()
 	if cond_mgr: cond_mgr.tick_turn_ended(actor)
