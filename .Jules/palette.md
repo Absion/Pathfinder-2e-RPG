@@ -60,3 +60,6 @@
 ## 2026-08-20 - Disable OptionButton Placeholder Selection
 **Learning:** Dropdowns with a placeholder like '--- Select ---' allow users to accidentally select an invalid or empty state if not disabled. Explicitly disabling index 0 ensures the placeholder acts only as a visual prompt.
 **Action:** Always use `set_item_disabled(0, true)` when adding a placeholder text as the first item in Godot OptionButtons, both during static initialization and dynamic repopulation.
+## 2026-10-01 - Focus states for TextureRects in UI
+**Learning:** TextureRects are purely visual by default. When used to represent functional UI elements (like action/reaction icons) that convey actionable state (spent vs available) through hover/tooltips, they lack keyboard focus support, breaking accessibility for non-mouse users.
+**Action:** Explicitly set `focus_mode = Control.FOCUS_ALL` on TextureRects functioning as UI elements to ensure keyboard navigability and state discoverability via tooltips.
