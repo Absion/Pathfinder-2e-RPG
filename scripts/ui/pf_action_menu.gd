@@ -131,6 +131,7 @@ func _ready():
 		act_icon.custom_minimum_size = Vector2(32, 32)
 		act_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		act_icon.mouse_filter = Control.MOUSE_FILTER_PASS
+		act_icon.focus_mode = Control.FOCUS_ALL
 		tracker_hbox.add_child(act_icon)
 		action_icons.append(act_icon)
 		
@@ -143,6 +144,7 @@ func _ready():
 	reaction_icon.custom_minimum_size = Vector2(32, 32)
 	reaction_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	reaction_icon.mouse_filter = Control.MOUSE_FILTER_PASS
+	reaction_icon.focus_mode = Control.FOCUS_ALL
 	tracker_hbox.add_child(reaction_icon)
 	
 	# --- MIDDLE DIVIDER 2 ---
@@ -159,6 +161,7 @@ func _ready():
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait.mouse_filter = Control.MOUSE_FILTER_PASS
+	portrait.focus_mode = Control.FOCUS_ALL
 	hbox.add_child(portrait)
 		
 	_apply_position()
